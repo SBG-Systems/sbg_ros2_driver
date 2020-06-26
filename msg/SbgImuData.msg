@@ -1,5 +1,5 @@
 # SBG Ellipse Messages
-Header header
+std_msgs/Header header
 
 # Time since sensor is powered up us 
 uint32 time_stamp

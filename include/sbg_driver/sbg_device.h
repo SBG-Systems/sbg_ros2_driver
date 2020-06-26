@@ -7,8 +7,8 @@
 #include <string>
 
 // ROS headers
-#include <std_srvs/SetBool.h>
-#include <std_srvs/Trigger.h>
+#include <std_srvs/srv/set_bool.hpp>
+#include <std_srvs/srv/trigger.hpp>
 
 // Project headers
 #include <config_applier.h>
@@ -39,7 +39,7 @@ private:
 
   SbgEComHandle           m_com_handle_;
   SbgInterface            m_sbg_interface_;
-  ros::NodeHandle&        m_ref_node_;
+  rclcpp::Node&        	  m_ref_node_;
   MessagePublisher        m_message_publisher_;
   ConfigStore             m_config_store_;
 
@@ -48,10 +48,10 @@ private:
   bool                    m_mag_calibration_ongoing_;
   bool                    m_mag_calibration_done_;
   SbgEComMagCalibResults  m_magCalibResults;
-  ros::ServiceServer      m_calib_service_;
-  ros::ServiceServer      m_calib_save_service_;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr    m_calib_service_;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr      m_calib_save_service_;
 
-  ros::Time               m_ros_processing_time_;
+  rclcpp::Time               m_ros_processing_time_;
 
   //---------------------------------------------------------------------//
   //- Private  methods                                                  -//
@@ -126,7 +126,7 @@ private:
    * \param[in] ref_ros_response  ROS service response.
    * \return                      Return true if the calibration process has been succesfull.
    */
-  bool processMagCalibration(std_srvs::Trigger::Request& ref_ros_request, std_srvs::Trigger::Response& ref_ros_response);
+  bool processMagCalibration(const std::shared_ptr<std_srvs::srv::Trigger::Request> ref_ros_request, std::shared_ptr<std_srvs::srv::Trigger::Response> ref_ros_response);
 
   /*!
    * Save the magnetometer calibration.
@@ -135,7 +135,7 @@ private:
    * \param[in] ref_ros_response  ROS service response.
    * \return                      Return true if the calibration has been saved.
    */
-  bool saveMagCalibration(std_srvs::Trigger::Request& ref_ros_request, std_srvs::Trigger::Response& ref_ros_response);
+  bool saveMagCalibration(const std::shared_ptr<std_srvs::srv::Trigger::Request> ref_ros_request, std::shared_ptr<std_srvs::srv::Trigger::Response> ref_ros_response);
 
   /*!
    * Start the magnetometer calibration process.
@@ -177,9 +177,9 @@ public:
   /*!
    * Default constructor.
    * 
-   * \param[in] ref_node_handle   ROS NodeHandle.
+   * \param[in] ref_node_handle   ROS Node.
    */
-  SbgDevice(ros::NodeHandle& ref_node_handle);
+  SbgDevice(rclcpp::Node& ref_node_handle);
 
   /*!
    * Default destructor.

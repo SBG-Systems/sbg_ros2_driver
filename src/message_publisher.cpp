@@ -11,7 +11,7 @@ using sbg::MessagePublisher;
 
 MessagePublisher::MessagePublisher(void):
 m_output_mode_(SBG_ECOM_OUTPUT_MODE_DISABLED),
-m_max_mesages_(10)
+m_max_messages_(10)
 {
 
 }
@@ -163,7 +163,7 @@ std::string MessagePublisher::getOutputTopicName(SbgEComMsgId sbg_message_id) co
   }
 }
 
-void MessagePublisher::initPublisher(ros::NodeHandle& ref_ros_node_handle, SbgEComMsgId sbg_msg_id, SbgEComOutputMode output_conf, const std::string &ref_output_topic)
+void MessagePublisher::initPublisher(rclcpp::Node& ref_ros_node_handle, SbgEComMsgId sbg_msg_id, SbgEComOutputMode output_conf, const std::string &ref_output_topic)
 {
   //
   // Check if the publisher has to be initialized.
@@ -175,105 +175,105 @@ void MessagePublisher::initPublisher(ros::NodeHandle& ref_ros_node_handle, SbgEC
     switch (sbg_msg_id)
     {
       case SBG_ECOM_LOG_STATUS:
-        m_sbgStatus_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgStatus>(ref_output_topic, m_max_mesages_);
+        m_sbgStatus_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgStatus>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_UTC_TIME:
-        m_sbgUtcTime_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgUtcTime>(ref_output_topic, m_max_mesages_);
+        m_sbgUtcTime_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgUtcTime>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_IMU_DATA:
-        m_sbgImuData_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgImuData>(ref_output_topic, m_max_mesages_);
+        m_sbgImuData_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgImuData>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_MAG:
-        m_sbgMag_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgMag>(ref_output_topic, m_max_mesages_);
+        m_sbgMag_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgMag>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_MAG_CALIB:
-        m_sbgMagCalib_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgMagCalib>(ref_output_topic, m_max_mesages_);
+        m_sbgMagCalib_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgMagCalib>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_EKF_EULER:
-        m_sbgEkfEuler_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgEkfEuler>(ref_output_topic, m_max_mesages_);
+        m_sbgEkfEuler_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfEuler>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_EKF_QUAT:
-        m_sbgEkfQuat_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgEkfQuat>(ref_output_topic, m_max_mesages_);
+        m_sbgEkfQuat_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfQuat>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_EKF_NAV:
 
-        m_sbgEkfNav_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgEkfNav>(ref_output_topic, m_max_mesages_);
+        m_sbgEkfNav_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfNav>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_SHIP_MOTION:
 
-        m_sbgShipMotion_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgShipMotion>(ref_output_topic, m_max_mesages_);
+        m_sbgShipMotion_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgShipMotion>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_GPS1_VEL:
       case SBG_ECOM_LOG_GPS2_VEL:
 
-        m_sbgGpsVel_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgGpsVel>(ref_output_topic, m_max_mesages_);
+        m_sbgGpsVel_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsVel>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_GPS1_POS:
       case SBG_ECOM_LOG_GPS2_POS:
 
-        m_sbgGpsPos_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgGpsPos>(ref_output_topic, m_max_mesages_);
+        m_sbgGpsPos_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsPos>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_GPS1_HDT:
       case SBG_ECOM_LOG_GPS2_HDT:
 
-        m_sbgGpsHdt_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgGpsHdt>(ref_output_topic, m_max_mesages_);
+        m_sbgGpsHdt_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsHdt>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_GPS1_RAW:
       case SBG_ECOM_LOG_GPS2_RAW:
 
-        m_sbgGpsRaw_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgGpsRaw>(ref_output_topic, m_max_mesages_);
+        m_sbgGpsRaw_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsRaw>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_ODO_VEL:
 
-        m_sbgOdoVel_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgOdoVel>(ref_output_topic, m_max_mesages_);
+        m_sbgOdoVel_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgOdoVel>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_A:
 
-        m_sbgEventA_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgEvent>(ref_output_topic, m_max_mesages_);
+        m_sbgEventA_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_B:
 
-        m_sbgEventB_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgEvent>(ref_output_topic, m_max_mesages_);
+        m_sbgEventB_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_C:
 
-        m_sbgEventC_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgEvent>(ref_output_topic, m_max_mesages_);
+        m_sbgEventC_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_D:
 
-        m_sbgEventD_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgEvent>(ref_output_topic, m_max_mesages_);
+        m_sbgEventD_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_E:
 
-        m_sbgEventE_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgEvent>(ref_output_topic, m_max_mesages_);
+        m_sbgEventE_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_IMU_SHORT:
 
-        m_SbgImuShort_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgImuShort>(ref_output_topic, m_max_mesages_);
+        m_SbgImuShort_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgImuShort>(ref_output_topic, m_max_messages_);
         break;
 
       case SBG_ECOM_LOG_AIR_DATA:
 
-        m_SbgAirData_pub_ = ref_ros_node_handle.advertise<sbg_driver::SbgAirData>(ref_output_topic, m_max_mesages_);
+        m_SbgAirData_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgAirData>(ref_output_topic, m_max_messages_);
         break;
 
       default:
@@ -282,91 +282,91 @@ void MessagePublisher::initPublisher(ros::NodeHandle& ref_ros_node_handle, SbgEC
   }
 }
 
-void MessagePublisher::defineRosStandardPublishers(ros::NodeHandle& ref_ros_node_handle)
+void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_handle)
 {
   if (m_sbgImuData_pub_ && m_sbgEkfQuat_pub_)
   {
-    m_imu_pub_ = ref_ros_node_handle.advertise<sensor_msgs::Imu>("imu/data", m_max_mesages_);
+    m_imu_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::Imu>("imu/data", m_max_messages_);
   }
   else
   {
-    ROS_WARN("SBG_DRIVER - [Publisher] SBG Imu and/or Quat output are not configured, the standard IMU can not be defined.");
+    RCLCPP_WARN(ref_ros_node_handle.get_logger(), "SBG_DRIVER - [Publisher] SBG Imu and/or Quat output are not configured, the standard IMU can not be defined.");
   }
 
   if (m_sbgImuData_pub_)
   {
-    m_temp_pub_     = ref_ros_node_handle.advertise<sensor_msgs::Temperature>("imu/temp", m_max_mesages_);
-    m_velocity_pub_ = ref_ros_node_handle.advertise<geometry_msgs::TwistStamped>("imu/velocity", m_max_mesages_);
+    m_temp_pub_     = ref_ros_node_handle.create_publisher<sensor_msgs::msg::Temperature>("imu/temp", m_max_messages_);
+    m_velocity_pub_ = ref_ros_node_handle.create_publisher<geometry_msgs::msg::TwistStamped>("imu/velocity", m_max_messages_);
   }
   else
   {
-    ROS_WARN("SBG_DRIVER - [Publisher] SBG Imu data output are not configured, the standard Temperature publisher can not be defined.");
+    RCLCPP_WARN(ref_ros_node_handle.get_logger(), "SBG_DRIVER - [Publisher] SBG Imu data output are not configured, the standard Temperature publisher can not be defined.");
   }
 
   if (m_sbgMag_pub_)
   {
-    m_mag_pub_ = ref_ros_node_handle.advertise<sensor_msgs::MagneticField>("imu/mag", m_max_mesages_);
+    m_mag_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::MagneticField>("imu/mag", m_max_messages_);
   }
   else
   {
-    ROS_WARN("SBG_DRIVER - [Publisher] SBG Mag data output are not configured, the standard Magnetic publisher can not be defined.");
+    RCLCPP_WARN(ref_ros_node_handle.get_logger(), "SBG_DRIVER - [Publisher] SBG Mag data output are not configured, the standard Magnetic publisher can not be defined.");
   }
 
   if (m_SbgAirData_pub_)
   {
-    m_fluid_pub_ = ref_ros_node_handle.advertise<sensor_msgs::FluidPressure>("imu/pres", m_max_mesages_);
+    m_fluid_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::FluidPressure>("imu/pres", m_max_messages_);
   }
   else
   {
-    ROS_WARN("SBG_DRIVER - [Publisher] SBG AirData output are not configured, the standard FluidPressure publisher can not be defined.");
+    RCLCPP_WARN(ref_ros_node_handle.get_logger(), "SBG_DRIVER - [Publisher] SBG AirData output are not configured, the standard FluidPressure publisher can not be defined.");
   }
 
 
   if (m_sbgEkfNav_pub_)
   {
-    m_pos_ecef_pub_ = ref_ros_node_handle.advertise<geometry_msgs::PointStamped>("imu/pos_ecef", m_max_mesages_);
+    m_pos_ecef_pub_ = ref_ros_node_handle.create_publisher<geometry_msgs::msg::PointStamped>("imu/pos_ecef", m_max_messages_);
   }
   else
   {
-    ROS_WARN("SBG_DRIVER - [Publisher] SBG Ekf data output are not configured, the standard ECEF position publisher can not be defined.");
+    RCLCPP_WARN(ref_ros_node_handle.get_logger(), "SBG_DRIVER - [Publisher] SBG Ekf data output are not configured, the standard ECEF position publisher can not be defined.");
   }
 
   if (m_sbgUtcTime_pub_)
   {
-    m_utc_reference_pub_ = ref_ros_node_handle.advertise<sensor_msgs::TimeReference>("imu/utc_ref", m_max_mesages_);
+    m_utc_reference_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::TimeReference>("imu/utc_ref", m_max_messages_);
   }
   else
   {
-    ROS_WARN("SBG_DRIVER - [Publisher] SBG Utc data output are not configured, the UTC time reference publisher can not be defined.");
+    RCLCPP_WARN(ref_ros_node_handle.get_logger(), "SBG_DRIVER - [Publisher] SBG Utc data output are not configured, the UTC time reference publisher can not be defined.");
   }
 
   if (m_sbgGpsPos_pub_)
   {
-    m_nav_sat_fix_pub_ = ref_ros_node_handle.advertise<sensor_msgs::NavSatFix>("imu/nav_sat_fix", m_max_mesages_);
+    m_nav_sat_fix_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::NavSatFix>("imu/nav_sat_fix", m_max_messages_);
   }
   else
   {
-    ROS_WARN("SBG_DRIVER - [Publisher] SBG GPS Pos data output are not configured, the NavSatFix publisher can not be defined.");
+    RCLCPP_WARN(ref_ros_node_handle.get_logger(), "SBG_DRIVER - [Publisher] SBG GPS Pos data output are not configured, the NavSatFix publisher can not be defined.");
   }
 }
 
 void MessagePublisher::publishIMUData(const SbgBinaryLogData &ref_sbg_log)
 {
-  sbg_driver::SbgImuData sbg_message_imu_old;
+  sbg_driver::msg::SbgImuData sbg_message_imu_old;
   sbg_message_imu_old = m_sbg_imu_message_;
 
   if (m_sbgImuData_pub_)
   {
     m_sbg_imu_message_ = m_message_wrapper_.createSbgImuDataMessage(ref_sbg_log.imuData);
-    m_sbgImuData_pub_.publish(m_sbg_imu_message_);
+    m_sbgImuData_pub_->publish(m_sbg_imu_message_);
   }
   if (m_temp_pub_)
   {
-    m_temp_pub_.publish(m_message_wrapper_.createRosTemperatureMessage(m_sbg_imu_message_));
+    m_temp_pub_->publish(m_message_wrapper_.createRosTemperatureMessage(m_sbg_imu_message_));
   }
   if (m_velocity_pub_)
   {
-    m_velocity_pub_.publish(m_message_wrapper_.createRosTwistStampedMessage(m_sbg_imu_message_, sbg_message_imu_old));
+    m_velocity_pub_->publish(m_message_wrapper_.createRosTwistStampedMessage(m_sbg_imu_message_, sbg_message_imu_old));
   }
 
   processRosImuMessage();
@@ -378,88 +378,88 @@ void MessagePublisher::processRosImuMessage(void)
   {
     if (m_sbg_imu_message_.time_stamp == m_sbg_ekf_quat_message_.time_stamp)
     {
-      m_imu_pub_.publish(m_message_wrapper_.createRosImuMessage(m_sbg_imu_message_, m_sbg_ekf_quat_message_));
+      m_imu_pub_->publish(m_message_wrapper_.createRosImuMessage(m_sbg_imu_message_, m_sbg_ekf_quat_message_));
     }
   }
 }
 
 void MessagePublisher::publishMagData(const SbgBinaryLogData &ref_sbg_log)
 {
-  sbg_driver::SbgMag sbg_mag_message;
+  sbg_driver::msg::SbgMag sbg_mag_message;
   sbg_mag_message = m_message_wrapper_.createSbgMagMessage(ref_sbg_log.magData);
 
   if (m_sbgMag_pub_)
   {
-    m_sbgMag_pub_.publish(sbg_mag_message);
+    m_sbgMag_pub_->publish(sbg_mag_message);
   }
   if (m_mag_pub_)
   {
-    m_mag_pub_.publish(m_message_wrapper_.createRosMagneticMessage(sbg_mag_message));
+    m_mag_pub_->publish(m_message_wrapper_.createRosMagneticMessage(sbg_mag_message));
   }
 }
 
 void MessagePublisher::publishFluidPressureData(const SbgBinaryLogData &ref_sbg_log)
 {
-  sbg_driver::SbgAirData sbg_air_data_message;
+  sbg_driver::msg::SbgAirData sbg_air_data_message;
   sbg_air_data_message = m_message_wrapper_.createSbgAirDataMessage(ref_sbg_log.airData);
 
   if (m_SbgAirData_pub_)
   {
-    m_SbgAirData_pub_.publish(sbg_air_data_message);
+    m_SbgAirData_pub_->publish(sbg_air_data_message);
   }
   if (m_fluid_pub_)
   {
-    m_fluid_pub_.publish(m_message_wrapper_.createRosFluidPressureMessage(sbg_air_data_message));
+    m_fluid_pub_->publish(m_message_wrapper_.createRosFluidPressureMessage(sbg_air_data_message));
   }
 }
 
 void MessagePublisher::publishEkfNavigationData(const SbgBinaryLogData &ref_sbg_log)
 {
-  sbg_driver::SbgEkfNav sbg_ekf_nav_message;
+  sbg_driver::msg::SbgEkfNav sbg_ekf_nav_message;
   sbg_ekf_nav_message = m_message_wrapper_.createSbgEkfNavMessage(ref_sbg_log.ekfNavData);
 
   if (m_sbgEkfNav_pub_)
   {
-    m_sbgEkfNav_pub_.publish(sbg_ekf_nav_message);
+    m_sbgEkfNav_pub_->publish(sbg_ekf_nav_message);
   }
   if (m_pos_ecef_pub_)
   {
-    m_pos_ecef_pub_.publish(m_message_wrapper_.createRosPointStampedMessage(sbg_ekf_nav_message));
+    m_pos_ecef_pub_->publish(m_message_wrapper_.createRosPointStampedMessage(sbg_ekf_nav_message));
   }
 }
 
 void MessagePublisher::publishUtcData(const SbgBinaryLogData &ref_sbg_log)
 {
-  sbg_driver::SbgUtcTime sbg_utc_message;
+  sbg_driver::msg::SbgUtcTime sbg_utc_message;
 
   sbg_utc_message = m_message_wrapper_.createSbgUtcTimeMessage(ref_sbg_log.utcData);
 
   if (m_sbgUtcTime_pub_)
   {
-    m_sbgUtcTime_pub_.publish(sbg_utc_message);
+    m_sbgUtcTime_pub_->publish(sbg_utc_message);
   }
   if (m_utc_reference_pub_)
   {
     if (sbg_utc_message.clock_status.clock_utc_status != SBG_ECOM_UTC_INVALID)
     {
-      m_utc_reference_pub_.publish(m_message_wrapper_.createRosUtcTimeReferenceMessage(sbg_utc_message));
+      m_utc_reference_pub_->publish(m_message_wrapper_.createRosUtcTimeReferenceMessage(sbg_utc_message));
     }
   }
 }
 
 void MessagePublisher::publishGpsPosData(const SbgBinaryLogData &ref_sbg_log)
 {
-  sbg_driver::SbgGpsPos sbg_gps_pos_message;
+  sbg_driver::msg::SbgGpsPos sbg_gps_pos_message;
 
   sbg_gps_pos_message = m_message_wrapper_.createSbgGpsPosMessage(ref_sbg_log.gpsPosData);
 
   if (m_sbgGpsPos_pub_)
   {
-    m_sbgGpsPos_pub_.publish(sbg_gps_pos_message);
+    m_sbgGpsPos_pub_->publish(sbg_gps_pos_message);
   }
   if (m_nav_sat_fix_pub_)
   {
-    m_nav_sat_fix_pub_.publish(m_message_wrapper_.createRosNavSatFixMessage(sbg_gps_pos_message));
+    m_nav_sat_fix_pub_->publish(m_message_wrapper_.createRosNavSatFixMessage(sbg_gps_pos_message));
   }
 }
 
@@ -476,7 +476,7 @@ uint32_t MessagePublisher::getMaxOutputFrequency(void) const
 //- Operations                                                        -//
 //---------------------------------------------------------------------//
 
-void MessagePublisher::initPublishers(ros::NodeHandle& ref_ros_node_handle, const ConfigStore &ref_config_store)
+void MessagePublisher::initPublishers(rclcpp::Node& ref_ros_node_handle, const ConfigStore &ref_config_store)
 {
   //
   // Initialize all the publishers with the defined SBG output from the config store.
@@ -494,7 +494,7 @@ void MessagePublisher::initPublishers(ros::NodeHandle& ref_ros_node_handle, cons
   }
 }
 
-void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgBinaryLogData &ref_sbg_log)
+void MessagePublisher::publish(const rclcpp::Time& ref_ros_time, SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgBinaryLogData &ref_sbg_log)
 {
   //
   // Publish the message with the corresponding publisher and SBG message ID.
@@ -510,7 +510,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_sbgStatus_pub_)
       {
-        m_sbgStatus_pub_.publish(m_message_wrapper_.createSbgStatusMessage(ref_sbg_log.statusData));
+        m_sbgStatus_pub_->publish(m_message_wrapper_.createSbgStatusMessage(ref_sbg_log.statusData));
       }
       break;
 
@@ -533,7 +533,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_sbgMagCalib_pub_)
       {
-        m_sbgMagCalib_pub_.publish(m_message_wrapper_.createSbgMagCalibMessage(ref_sbg_log.magCalibData));
+        m_sbgMagCalib_pub_->publish(m_message_wrapper_.createSbgMagCalibMessage(ref_sbg_log.magCalibData));
       }
       break;
 
@@ -541,7 +541,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_sbgEkfEuler_pub_)
       {
-        m_sbgEkfEuler_pub_.publish(m_message_wrapper_.createSbgEkfEulerMessage(ref_sbg_log.ekfEulerData));
+        m_sbgEkfEuler_pub_->publish(m_message_wrapper_.createSbgEkfEulerMessage(ref_sbg_log.ekfEulerData));
       }
       break;
 
@@ -550,7 +550,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
       if (m_sbgEkfQuat_pub_)
       {
         m_sbg_ekf_quat_message_ = m_message_wrapper_.createSbgEkfQuatMessage(ref_sbg_log.ekfQuatData);
-        m_sbgEkfQuat_pub_.publish(m_sbg_ekf_quat_message_);
+        m_sbgEkfQuat_pub_->publish(m_sbg_ekf_quat_message_);
         processRosImuMessage();
       }
       break;
@@ -564,7 +564,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_sbgShipMotion_pub_)
       {
-        m_sbgShipMotion_pub_.publish(m_message_wrapper_.createSbgShipMotionMessage(ref_sbg_log.shipMotionData));
+        m_sbgShipMotion_pub_->publish(m_message_wrapper_.createSbgShipMotionMessage(ref_sbg_log.shipMotionData));
       }
       break;
 
@@ -573,7 +573,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_sbgGpsVel_pub_)
       {
-        m_sbgGpsVel_pub_.publish(m_message_wrapper_.createSbgGpsVelMessage(ref_sbg_log.gpsVelData));
+        m_sbgGpsVel_pub_->publish(m_message_wrapper_.createSbgGpsVelMessage(ref_sbg_log.gpsVelData));
       }
       break;
 
@@ -588,7 +588,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_sbgGpsHdt_pub_)
       {
-        m_sbgGpsHdt_pub_.publish(m_message_wrapper_.createSbgGpsHdtMessage(ref_sbg_log.gpsHdtData));
+        m_sbgGpsHdt_pub_->publish(m_message_wrapper_.createSbgGpsHdtMessage(ref_sbg_log.gpsHdtData));
       }
       break;
 
@@ -597,7 +597,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_sbgGpsRaw_pub_)
       {
-        m_sbgGpsRaw_pub_.publish(m_message_wrapper_.createSbgGpsRawMessage(ref_sbg_log.gpsRawData));
+        m_sbgGpsRaw_pub_->publish(m_message_wrapper_.createSbgGpsRawMessage(ref_sbg_log.gpsRawData));
       }
       break;
 
@@ -605,7 +605,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_sbgOdoVel_pub_)
       {
-        m_sbgOdoVel_pub_.publish(m_message_wrapper_.createSbgOdoVelMessage(ref_sbg_log.odometerData));
+        m_sbgOdoVel_pub_->publish(m_message_wrapper_.createSbgOdoVelMessage(ref_sbg_log.odometerData));
       }
       break;
 
@@ -613,7 +613,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_sbgEventA_pub_)
       {
-        m_sbgEventA_pub_.publish(m_message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
+        m_sbgEventA_pub_->publish(m_message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
       }
       break;
 
@@ -621,7 +621,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_sbgEventB_pub_)
       {
-        m_sbgEventB_pub_.publish(m_message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
+        m_sbgEventB_pub_->publish(m_message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
       }
       break;
 
@@ -629,7 +629,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_sbgEventC_pub_)
       {
-        m_sbgEventC_pub_.publish(m_message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
+        m_sbgEventC_pub_->publish(m_message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
       }
       break;
 
@@ -637,7 +637,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_sbgEventD_pub_)
       {
-        m_sbgEventD_pub_.publish(m_message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
+        m_sbgEventD_pub_->publish(m_message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
       }
       break;
 
@@ -645,7 +645,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_sbgEventE_pub_)
       {
-        m_sbgEventE_pub_.publish(m_message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
+        m_sbgEventE_pub_->publish(m_message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
       }
       break;
 
@@ -653,7 +653,7 @@ void MessagePublisher::publish(const ros::Time& ref_ros_time, SbgEComClass sbg_m
 
       if (m_SbgImuShort_pub_)
       {
-        m_SbgImuShort_pub_.publish(m_message_wrapper_.createSbgImuShortMessage(ref_sbg_log.imuShort));
+        m_SbgImuShort_pub_->publish(m_message_wrapper_.createSbgImuShortMessage(ref_sbg_log.imuShort));
       }
       break;
 

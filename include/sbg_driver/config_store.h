@@ -5,7 +5,7 @@
 #include <sbgEComLib.h>
 
 // ROS headers
-#include <ros/ros.h>
+#include "rclcpp/rclcpp.hpp"
 
 // Project headers
 #include "sbg_vector3.h"
@@ -74,21 +74,21 @@ private:
 
   /*!
    * Get the ROS integer parameter casted in the T type.
-   * This function has the same behavior as the param base function, however it enables an implicit cast, and the use of const NodeHandle.
+   * This function has the same behavior as the param base function, however it enables an implicit cast, and the use of const Node.
    * 
    * \template  T                 Template type to cast the ROS param to.
-   * \param[in] ref_node_handle   ROS NodeHandle.
+   * \param[in] ref_node_handle   ROS Node.
    * \param[in] param_key         Parameter key.
    * \param[in] default_value     Default value for the parameter.
    * \return                      ROS integer parameter casted.
    */
   template <typename T>
-  T getParameter(const ros::NodeHandle& ref_node_handle, std::string param_key, int default_value) const
+  T getParameter(const rclcpp::Node& ref_node_handle, std::string param_key, int default_value) const
   {
-    if (ref_node_handle.hasParam(param_key))
+    if (ref_node_handle.has_parameter(param_key))
     {
       int parameter;
-      ref_node_handle.param<int>(param_key, parameter, default_value);
+      ref_node_handle.get_parameter_or<int>(param_key, parameter, default_value);
 
       return static_cast<T>(parameter);
     }
@@ -103,49 +103,49 @@ private:
    * 
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
-  void loadCommunicationParameters(const ros::NodeHandle& ref_node_handle);
+  void loadCommunicationParameters(const rclcpp::Node& ref_node_handle);
 
   /*!
    * Load sensor parameters.
    * 
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
-  void loadSensorParameters(const ros::NodeHandle& ref_node_handle);
+  void loadSensorParameters(const rclcpp::Node& ref_node_handle);
 
   /*!
    * Load IMU alignement parameters.
    * 
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
-  void loadImuAlignementParameters(const ros::NodeHandle& ref_node_handle);
+  void loadImuAlignementParameters(const rclcpp::Node& ref_node_handle);
 
   /*!
    * Load aiding assignement parameters.
    * 
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
-  void loadAidingAssignementParameters(const ros::NodeHandle& ref_node_handle);
+  void loadAidingAssignementParameters(const rclcpp::Node& ref_node_handle);
 
   /*!
    * Load magnetometers parameters.
    * 
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
-  void loadMagnetometersParameters(const ros::NodeHandle& ref_node_handle);
+  void loadMagnetometersParameters(const rclcpp::Node& ref_node_handle);
 
   /*!
    * Load Gnss parameters.
    * 
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
-  void loadGnssParameters(const ros::NodeHandle& ref_node_handle);
+  void loadGnssParameters(const rclcpp::Node& ref_node_handle);
 
   /*!
    * Load odometer parameters.
    * 
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
-  void loadOdometerParameters(const ros::NodeHandle& ref_node_handle);
+  void loadOdometerParameters(const rclcpp::Node& ref_node_handle);
 
   /*!
    * Load the output configuration.
@@ -155,7 +155,7 @@ private:
    * \param[in] sbg_msg_class     SBG message class.
    * \param[in] sbg_msg_id        ID of the SBG log.
    */
-  void loadOutputConfiguration(const ros::NodeHandle& ref_node_handle, const std::string& ref_key, SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id);
+  void loadOutputConfiguration(const rclcpp::Node& ref_node_handle, const std::string& ref_key, SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id);
 
 public:
 
@@ -371,7 +371,7 @@ public:
    * 
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
-  void loadFromRosNodeHandle(const ros::NodeHandle& ref_node_handle);
+  void loadFromRosNodeHandle(const rclcpp::Node& ref_node_handle);
 };
 }
 

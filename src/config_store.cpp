@@ -23,22 +23,22 @@ m_ros_standard_output_(false)
 //- Private  methods                                                  -//
 //---------------------------------------------------------------------//
 
-void ConfigStore::loadCommunicationParameters(const ros::NodeHandle& ref_node_handle)
+void ConfigStore::loadCommunicationParameters(const rclcpp::Node& ref_node_handle)
 {
-  ref_node_handle.param<bool>("confWithRos", m_configure_through_ros_, false);
+  ref_node_handle.get_parameter_or<bool>("confWithRos", m_configure_through_ros_, false);
 
-  if (ref_node_handle.hasParam("uartConf"))
+  if (ref_node_handle.has_parameter("uartConf"))
   {
     m_serial_communication_ = true;
-    ref_node_handle.param<std::string>("uartConf/portName", m_uart_port_name_, "/dev/ttyUSB0");
+    ref_node_handle.get_parameter_or<std::string>("uartConf/portName", m_uart_port_name_, "/dev/ttyUSB0");
 
     m_uart_baud_rate_ = getParameter<uint32_t>(ref_node_handle, "uartConf/baudRate", 0);
     m_output_port_    = getParameter<SbgEComOutputPort>(ref_node_handle, "uartConf/portID", SBG_ECOM_OUTPUT_PORT_A);
   }
-  else if (ref_node_handle.hasParam("ipConf"))
+  else if (ref_node_handle.has_parameter("ipConf"))
   {
     std::string ip_address;
-    ref_node_handle.param<std::string>("ipConf/ipAddress", ip_address, "0.0.0.0");
+    ref_node_handle.get_parameter_or<std::string>("ipConf/ipAddress", ip_address, "0.0.0.0");
 
     m_upd_communication_  = true;
     m_sbg_ip_address_     = sbgNetworkIpFromString(ip_address.c_str());
@@ -47,15 +47,16 @@ void ConfigStore::loadCommunicationParameters(const ros::NodeHandle& ref_node_ha
   }
   else
   {
-    throw ros::Exception("SBG DRIVER - Invalid communication interface parameters.");
+    rclcpp::exceptions::throw_from_rcl_error(RMW_RET_ERROR, "SBG DRIVER - Invalid communication interface parameters.");
+    //throw rclcpp::exceptions("SBG DRIVER - Invalid communication interface parameters.");
   }
 }
 
-void ConfigStore::loadSensorParameters(const ros::NodeHandle& ref_node_handle)
+void ConfigStore::loadSensorParameters(const rclcpp::Node& ref_node_handle)
 {
-  ref_node_handle.param<double>("sensorParameters/initLat", m_init_condition_conf_.latitude, 48.419727);
-  ref_node_handle.param<double>("sensorParameters/initLong", m_init_condition_conf_.longitude, -4.472119);
-  ref_node_handle.param<double>("sensorParameters/initAlt", m_init_condition_conf_.altitude, 100);
+  ref_node_handle.get_parameter_or<double>("sensorParameters/initLat", m_init_condition_conf_.latitude, 48.419727);
+  ref_node_handle.get_parameter_or<double>("sensorParameters/initLong", m_init_condition_conf_.longitude, -4.472119);
+  ref_node_handle.get_parameter_or<double>("sensorParameters/initAlt", m_init_condition_conf_.altitude, 100);
 
   m_init_condition_conf_.year     = getParameter<uint16_t>(ref_node_handle, "sensorParameters/year", 2018);
   m_init_condition_conf_.month    = getParameter<uint8_t>(ref_node_handle, "sensorParameters/year", 03);
@@ -64,24 +65,24 @@ void ConfigStore::loadSensorParameters(const ros::NodeHandle& ref_node_handle)
   m_motion_profile_model_info_.id = getParameter<uint32>(ref_node_handle, "sensorParameters/motionProfile", SBG_ECOM_MOTION_PROFILE_GENERAL_PURPOSE);
 }
 
-void ConfigStore::loadImuAlignementParameters(const ros::NodeHandle& ref_node_handle)
+void ConfigStore::loadImuAlignementParameters(const rclcpp::Node& ref_node_handle)
 {
   m_sensor_alignement_info_.axisDirectionX  = getParameter<SbgEComAxisDirection>(ref_node_handle, "imuAlignementLeverArm/axisDirectionX", SBG_ECOM_ALIGNMENT_FORWARD);
   m_sensor_alignement_info_.axisDirectionY  = getParameter<SbgEComAxisDirection>(ref_node_handle, "imuAlignementLeverArm/axisDirectionY", SBG_ECOM_ALIGNMENT_FORWARD);
 
-  ref_node_handle.param<float>("imuAlignementLeverArm/misRoll", m_sensor_alignement_info_.misRoll, 0.0f);
-  ref_node_handle.param<float>("imuAlignementLeverArm/misPitch", m_sensor_alignement_info_.misPitch, 0.0f);
-  ref_node_handle.param<float>("imuAlignementLeverArm/misYaw", m_sensor_alignement_info_.misYaw, 0.0f);
+  ref_node_handle.get_parameter_or<float>("imuAlignementLeverArm/misRoll", m_sensor_alignement_info_.misRoll, 0.0f);
+  ref_node_handle.get_parameter_or<float>("imuAlignementLeverArm/misPitch", m_sensor_alignement_info_.misPitch, 0.0f);
+  ref_node_handle.get_parameter_or<float>("imuAlignementLeverArm/misYaw", m_sensor_alignement_info_.misYaw, 0.0f);
 
   float sensor_level_arm[3];
-  ref_node_handle.param<float>("imuAlignementLeverArm/leverArmX", sensor_level_arm[0], 0.0f);
-  ref_node_handle.param<float>("imuAlignementLeverArm/leverArmY", sensor_level_arm[1], 0.0f);
-  ref_node_handle.param<float>("imuAlignementLeverArm/leverArmZ", sensor_level_arm[2], 0.0f);
+  ref_node_handle.get_parameter_or<float>("imuAlignementLeverArm/leverArmX", sensor_level_arm[0], 0.0f);
+  ref_node_handle.get_parameter_or<float>("imuAlignementLeverArm/leverArmY", sensor_level_arm[1], 0.0f);
+  ref_node_handle.get_parameter_or<float>("imuAlignementLeverArm/leverArmZ", sensor_level_arm[2], 0.0f);
 
   m_sensor_lever_arm_ = SbgVector3<float>(sensor_level_arm, 3);
 }
 
-void ConfigStore::loadAidingAssignementParameters(const ros::NodeHandle& ref_node_handle)
+void ConfigStore::loadAidingAssignementParameters(const rclcpp::Node& ref_node_handle)
 {
   m_aiding_assignement_conf_.gps1Port         = getParameter<SbgEComModulePortAssignment>(ref_node_handle, "aidingAssignment/gnss1ModulePortAssignment", SBG_ECOM_MODULE_PORT_B);
   m_aiding_assignement_conf_.gps1Sync         = getParameter<SbgEComModuleSyncAssignment>(ref_node_handle, "aidingAssignment/gnss1ModuleSyncAssignment", SBG_ECOM_MODULE_SYNC_DISABLED);
@@ -89,7 +90,7 @@ void ConfigStore::loadAidingAssignementParameters(const ros::NodeHandle& ref_nod
   m_aiding_assignement_conf_.odometerPinsConf = getParameter<SbgEComOdometerPinAssignment>(ref_node_handle, "aidingAssignment/odometerPinAssignment", SBG_ECOM_MODULE_ODO_DISABLED);
 }
 
-void ConfigStore::loadMagnetometersParameters(const ros::NodeHandle& ref_node_handle)
+void ConfigStore::loadMagnetometersParameters(const rclcpp::Node& ref_node_handle)
 {
   m_mag_model_info_.id                = getParameter<uint32_t>(ref_node_handle, "magnetometer/magnetometerModel", SBG_ECOM_MAG_MODEL_NORMAL);
   m_mag_rejection_conf_.magneticField = getParameter<SbgEComRejectionMode>(ref_node_handle, "magnetometer/magnetometerRejectMode", SBG_ECOM_AUTOMATIC_MODE);
@@ -98,17 +99,17 @@ void ConfigStore::loadMagnetometersParameters(const ros::NodeHandle& ref_node_ha
   m_mag_calib_bandwidth_  = getParameter<SbgEComMagCalibBandwidth>(ref_node_handle, "magnetometer/calibration/bandwidth", SBG_ECOM_MAG_CALIB_HIGH_BW);
 }
 
-void ConfigStore::loadGnssParameters(const ros::NodeHandle& ref_node_handle)
+void ConfigStore::loadGnssParameters(const rclcpp::Node& ref_node_handle)
 {
   m_gnss_model_info_.id = getParameter<uint32_t>(ref_node_handle, "gnss/gnss_model_id", SBG_ECOM_GNSS_MODEL_NMEA);
 
-  ref_node_handle.param<float>("gnss/primaryLeverArmX", m_gnss_installation_.leverArmPrimary[0], 0.0f);
-  ref_node_handle.param<float>("gnss/primaryLeverArmY", m_gnss_installation_.leverArmPrimary[1], 0.0f);
-  ref_node_handle.param<float>("gnss/primaryLeverArmZ", m_gnss_installation_.leverArmPrimary[2], 0.0f);
-  ref_node_handle.param<bool>("gnss/primaryLeverPrecise", m_gnss_installation_.leverArmPrimaryPrecise, true);
-  ref_node_handle.param<float>("gnss/secondaryLeverArmX", m_gnss_installation_.leverArmSecondary[0], 0.0f);
-  ref_node_handle.param<float>("gnss/secondaryLeverArmY", m_gnss_installation_.leverArmSecondary[1], 0.0f);
-  ref_node_handle.param<float>("gnss/secondaryLeverArmZ", m_gnss_installation_.leverArmSecondary[2], 0.0f);
+  ref_node_handle.get_parameter_or<float>("gnss/primaryLeverArmX", m_gnss_installation_.leverArmPrimary[0], 0.0f);
+  ref_node_handle.get_parameter_or<float>("gnss/primaryLeverArmY", m_gnss_installation_.leverArmPrimary[1], 0.0f);
+  ref_node_handle.get_parameter_or<float>("gnss/primaryLeverArmZ", m_gnss_installation_.leverArmPrimary[2], 0.0f);
+  ref_node_handle.get_parameter_or<bool>("gnss/primaryLeverPrecise", m_gnss_installation_.leverArmPrimaryPrecise, true);
+  ref_node_handle.get_parameter_or<float>("gnss/secondaryLeverArmX", m_gnss_installation_.leverArmSecondary[0], 0.0f);
+  ref_node_handle.get_parameter_or<float>("gnss/secondaryLeverArmY", m_gnss_installation_.leverArmSecondary[1], 0.0f);
+  ref_node_handle.get_parameter_or<float>("gnss/secondaryLeverArmZ", m_gnss_installation_.leverArmSecondary[2], 0.0f);
   m_gnss_installation_.leverArmSecondaryMode = getParameter<SbgEComGnssInstallationMode>(ref_node_handle, "gnss/secondaryLeverMode", SBG_ECOM_GNSS_INSTALLATION_MODE_SINGLE);
 
   m_gnss_rejection_conf_.position = getParameter<SbgEComRejectionMode>(ref_node_handle, "gnss/posRejectMode", SBG_ECOM_AUTOMATIC_MODE);
@@ -116,15 +117,15 @@ void ConfigStore::loadGnssParameters(const ros::NodeHandle& ref_node_handle)
   m_gnss_rejection_conf_.hdt      = getParameter<SbgEComRejectionMode>(ref_node_handle, "gnss/hdtRejectMode", SBG_ECOM_AUTOMATIC_MODE);
 }
 
-void ConfigStore::loadOdometerParameters(const ros::NodeHandle& ref_node_handle)
+void ConfigStore::loadOdometerParameters(const rclcpp::Node& ref_node_handle)
 {
-  ref_node_handle.param<float>("odom/gain", m_odometer_conf_.gain, 4800.0f);
-  ref_node_handle.param<bool>("odom/direction", m_odometer_conf_.reverseMode, false);
+  ref_node_handle.get_parameter_or<float>("odom/gain", m_odometer_conf_.gain, 4800.0f);
+  ref_node_handle.get_parameter_or<bool>("odom/direction", m_odometer_conf_.reverseMode, false);
 
   float odometer_level_arm_[3];
-  ref_node_handle.param<float>("odom/leverArmX", odometer_level_arm_[0], 0.0f);
-  ref_node_handle.param<float>("odom/leverArmY", odometer_level_arm_[1], 0.0f);
-  ref_node_handle.param<float>("odom/leverArmZ", odometer_level_arm_[2], 0.0f);
+  ref_node_handle.get_parameter_or<float>("odom/leverArmX", odometer_level_arm_[0], 0.0f);
+  ref_node_handle.get_parameter_or<float>("odom/leverArmY", odometer_level_arm_[1], 0.0f);
+  ref_node_handle.get_parameter_or<float>("odom/leverArmZ", odometer_level_arm_[2], 0.0f);
 
   m_odometer_level_arm_ = SbgVector3<float>(odometer_level_arm_, 3);
 
@@ -132,7 +133,7 @@ void ConfigStore::loadOdometerParameters(const ros::NodeHandle& ref_node_handle)
   m_odometer_rejection_conf_.velocity = getParameter<SbgEComRejectionMode>(ref_node_handle, "odom/rejectMode", SBG_ECOM_AUTOMATIC_MODE);
 }
 
-void ConfigStore::loadOutputConfiguration(const ros::NodeHandle& ref_node_handle, const std::string& ref_key, SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id)
+void ConfigStore::loadOutputConfiguration(const rclcpp::Node& ref_node_handle, const std::string& ref_key, SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id)
 {
   SbgLogOutput log_output;
 
@@ -286,7 +287,7 @@ uint32_t ConfigStore::getReadingRateFrequency(void) const
 //- Operations                                                        -//
 //---------------------------------------------------------------------//
 
-void ConfigStore::loadFromRosNodeHandle(const ros::NodeHandle& ref_node_handle)
+void ConfigStore::loadFromRosNodeHandle(const rclcpp::Node& ref_node_handle)
 {
   loadCommunicationParameters(ref_node_handle);
   loadSensorParameters(ref_node_handle);
@@ -318,6 +319,6 @@ void ConfigStore::loadFromRosNodeHandle(const ros::NodeHandle& ref_node_handle)
   loadOutputConfiguration(ref_node_handle, "output/log_air_data", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_AIR_DATA);
   loadOutputConfiguration(ref_node_handle, "output/log_imu_short", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_IMU_SHORT);
 
-  ref_node_handle.param<bool>("output/ros_standard", m_ros_standard_output_, false);
+  ref_node_handle.get_parameter_or<bool>("output/ros_standard", m_ros_standard_output_, false);
   m_rate_frequency_ = getParameter<uint32_t>(ref_node_handle, "output/frequency", 0);
 }

@@ -289,4 +289,3 @@ Please report bugs and/or issues using the [Issue Tracker](https://github.com/SB
 ### Features requests or additions
 In order to contribute to the code, please use Pull requests to the `devel` branch.<br />
 If you have some feature requests, use the [Issue Tracker](https://github.com/SBG-Systems/sbg_ros_driver/issues) as well.
->>>>>>> b6d7590... Initial sbg_ros_driver with new CMakelists and package.xml

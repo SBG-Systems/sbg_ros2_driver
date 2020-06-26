@@ -1,2 +1,2 @@
 # SBG Ellipse Messages
-Header header
+std_msgs/Header header

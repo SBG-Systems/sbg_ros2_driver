@@ -4,23 +4,23 @@ using sbg::SbgDevice;
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "sbg_device_mag");
-  ros::NodeHandle node_handle;
+  rclcpp::init(argc, argv);
+  rclcpp::Node::SharedPtr node_handle; //("sbg_device_mag");
 
   try
   {
-    ROS_INFO("SBG DRIVER - Init node, load params and connect to the device");
-    SbgDevice sbg_device(node_handle);
+    RCLCPP_INFO(node_handle->get_logger(), "SBG DRIVER - Init node, load params and connect to the device");
+    SbgDevice sbg_device(*node_handle);
     
     sbg_device.initDeviceForMagCalibration();
     
-    ros::spin();
+    rclcpp::spin(node_handle);
 
     return 0;
   }
-  catch (ros::Exception const& refE)
+  catch (std::exception const& refE)
   {
-    ROS_ERROR("SBG_DRIVER - [MagNode] Error - %s.", refE.what());
+    RCLCPP_ERROR(node_handle->get_logger(), "SBG_DRIVER - [MagNode] Error - %s.", refE.what());
   }
 
   return 0;

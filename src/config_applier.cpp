@@ -1,5 +1,6 @@
 // File header
 #include <config_applier.h>
+//#include "rclcpp/logger.hpp"
 
 using sbg::ConfigApplier;
 
@@ -25,7 +26,7 @@ void ConfigApplier::checkConfigurationGet(const SbgErrorCode& ref_sbg_error_code
 {
   if (ref_sbg_error_code == SBG_INVALID_PARAMETER)
   {
-    ROS_WARN("SBG_DRIVER - [Config] Configuration %s is not available for the connected device.", ref_conf_title.c_str());
+    RCLCPP_WARN(rclcpp::get_logger("Config"), "SBG_DRIVER - [Config] Configuration %s is not available for the connected device.", ref_conf_title.c_str());
   }
   else if (ref_sbg_error_code != SBG_NO_ERROR)
   {
@@ -34,7 +35,8 @@ void ConfigApplier::checkConfigurationGet(const SbgErrorCode& ref_sbg_error_code
     error_message.append(" configuration : ");
     error_message.append(sbgErrorCodeToString(ref_sbg_error_code));
 
-    throw ros::Exception(error_message);
+    rclcpp::exceptions::throw_from_rcl_error(RMW_RET_ERROR, error_message);
+    //throw rclcpp::exceptions(error_message);
   }
 }
 
@@ -42,7 +44,7 @@ void ConfigApplier::checkConfigurationApplied(const SbgErrorCode& ref_sbg_error_
 {
   if (ref_sbg_error_code == SBG_INVALID_PARAMETER)
   {
-    ROS_WARN("SBG_DRIVER - [Config] Configuration %s is not available for the connected device.", ref_conf_title.c_str());
+    RCLCPP_WARN(rclcpp::get_logger("Config"), "SBG_DRIVER - [Config] Configuration %s is not available for the connected device.", ref_conf_title.c_str());
   }
   else if (ref_sbg_error_code != SBG_NO_ERROR)
   {
@@ -51,11 +53,12 @@ void ConfigApplier::checkConfigurationApplied(const SbgErrorCode& ref_sbg_error_
     error_message.append(" configuration : ");
     error_message.append(sbgErrorCodeToString(ref_sbg_error_code));
 
-    throw ros::Exception(error_message);
+    rclcpp::exceptions::throw_from_rcl_error(RMW_RET_ERROR, error_message);
+    //throw rclcpp::exceptions(error_message);
   }
   else
   {
-    ROS_INFO("SBG_DRIVER - [Config] %s updated on the device.", ref_conf_title.c_str());
+    RCLCPP_INFO(rclcpp::get_logger("Config"), "SBG_DRIVER - [Config] %s updated on the device.", ref_conf_title.c_str());
     m_reboot_needed_ = true;
   }
 }
@@ -359,7 +362,7 @@ void ConfigApplier::configureOutput(SbgEComOutputPort output_port, const ConfigS
 
   if (error_code == SBG_INVALID_PARAMETER)
   {
-    ROS_WARN("SBG_DRIVER - [Config] Output is not available for this device : Class [%d] - Id [%d]", ref_log_output.message_class, ref_log_output.message_id);
+    RCLCPP_WARN(rclcpp::get_logger("Config"), "SBG_DRIVER - [Config] Output is not available for this device : Class [%d] - Id [%d]", ref_log_output.message_class, ref_log_output.message_id);
   }
   else if (error_code != SBG_NO_ERROR)
   {
@@ -370,7 +373,8 @@ void ConfigApplier::configureOutput(SbgEComOutputPort output_port, const ConfigS
     error_message.append("] : ");
     error_message.append(sbgErrorCodeToString(error_code));
 
-    throw ros::Exception(error_message);
+    rclcpp::exceptions::throw_from_rcl_error(RMW_RET_ERROR, error_message);
+    //throw rclcpp::exceptions(error_message);
   }
   else if (current_output_mode != ref_log_output.output_mode)
   {
@@ -385,7 +389,8 @@ void ConfigApplier::configureOutput(SbgEComOutputPort output_port, const ConfigS
       error_message.append("] : ");
       error_message.append(sbgErrorCodeToString(error_code));
 
-      throw ros::Exception(error_message);
+      rclcpp::exceptions::throw_from_rcl_error(RMW_RET_ERROR, error_message);
+     // throw rclcpp::exceptions(error_message);
     }
     else
     {
@@ -447,10 +452,10 @@ void ConfigApplier::saveConfiguration(void)
 
   if (error_code != SBG_NO_ERROR)
   {
-    ROS_ERROR("Unable to save the settings on the SBG device - %s", sbgErrorCodeToString(error_code));
+    RCLCPP_ERROR(rclcpp::get_logger("Config"), "Unable to save the settings on the SBG device - %s", sbgErrorCodeToString(error_code));
   }
   else
   {
-    ROS_INFO("SBG_DRIVER - Settings saved and device rebooted.");
+    RCLCPP_INFO(rclcpp::get_logger("Config"), "SBG_DRIVER - Settings saved and device rebooted.");
   }
 }

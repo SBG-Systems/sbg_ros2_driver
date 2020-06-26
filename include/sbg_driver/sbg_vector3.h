@@ -1,8 +1,10 @@
 #ifndef SBG_VECTOR_3_H
 #define SBG_VECTOR_3_H
 
+#include <cmath>
+
 // ROS headers
-#include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/msg/vector3.hpp>
 
 // Sbg headers
 #include <sbgDefines.h>

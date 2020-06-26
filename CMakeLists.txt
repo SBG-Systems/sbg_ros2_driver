@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(sbg_driver)
 
 #
@@ -18,8 +18,8 @@ find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(message_generation REQUIRED)
-
+find_package(rosidl_default_generators REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -33,38 +33,37 @@ set (USED_LIBRARIES
   std_msgs
   std_srvs
   geometry_msgs
-  message_generation
 )
 
 set (msg_files
-  "SbgGpsVelStatus.msg"
-  "SbgGpsPosStatus.msg"
-  "SbgMagStatus.msg"
-  "SbgShipMotionStatus.msg"
-  "SbgUtcTimeStatus.msg"
-  "SbgAirData.msg"
-  "SbgAirDataStatus.msg"
-  "SbgEkfEuler.msg"
-  "SbgGpsPos.msg"
-  "SbgMag.msg"
-  "SbgStatusCom.msg"
-  "SbgEkfNav.msg"
-  "SbgGpsRaw.msg"
-  "SbgOdoVel.msg"
-  "SbgStatusGeneral.msg"
-  "SbgEkfQuat.msg"
-  "SbgGpsVel.msg"
-  "SbgStatus.msg"
-  "SbgEvent.msg"
-  "SbgImuStatus.msg"
-  "SbgImuData.msg"
-  "SbgImuShort.msg"
-  "SbgShipMotion.msg"
-  "SbgUtcTime.msg"
-  "SbgGpsHdt.msg"
-  "SbgMagCalib.msg"
-  "SbgStatusAiding.msg"
-  "SbgEkfStatus.msg"
+  "msg/SbgGpsVelStatus.msg"
+  "msg/SbgGpsPosStatus.msg"
+  "msg/SbgMagStatus.msg"
+  "msg/SbgShipMotionStatus.msg"
+  "msg/SbgUtcTimeStatus.msg"
+  "msg/SbgAirData.msg"
+  "msg/SbgAirDataStatus.msg"
+  "msg/SbgEkfEuler.msg"
+  "msg/SbgGpsPos.msg"
+  "msg/SbgMag.msg"
+  "msg/SbgStatusCom.msg"
+  "msg/SbgEkfNav.msg"
+  "msg/SbgGpsRaw.msg"
+  "msg/SbgOdoVel.msg"
+  "msg/SbgStatusGeneral.msg"
+  "msg/SbgEkfQuat.msg"
+  "msg/SbgGpsVel.msg"
+  "msg/SbgStatus.msg"
+  "msg/SbgEvent.msg"
+  "msg/SbgImuStatus.msg"
+  "msg/SbgImuData.msg"
+  "msg/SbgImuShort.msg"
+  "msg/SbgShipMotion.msg"
+  "msg/SbgUtcTime.msg"
+  "msg/SbgGpsHdt.msg"
+  "msg/SbgMagCalib.msg"
+  "msg/SbgStatusAiding.msg"
+  "msg/SbgEkfStatus.msg"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -72,6 +71,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   DEPENDENCIES
     std_msgs
     geometry_msgs
+    builtin_interfaces
 )
 
 ament_export_dependencies(rosidl_default_runtime)
@@ -115,22 +115,27 @@ set (SBG_COMMON_RESOURCES
 
 ## Declare a C++ executable
 add_executable(sbg_device ${SBG_COMMON_RESOURCES} src/main.cpp)
-add_dependencies(sbg_device ${sbg_driver_EXPORTED_TARGETS})
+#add_dependencies(sbg_device ${sbg_driver_EXPORTED_TARGETS})
+add_dependencies(sbg_device ${PROJECT_NAME})
 target_compile_options(sbg_device PRIVATE -Wall -Wextra)
 
 add_executable(sbg_device_mag ${SBG_COMMON_RESOURCES} src/main_mag.cpp)
-add_dependencies(sbg_device_mag ${sbg_driver_EXPORTED_TARGETS})
+#add_dependencies(sbg_device_mag ${sbg_driver_EXPORTED_TARGETS})
+add_dependencies(sbg_device_mag ${PROJECT_NAME})
 target_compile_options(sbg_device_mag PRIVATE -Wall -Wextra)
 
 ## Specify libraries to link a library or executable target against
-#target_link_libraries(sbg_device ${catkin_LIBRARIES} sbgECom)
-#target_link_libraries(sbg_device_mag ${catkin_LIBRARIES} sbgECom)
+target_link_libraries(sbg_device ${catkin_LIBRARIES} sbgECom)
+target_link_libraries(sbg_device_mag ${catkin_LIBRARIES} sbgECom)
 
 ament_target_dependencies(sbg_device ${USED_LIBRARIES} sbgECom)
 ament_target_dependencies(sbg_device_mag ${USED_LIBRARIES} sbgECom)
 
-set_property(TARGET sbg_device PROPERTY CXX_STANDARD 11)
-set_property(TARGET sbg_device_mag PROPERTY CXX_STANDARD 11)
+rosidl_target_interfaces(sbg_device ${PROJECT_NAME} "rosidl_typesupport_cpp")
+rosidl_target_interfaces(sbg_device_mag ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
+set_property(TARGET sbg_device PROPERTY CXX_STANDARD 14)
+set_property(TARGET sbg_device_mag PROPERTY CXX_STANDARD 14)
 
 #############
 ## Install ##
@@ -179,16 +184,16 @@ install(DIRECTORY config/
 #)
 
 ament_export_dependencies(
-    message_runtime 
     rclcpp
     sensor_msgs
     std_msgs
     std_srvs
     geometry_msgs
+    rosidl_default_runtime
 )
 
 ament_export_include_directories(
-    src
+    include
 )
 
 ament_package()

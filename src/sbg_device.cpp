@@ -19,9 +19,9 @@ using namespace std;
 using sbg::SbgDevice;
 
 // From ros_com/recorder
-std::string timeToStr(ros::WallTime ros_t)
+std::string timeToStr() //rclcpp::WallTimer<std::function<void()>> ros_t)
 {
-    (void)ros_t;
+    //(void)ros_t;
     std::stringstream msg;
     const boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
     boost::posix_time::time_facet *const f = new boost::posix_time::time_facet("%Y-%m-%d-%H-%M-%S");
@@ -56,7 +56,7 @@ std::map<SbgEComMagCalibBandwidth, std::string> SbgDevice::g_mag_calib_bandwidth
 //- Constructor                                                       -//
 //---------------------------------------------------------------------//
 
-SbgDevice::SbgDevice(ros::NodeHandle& ref_node_handle):
+SbgDevice::SbgDevice(rclcpp::Node& ref_node_handle):
 m_ref_node_(ref_node_handle),
 m_mag_calibration_ongoing_(false),
 m_mag_calibration_done_(false)
@@ -73,7 +73,7 @@ SbgDevice::~SbgDevice(void)
 
   if (error_code != SBG_NO_ERROR)
   {
-    ROS_ERROR("Unable to close the SBG communication handle - %s.", sbgErrorCodeToString(error_code));
+    RCLCPP_ERROR(m_ref_node_.get_logger(), "Unable to close the SBG communication handle - %s.", sbgErrorCodeToString(error_code));
   }
 
   if (m_config_store_.isInterfaceSerial())
@@ -87,7 +87,7 @@ SbgDevice::~SbgDevice(void)
 
   if (error_code != SBG_NO_ERROR)
   {
-    ROS_ERROR("SBG DRIVER - Unable to close the communication interface.");
+    RCLCPP_ERROR(m_ref_node_.get_logger(), "SBG DRIVER - Unable to close the communication interface.");
   }
 }
 
@@ -122,7 +122,7 @@ void SbgDevice::loadParameters(void)
   //
   // Get the ROS private nodeHandle, where the parameters are loaded from the launch file.
   //
-  ros::NodeHandle n_private("~");
+  rclcpp::Node n_private("~");
   m_config_store_.loadFromRosNodeHandle(n_private);
 }
 
@@ -144,19 +144,19 @@ void SbgDevice::connect(void)
   }
   else
   {
-    throw ros::Exception("Invalid interface type for the SBG device.");
+    rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "Invalid interface type for the SBG device.");
   }
 
   if (error_code != SBG_NO_ERROR)
   {
-    throw ros::Exception("SBG_DRIVER - [Init] Unable to initialize the interface - " + std::string(sbgErrorCodeToString(error_code)));
+    rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Init] Unable to initialize the interface - " + std::string(sbgErrorCodeToString(error_code)));
   }
   
   error_code = sbgEComInit(&m_com_handle_, &m_sbg_interface_);
 
   if (error_code != SBG_NO_ERROR)
   {
-    throw ros::Exception("SBG_DRIVER - [Init] Unable to initialize the SbgECom protocol - " + std::string(sbgErrorCodeToString(error_code)));
+    rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Init] Unable to initialize the SbgECom protocol - " + std::string(sbgErrorCodeToString(error_code)));
   }
 
   readDeviceInfo();
@@ -171,17 +171,17 @@ void SbgDevice::readDeviceInfo(void)
 
   if (error_code != SBG_NO_ERROR)
   {
-    ROS_ERROR("Unable to get the device Info : %s", sbgErrorCodeToString(error_code));
+    RCLCPP_ERROR(m_ref_node_.get_logger(), "Unable to get the device Info : %s", sbgErrorCodeToString(error_code));
   }
 
-  ROS_INFO("SBG_DRIVER - productCode = %s", device_info.productCode);
-  ROS_INFO("SBG_DRIVER - serialNumber = %u", device_info.serialNumber);
+  RCLCPP_INFO(m_ref_node_.get_logger(), "SBG_DRIVER - productCode = %s", device_info.productCode);
+  RCLCPP_INFO(m_ref_node_.get_logger(), "SBG_DRIVER - serialNumber = %u", device_info.serialNumber);
 
-  ROS_INFO("SBG_DRIVER - calibationRev = %s", getVersionAsString(device_info.calibationRev).c_str());
-  ROS_INFO("SBG_DRIVER - calibrationDate = %u / %u / %u", device_info.calibrationDay, device_info.calibrationMonth, device_info.calibrationYear);
+  RCLCPP_INFO(m_ref_node_.get_logger(), "SBG_DRIVER - calibationRev = %s", getVersionAsString(device_info.calibationRev).c_str());
+  RCLCPP_INFO(m_ref_node_.get_logger(), "SBG_DRIVER - calibrationDate = %u / %u / %u", device_info.calibrationDay, device_info.calibrationMonth, device_info.calibrationYear);
 
-  ROS_INFO("SBG_DRIVER - hardwareRev = %s", getVersionAsString(device_info.hardwareRev).c_str());
-  ROS_INFO("SBG_DRIVER - firmwareRev = %s", getVersionAsString(device_info.firmwareRev).c_str()); 
+  RCLCPP_INFO(m_ref_node_.get_logger(), "SBG_DRIVER - hardwareRev = %s", getVersionAsString(device_info.hardwareRev).c_str());
+  RCLCPP_INFO(m_ref_node_.get_logger(), "SBG_DRIVER - firmwareRev = %s", getVersionAsString(device_info.firmwareRev).c_str()); 
 }
 
 std::string SbgDevice::getVersionAsString(uint32 sbg_version_enc) const
@@ -218,7 +218,7 @@ void SbgDevice::configure(void)
   }
 }
 
-bool SbgDevice::processMagCalibration(std_srvs::Trigger::Request& ref_ros_request, std_srvs::Trigger::Response& ref_ros_response)
+bool SbgDevice::processMagCalibration(const std::shared_ptr<std_srvs::srv::Trigger::Request> ref_ros_request, std::shared_ptr<std_srvs::srv::Trigger::Response> ref_ros_response)
 {
   SBG_UNUSED_PARAMETER(ref_ros_request);
 
@@ -226,13 +226,13 @@ bool SbgDevice::processMagCalibration(std_srvs::Trigger::Request& ref_ros_reques
   {
     if (endMagCalibration())
     {
-      ref_ros_response.success = true;
-      ref_ros_response.message = "Magnetometer calibration is finished. See the output console to get calibration informations.";
+      ref_ros_response->success = true;
+      ref_ros_response->message = "Magnetometer calibration is finished. See the output console to get calibration informations.";
     }
     else
     {
-      ref_ros_response.success = false;
-      ref_ros_response.message = "Unable to end the calibration.";
+      ref_ros_response->success = false;
+      ref_ros_response->message = "Unable to end the calibration.";
     }
 
     m_mag_calibration_ongoing_  = false;
@@ -242,50 +242,50 @@ bool SbgDevice::processMagCalibration(std_srvs::Trigger::Request& ref_ros_reques
   {
     if (startMagCalibration())
     {
-      ref_ros_response.success = true;
-      ref_ros_response.message = "Magnetometer calibration process started.";
+      ref_ros_response->success = true;
+      ref_ros_response->message = "Magnetometer calibration process started.";
     }
     else
     {
-      ref_ros_response.success = false;
-      ref_ros_response.message = "Unable to start magnetometers calibration.";
+      ref_ros_response->success = false;
+      ref_ros_response->message = "Unable to start magnetometers calibration.";
     }
 
     m_mag_calibration_ongoing_ = true;
   }
 
-  return ref_ros_response.success;
+  return ref_ros_response->success;
 }
 
-bool SbgDevice::saveMagCalibration(std_srvs::Trigger::Request& ref_ros_request, std_srvs::Trigger::Response& ref_ros_response)
+bool SbgDevice::saveMagCalibration(const std::shared_ptr<std_srvs::srv::Trigger::Request> ref_ros_request, std::shared_ptr<std_srvs::srv::Trigger::Response> ref_ros_response)
 {
   SBG_UNUSED_PARAMETER(ref_ros_request);
 
   if (m_mag_calibration_ongoing_)
   {
-    ref_ros_response.success = false;
-    ref_ros_response.message = "Magnetometer calibration process is still ongoing, finish it before trying to save it.";
+    ref_ros_response->success = false;
+    ref_ros_response->message = "Magnetometer calibration process is still ongoing, finish it before trying to save it.";
   }
   else if (m_mag_calibration_done_)
   {
     if (uploadMagCalibrationToDevice())
     {
-      ref_ros_response.success = true;
-      ref_ros_response.message = "Magnetometer calibration has been uploaded to the device.";
+      ref_ros_response->success = true;
+      ref_ros_response->message = "Magnetometer calibration has been uploaded to the device.";
     }
     else
     {
-      ref_ros_response.success = false;
-      ref_ros_response.message = "Magnetometer calibration has not been uploaded to the device.";
+      ref_ros_response->success = false;
+      ref_ros_response->message = "Magnetometer calibration has not been uploaded to the device.";
     }
   }
   else
   {
-    ref_ros_response.success = false;
-    ref_ros_response.message = "No magnetometer calibration has been done.";
+    ref_ros_response->success = false;
+    ref_ros_response->message = "No magnetometer calibration has been done.";
   }
 
-  return ref_ros_response.success;
+  return ref_ros_response->success;
 }
 
 bool SbgDevice::startMagCalibration(void)
@@ -301,14 +301,14 @@ bool SbgDevice::startMagCalibration(void)
 
   if (error_code != SBG_NO_ERROR)
   {
-    ROS_WARN("SBG DRIVER [Mag Calib] - Unable to start the magnetometer calibration : %s", sbgErrorCodeToString(error_code));
+    RCLCPP_WARN(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Unable to start the magnetometer calibration : %s", sbgErrorCodeToString(error_code));
     return false;
   }
   else
   {
-    ROS_INFO("SBG DRIVER [Mag Calib] - Start calibration");
-    ROS_INFO("SBG DRIVER [Mag Calib] - Mode : %s", g_mag_calib_mode_[mag_calib_mode].c_str());
-    ROS_INFO("SBG DRIVER [Mag Calib] - Bandwidth : %s", g_mag_calib_bandwidth[mag_calib_bandwidth].c_str());
+    RCLCPP_INFO(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Start calibration");
+    RCLCPP_INFO(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Mode : %s", g_mag_calib_mode_[mag_calib_mode].c_str());
+    RCLCPP_INFO(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Bandwidth : %s", g_mag_calib_bandwidth[mag_calib_bandwidth].c_str());
     return true;
   }
 }
@@ -321,7 +321,7 @@ bool SbgDevice::endMagCalibration(void)
 
   if (error_code != SBG_NO_ERROR)
   {
-    ROS_WARN("SBG DRIVER [Mag Calib] - Unable to compute the magnetometer calibration results : %s", sbgErrorCodeToString(error_code));
+    RCLCPP_WARN(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Unable to compute the magnetometer calibration results : %s", sbgErrorCodeToString(error_code));
     return false;
   }
   else
@@ -343,12 +343,12 @@ bool SbgDevice::uploadMagCalibrationToDevice(void)
 
     if (error_code != SBG_NO_ERROR)
     {
-      ROS_WARN("SBG DRIVER [Mag Calib] - Unable to set the magnetometers calibration data to the device : %s", sbgErrorCodeToString(error_code));
+      RCLCPP_WARN(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Unable to set the magnetometers calibration data to the device : %s", sbgErrorCodeToString(error_code));
       return false;
     }
     else
     {
-      ROS_INFO("SBG DRIVER [Mag Calib] - Saving data to the device");
+      RCLCPP_INFO(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Saving data to the device");
       ConfigApplier configApplier(m_com_handle_);
       configApplier.saveConfiguration();
       return true;
@@ -356,15 +356,15 @@ bool SbgDevice::uploadMagCalibrationToDevice(void)
   }
   else
   {
-    ROS_ERROR("SBG DRIVER [Mag Calib] - The calibration was invalid, it can't be uploaded on the device.");
+    RCLCPP_ERROR(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - The calibration was invalid, it can't be uploaded on the device.");
     return false;
   }
 }
 
 void SbgDevice::displayMagCalibrationStatusResult(void) const
 {
-  ROS_INFO("SBG DRIVER [Mag Calib] - Quality of the calibration %s", g_mag_calib_quality_[m_magCalibResults.quality].c_str());
-  ROS_INFO("SBG DRIVER [Mag Calib] - Calibration results confidence %s", g_mag_calib_confidence_[m_magCalibResults.confidence].c_str());
+  RCLCPP_INFO(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Quality of the calibration %s", g_mag_calib_quality_[m_magCalibResults.quality].c_str());
+  RCLCPP_INFO(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Calibration results confidence %s", g_mag_calib_confidence_[m_magCalibResults.confidence].c_str());
 
   SbgEComMagCalibMode mag_calib_mode;
 
@@ -375,41 +375,41 @@ void SbgDevice::displayMagCalibrationStatusResult(void) const
   //
   if (m_magCalibResults.advancedStatus & SBG_ECOM_MAG_CALIB_NOT_ENOUGH_POINTS)
   {
-    ROS_WARN("SBG DRIVER [Mag Calib] - Not enough valid points. Maybe you are moving too fast");
+    RCLCPP_WARN(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Not enough valid points. Maybe you are moving too fast");
   }
   if (m_magCalibResults.advancedStatus & SBG_ECOM_MAG_CALIB_TOO_MUCH_DISTORTIONS)
   {
-    ROS_WARN("SBG DRIVER [Mag Calib] - Unable to find a calibration solution. Maybe there are too much non static distortions");
+    RCLCPP_WARN(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Unable to find a calibration solution. Maybe there are too much non static distortions");
   }   
   if (m_magCalibResults.advancedStatus & SBG_ECOM_MAG_CALIB_ALIGNMENT_ISSUE)
   {
-    ROS_WARN("SBG DRIVER [Mag Calib] - The magnetic calibration has troubles to correct the magnetometers and inertial frame alignment");
+    RCLCPP_WARN(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - The magnetic calibration has troubles to correct the magnetometers and inertial frame alignment");
   }
   if (mag_calib_mode == SBG_ECOM_MAG_CALIB_MODE_2D)
   {
     if (m_magCalibResults.advancedStatus & SBG_ECOM_MAG_CALIB_X_MOTION_ISSUE)
     {
-      ROS_WARN("SBG DRIVER [Mag Calib] - Too much roll motion for a 2D magnetic calibration");
+      RCLCPP_WARN(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Too much roll motion for a 2D magnetic calibration");
     }
     if (m_magCalibResults.advancedStatus & SBG_ECOM_MAG_CALIB_Y_MOTION_ISSUE)
     {
-      ROS_WARN("SBG DRIVER [Mag Calib] - Too much pitch motion for a 2D magnetic calibration");
+      RCLCPP_WARN(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Too much pitch motion for a 2D magnetic calibration");
     }
   }
   else
   {
     if (m_magCalibResults.advancedStatus & SBG_ECOM_MAG_CALIB_X_MOTION_ISSUE)
     {
-      ROS_WARN("SBG DRIVER [Mag Calib] - Not enough roll motion for a 3D magnetic calibration");
+      RCLCPP_WARN(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Not enough roll motion for a 3D magnetic calibration");
     }
     if (m_magCalibResults.advancedStatus & SBG_ECOM_MAG_CALIB_Y_MOTION_ISSUE)
     {
-      ROS_WARN("SBG DRIVER [Mag Calib] - Not enough pitch motion for a 3D magnetic calibration.");
+      RCLCPP_WARN(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Not enough pitch motion for a 3D magnetic calibration.");
     }
   }
   if (m_magCalibResults.advancedStatus & SBG_ECOM_MAG_CALIB_Z_MOTION_ISSUE)
   {
-    ROS_WARN("SBG DRIVER [Mag Calib] - Not enough yaw motion to compute a valid magnetic calibration");
+    RCLCPP_WARN(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Not enough yaw motion to compute a valid magnetic calibration");
   }
 }
 
@@ -444,13 +444,13 @@ void SbgDevice::exportMagCalibrationResults(void) const
   mag_results_stream << m_magCalibResults.matrix[3] << "\t" << m_magCalibResults.matrix[4] << "\t" << m_magCalibResults.matrix[5] << endl;
   mag_results_stream << m_magCalibResults.matrix[6] << "\t" << m_magCalibResults.matrix[7] << "\t" << m_magCalibResults.matrix[8] << endl;
 
-  output_filename = "mag_calib_" + timeToStr(ros::WallTime::now()) + ".txt";
+  output_filename = "mag_calib_" + timeToStr()/*(nullptrrclcpp::WallTimer::now())*/ + ".txt";
   ofstream output_file(output_filename);
   output_file << mag_results_stream.str();
   output_file.close();
 
-  ROS_INFO("%s", mag_results_stream.str().c_str());
-  ROS_INFO("SBG DRIVER [Mag Calib] - Magnetometers calibration results saved to file %s", output_filename.c_str());
+  RCLCPP_INFO(m_ref_node_.get_logger(), "%s", mag_results_stream.str().c_str());
+  RCLCPP_INFO(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Magnetometers calibration results saved to file %s", output_filename.c_str());
 }
 
 //---------------------------------------------------------------------//
@@ -476,21 +476,21 @@ void SbgDevice::initDeviceForReceivingData(void)
 
   if (error_code != SBG_NO_ERROR)
   {
-    throw ros::Exception("SBG_DRIVER - [Init] Unable to set the callback function - " + std::string(sbgErrorCodeToString(error_code)));
+    rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Init] Unable to set the callback function - " + std::string(sbgErrorCodeToString(error_code)));
   }
 }
 
 void SbgDevice::initDeviceForMagCalibration(void)
 {
-  m_calib_service_      = m_ref_node_.advertiseService("sbg/mag_calibration", &SbgDevice::processMagCalibration, this);
-  m_calib_save_service_ = m_ref_node_.advertiseService("sbg/mag_calibration_save", &SbgDevice::saveMagCalibration, this);
+  m_calib_service_      = m_ref_node_.create_service<std_srvs::srv::Trigger>("sbg/mag_calibration", std::bind(&SbgDevice::processMagCalibration, this, std::placeholders::_1, std::placeholders::_2));
+  m_calib_save_service_ = m_ref_node_.create_service<std_srvs::srv::Trigger>("sbg/mag_calibration_save", std::bind(&SbgDevice::saveMagCalibration, this, std::placeholders::_1, std::placeholders::_2));
 
-  ROS_INFO("SBG DRIVER [Init] - SBG device is initialized for magnetometers calibration.");
+  RCLCPP_INFO(m_ref_node_.get_logger(), "SBG DRIVER [Init] - SBG device is initialized for magnetometers calibration.");
 }
 
 void SbgDevice::periodicHandle(void)
 {
-  m_ros_processing_time_ = ros::Time::now();
+  m_ros_processing_time_ = m_ref_node_.now();
 
   sbgEComHandle(&m_com_handle_);
 }
