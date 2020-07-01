@@ -122,7 +122,7 @@ void SbgDevice::loadParameters(void)
   //
   // Get the ROS private nodeHandle, where the parameters are loaded from the launch file.
   //
-  rclcpp::Node n_private("~");
+  rclcpp::Node n_private("npv");
   m_config_store_.loadFromRosNodeHandle(n_private);
 }
 
