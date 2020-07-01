@@ -103,7 +103,7 @@ private:
    * 
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
-  void loadCommunicationParameters(const rclcpp::Node& ref_node_handle);
+  void loadCommunicationParameters(rclcpp::Node& ref_node_handle);
 
   /*!
    * Load sensor parameters.
@@ -371,7 +371,7 @@ public:
    * 
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
-  void loadFromRosNodeHandle(const rclcpp::Node& ref_node_handle);
+  void loadFromRosNodeHandle(/*const*/ rclcpp::Node& ref_node_handle);
 };
 }
 

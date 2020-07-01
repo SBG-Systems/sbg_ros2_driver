@@ -20,6 +20,7 @@ find_package(std_srvs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(builtin_interfaces REQUIRED)
+find_package(Boost REQUIRED)
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -128,8 +129,8 @@ target_compile_options(sbg_device_mag PRIVATE -Wall -Wextra)
 target_link_libraries(sbg_device ${catkin_LIBRARIES} sbgECom)
 target_link_libraries(sbg_device_mag ${catkin_LIBRARIES} sbgECom)
 
-ament_target_dependencies(sbg_device ${USED_LIBRARIES} sbgECom)
-ament_target_dependencies(sbg_device_mag ${USED_LIBRARIES} sbgECom)
+ament_target_dependencies(sbg_device ${USED_LIBRARIES}) 
+ament_target_dependencies(sbg_device_mag ${USED_LIBRARIES})
 
 rosidl_target_interfaces(sbg_device ${PROJECT_NAME} "rosidl_typesupport_cpp")
 rosidl_target_interfaces(sbg_device_mag ${PROJECT_NAME} "rosidl_typesupport_cpp")

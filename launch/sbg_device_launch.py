@@ -13,8 +13,8 @@ def generate_launch_description():
 	return LaunchDescription([
 		Node(
 			package='sbg_driver',
-		#	node_name='sbg_device_1',
-			node_executable = 'sbg_device',
+		#	name='sbg_device_1',
+			executable = 'sbg_device',
 			output = 'screen',
 			parameters = [config]
 		)
