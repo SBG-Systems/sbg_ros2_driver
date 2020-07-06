@@ -9,42 +9,45 @@ The driver allows the user to configure the IMU (if possible, according to the d
 <i>Initial work has been done by [ENSTA Bretagne](https://github.com/ENSTABretagneRobotics).</i>
 
 **Author : [SBG Systems](https://www.sbg-systems.com/)<br />
-Maintainer : Rémi Burtin, remi.burtin@sbg-systems.com**
+Maintainer : Hadrien Pomès, hadrien.pomes@sbg-systems.com**
 
 ## Installation
 ### Installation from Packages
-User can install the sbg_ros_driver through the standard ROS installation system.
-* Melodic ```sudo apt-get install ros-melodic-sbg-driver```
-* Kinectic ```sudo apt-get install ros-kinetic-sbg-driver```
-* Lunar ```sudo apt-get install ros-lunar-sbg-driver```
+User can install the sbg_ros2_driver through the standard ROS installation system.
+* Dashing ```sudo apt-get install ros-dashing-sbg-driver```
+* Eloquent ```sudo apt-get install ros-eloquent-sbg-driver```
+* Foxy ```sudo apt-get install ros-foxy-sbg-driver```
 
 ### Building from sources
 #### Dependencies
 * [Robot Operating System (ROS)](http://wiki.ros.org/)
 * SBG communication protocol sbgECom, v1.11.920-stable (full compatible with firmwares from 1.7.x).
+* Boost
 
 #### Building
 1. Clone the repository (use a Release version)
 2. Build using the normal ROS catkin build system
 
 ```
-cd catkin_ws/src
-git clone https://github.com/SBG-Systems/sbg_ros_driver.git
-cd ../
-catkin_make
+cd colcon_ws/src
+git clone https://github.com/SBG-Systems/sbg_ros2.git
+cd sbg_ros2
+rosdep install --from-path .
+cd ../..
+colcon build
 ```
 
 ## Usage
-To run the default Ros node with the default configuration
+To run the default Ros2 node with the default configuration
 
 ```
-roslaunch sbg_driver sbg_device.launch
+ros2 launch sbg_driver sbg_device_launch.py
 ```
 
 To run the magnetic calibration node
 
 ```
-roslaunch sbg_driver sbg_device_mag_calibration.launch
+ros2 launch sbg_driver sbg_device_mag_calibration_launch.py
 ```
 
 ## Config files
@@ -79,10 +82,10 @@ Default config file for an Ellipse-N with an external antenna and internal Gnss.
 
 ## Launch files
 ### Default launch files
-* **sbg_device.launch** <br />
+* **sbg_device_launch.py** <br />
 Launch the sbg_device node to handle the receivde data, and load the `sbg_device_uart_default.yaml` configuration.
 
-* **sbg_device_mag_calibration.launch** <br />
+* **sbg_device_mag_calibration_launch.py** <br />
 Launch the sbg_device_mag node to calibrate the magnetometers, and load the `ellipse_E_default.yaml` configuration.
 
 ## Nodes
