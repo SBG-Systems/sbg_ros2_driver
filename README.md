@@ -32,10 +32,13 @@ User can install the sbg_ros2_driver through the standard ROS installation syste
 cd colcon_ws/src
 git clone https://github.com/SBG-Systems/sbg_ros2.git
 cd sbg_ros2
+rosdep update
 rosdep install --from-path .
 cd ../..
 colcon build
+source install/setup.bash
 ```
+
 
 ## Usage
 To run the default Ros2 node with the default configuration
