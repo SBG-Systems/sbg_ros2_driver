@@ -38,6 +38,7 @@
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
+  <depend>boost</depend>
 
   <exec_depend>rosidl_default_runtime</exec_depend>
 
