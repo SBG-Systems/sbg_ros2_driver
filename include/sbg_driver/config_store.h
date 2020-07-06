@@ -5,7 +5,7 @@
 #include <sbgEComLib.h>
 
 // ROS headers
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
 
 // Project headers
 #include "sbg_vector3.h"
@@ -371,7 +371,7 @@ public:
    * 
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
-  void loadFromRosNodeHandle(/*const*/ rclcpp::Node& ref_node_handle);
+  void loadFromRosNodeHandle(rclcpp::Node& ref_node_handle);
 };
 }
 

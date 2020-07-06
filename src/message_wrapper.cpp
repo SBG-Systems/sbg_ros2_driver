@@ -86,12 +86,8 @@ const rclcpp::Time MessageWrapper::computeCorrectedRosTime(uint32_t device_times
   utc_to_epoch          = convertUtcTimeToEpoch(m_last_sbg_utc_);
   device_timestamp_diff = device_timestamp - m_last_sbg_utc_.time_stamp;
 
-  nanoseconds = utc_to_epoch.nanoseconds() + static_cast<uint64_t>(device_timestamp_diff) * 1000; ////////////////////////////
-  //nanoseconds = utc_to_epoch.toNSec() + static_cast<uint64_t>(device_timestamp_diff) * 1000; ////////////////////////////
-
-  utc_to_epoch = rclcpp::Time(nanoseconds); //fromNSec(nanoseconds);    ///////////////// 
-  //utc_to_epoch.fromNSec(nanoseconds);  /////////////////
-
+  nanoseconds = utc_to_epoch.nanoseconds() + static_cast<uint64_t>(device_timestamp_diff) * 1000;
+  utc_to_epoch = rclcpp::Time(nanoseconds); 
   return utc_to_epoch;
 }
 

@@ -1,6 +1,5 @@
 // File header
 #include <config_applier.h>
-//#include "rclcpp/logger.hpp"
 
 using sbg::ConfigApplier;
 
@@ -36,7 +35,6 @@ void ConfigApplier::checkConfigurationGet(const SbgErrorCode& ref_sbg_error_code
     error_message.append(sbgErrorCodeToString(ref_sbg_error_code));
 
     rclcpp::exceptions::throw_from_rcl_error(RMW_RET_ERROR, error_message);
-    //throw rclcpp::exceptions(error_message);
   }
 }
 
@@ -374,7 +372,6 @@ void ConfigApplier::configureOutput(SbgEComOutputPort output_port, const ConfigS
     error_message.append(sbgErrorCodeToString(error_code));
 
     rclcpp::exceptions::throw_from_rcl_error(RMW_RET_ERROR, error_message);
-    //throw rclcpp::exceptions(error_message);
   }
   else if (current_output_mode != ref_log_output.output_mode)
   {
@@ -390,7 +387,6 @@ void ConfigApplier::configureOutput(SbgEComOutputPort output_port, const ConfigS
       error_message.append(sbgErrorCodeToString(error_code));
 
       rclcpp::exceptions::throw_from_rcl_error(RMW_RET_ERROR, error_message);
-     // throw rclcpp::exceptions(error_message);
     }
     else
     {

@@ -30,7 +30,7 @@ void ConfigStore::loadCommunicationParameters(rclcpp::Node& ref_node_handle)
 
   if (ref_node_handle.has_parameter("uartConf.portName"))
   {
-    m_serial_communication_ = true;
+    m_serial_communication_ = true; 
     ref_node_handle.get_parameter_or<std::string>("uartConf.portName", m_uart_port_name_, "/dev/ttyUSB0");
 
     m_uart_baud_rate_ = getParameter<uint32_t>(ref_node_handle, "uartConf.baudRate", 0);
@@ -288,7 +288,7 @@ uint32_t ConfigStore::getReadingRateFrequency(void) const
 //- Operations                                                        -//
 //---------------------------------------------------------------------//
 
-void ConfigStore::loadFromRosNodeHandle(/*const*/ rclcpp::Node& ref_node_handle)
+void ConfigStore::loadFromRosNodeHandle(rclcpp::Node& ref_node_handle)
 {
   loadCommunicationParameters(ref_node_handle);
   loadSensorParameters(ref_node_handle);
