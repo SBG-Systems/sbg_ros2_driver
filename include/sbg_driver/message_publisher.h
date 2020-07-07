@@ -1,0 +1,193 @@
+#ifndef SBG_ROS_MESSAGE_PUBLISHER_H
+#define SBG_ROS_MESSAGE_PUBLISHER_H
+
+// Project headers
+#include <config_store.h>
+#include <message_wrapper.h>
+
+namespace sbg
+{
+/*!
+ * Class to publish all SBG-ROS messages to the corresponding publishers. 
+ */
+class MessagePublisher
+{
+private:
+
+  rclcpp::Publisher<sbg_driver::msg::SbgStatus, std::allocator<void>>::SharedPtr   	m_sbgStatus_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgUtcTime, std::allocator<void>>::SharedPtr    	m_sbgUtcTime_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgImuData, std::allocator<void>>::SharedPtr  	m_sbgImuData_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEkfEuler, std::allocator<void>>::SharedPtr   	m_sbgEkfEuler_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEkfQuat, std::allocator<void>>::SharedPtr m_sbgEkfQuat_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEkfNav, std::allocator<void>>::SharedPtr        m_sbgEkfNav_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgShipMotion, std::allocator<void>>::SharedPtr m_sbgShipMotion_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgMag, std::allocator<void>>::SharedPtr         	m_sbgMag_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgMagCalib, std::allocator<void>>::SharedPtr   	m_sbgMagCalib_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgGpsVel, std::allocator<void>>::SharedPtr     	m_sbgGpsVel_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgGpsPos, std::allocator<void>>::SharedPtr    	m_sbgGpsPos_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgGpsHdt, std::allocator<void>>::SharedPtr      	m_sbgGpsHdt_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgGpsRaw, std::allocator<void>>::SharedPtr      	m_sbgGpsRaw_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgOdoVel, std::allocator<void>>::SharedPtr      	m_sbgOdoVel_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr        m_sbgEventA_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr        m_sbgEventB_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr         m_sbgEventC_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr       m_sbgEventD_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr        m_sbgEventE_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgImuShort, std::allocator<void>>::SharedPtr   	m_SbgImuShort_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgAirData, std::allocator<void>>::SharedPtr     	m_SbgAirData_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::Imu, std::allocator<void>>::SharedPtr               m_imu_pub_;
+  
+  sbg_driver::msg::SbgImuData  m_sbg_imu_message_;
+  sbg_driver::msg::SbgEkfQuat  m_sbg_ekf_quat_message_;
+
+  rclcpp::Publisher<sensor_msgs::msg::Temperature, std::allocator<void>>::SharedPtr         m_temp_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::MagneticField, std::allocator<void>>::SharedPtr         m_mag_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::FluidPressure, std::allocator<void>>::SharedPtr         m_fluid_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::PointStamped, std::allocator<void>>::SharedPtr         m_pos_ecef_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::TwistStamped, std::allocator<void>>::SharedPtr        m_velocity_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::TimeReference, std::allocator<void>>::SharedPtr         m_utc_reference_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::NavSatFix, std::allocator<void>>::SharedPtr         m_nav_sat_fix_pub_;
+
+  MessageWrapper          m_message_wrapper_;
+  SbgEComOutputMode       m_output_mode_;
+  uint32_t                m_max_messages_;
+
+  //---------------------------------------------------------------------//
+  //- Private methods                                                   -//
+  //---------------------------------------------------------------------//
+
+  /*!
+   * Update the maximal output frequency for the defined pubishers.
+   * Each time a new publisher is defined, update the maximal output frequency if required.
+   * 
+   * \param[in] output_mode_freq        Output mode.
+   */
+  void updateMaxOutputFrequency(SbgEComOutputMode output_mode);
+
+  /*!
+   * Get the corresponding frequency for the SBG output mode.
+   * 
+   * \param[in] output_mode             Output mode.
+   * \return                            Output frequency (in Hz).
+   */
+  uint32_t getCorrespondingFrequency(SbgEComOutputMode output_mode) const;
+
+  /*!
+   * Get the corresponding topic name output for the SBG output mode.
+   * 
+   * \param[in] sbg_message_id          SBG message ID.
+   * \return                            Output topic name.
+   */
+  std::string getOutputTopicName(SbgEComMsgId sbg_message_id) const;
+
+  /*!
+   * Initialize the publisher for the specified SBG Id, and the output configuration.
+   * 
+   * \param[in] ref_ros_node_handle     Ros Node to advertise the publisher.
+   * \param[in] sbg_msg_id              Id of the SBG message.
+   * \param[in] output_conf             Output configuration.
+   * \param[in] ref_output_topic        Output topic for the publisher.
+   */
+  void initPublisher(rclcpp::Node& ref_ros_node_handle, SbgEComMsgId sbg_msg_id, SbgEComOutputMode output_conf, const std::string &ref_output_topic);
+
+  /*!
+   * Define standard ROS publishers.
+   * 
+   * \param[in] ref_ros_node_handle     Ros Node to advertise the publisher.
+   */
+  void defineRosStandardPublishers(rclcpp::Node& ref_ros_node_handle);
+
+  /*!
+   * Publish a received SBG IMU log.
+   * 
+   * \param[in] ref_sbg_log             SBG log.
+   */
+  void publishIMUData(const SbgBinaryLogData &ref_sbg_log);
+
+  /*!
+   * Process a ROS IMU standard message.
+   */
+  void processRosImuMessage(void);
+
+  /*!
+   * Publish a received SBG Magnetic log.
+   * 
+   * \param[in] ref_sbg_log             SBG log.
+   */
+  void publishMagData(const SbgBinaryLogData &ref_sbg_log);
+
+  /*!
+   * Publish a received SBG Fluid pressure log.
+   * 
+   * \param[in] ref_sbg_log             SBG log.
+   */
+  void publishFluidPressureData(const SbgBinaryLogData &ref_sbg_log);
+
+  /*!
+   * Publish a received SBG EkfNav log.
+   * 
+   * \param[in] ref_sbg_log             SBG log.
+   */
+  void publishEkfNavigationData(const SbgBinaryLogData &ref_sbg_log);
+
+  /*!
+   * Publish a received SBG UTC log.
+   * 
+   * \param[in] ref_sbg_log             SBG log.
+   */
+  void publishUtcData(const SbgBinaryLogData &ref_sbg_log);
+
+  /*!
+   * Publish a received SBG GpsPos log.
+   * 
+   * \param[in] ref_sbg_log             SBG log.
+   */
+  void publishGpsPosData(const SbgBinaryLogData &ref_sbg_log);
+
+public:
+
+  //---------------------------------------------------------------------//
+  //- Constructor                                                       -//
+  //---------------------------------------------------------------------//
+
+  /*!
+   * Default constructor.
+   */
+  MessagePublisher(void);
+
+  //---------------------------------------------------------------------//
+  //- Parameters                                                        -//
+  //---------------------------------------------------------------------//
+
+  /*!
+   * Get the maximal output frequency for the publisher.
+   * 
+   * \return                            Maixmal output frequency (in Hz).
+   */
+  uint32_t getMaxOutputFrequency(void) const;
+
+  //---------------------------------------------------------------------//
+  //- Operations                                                        -//
+  //---------------------------------------------------------------------//
+
+  /*!
+   * Initialize the publishers for the output configuration.
+   * 
+   * \param[in] ref_ros_node_handle     Ros Node to advertise the publisher.
+   * \param[in] ref_config_store        Store configuration for the publishers.
+   */
+  void initPublishers(rclcpp::Node& ref_ros_node_handle, const ConfigStore &ref_config_store);
+
+  /*!
+   * Publish the received SbgLog if the corresponding publisher is defined.
+   * 
+   * \param[in] ref_ros_time            ROS processing time for the messages.
+   * \param[in] sbg_msg_class           Class ID of the SBG message.
+   * \param[in] sbg_msg_id              Id of the SBG message.
+   * \param[in] ref_sbg_log             SBG binary log.
+   */
+  void publish(const rclcpp::Time& ref_ros_time, SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgBinaryLogData &ref_sbg_log);
+};
+}
+
+#endif // SBG_ROS_MESSAGE_PUBLISHER_H
