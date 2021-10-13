@@ -10,86 +10,13 @@ using sbg::MessagePublisher;
 //---------------------------------------------------------------------//
 
 MessagePublisher::MessagePublisher(void):
-m_output_mode_(SBG_ECOM_OUTPUT_MODE_DISABLED),
 m_max_messages_(10)
 {
-
 }
 
 //---------------------------------------------------------------------//
 //- Private methods                                                   -//
 //---------------------------------------------------------------------//
-
-void MessagePublisher::updateMaxOutputFrequency(SbgEComOutputMode output_mode)
-{
-  //
-  // Update the maximal output frequency if needed.
-  //
-  if (m_output_mode_ == SBG_ECOM_OUTPUT_MODE_DISABLED)
-  {
-    m_output_mode_ = output_mode;
-  }
-  else
-  {
-    if (getCorrespondingFrequency(output_mode) > getCorrespondingFrequency(m_output_mode_))
-    {
-      m_output_mode_ = output_mode;
-    }
-  }
-
-  //
-  // In case of sbg output event configuration, just define the output on a 25Hz frequency.
-  //
-  if (getCorrespondingFrequency(m_output_mode_) >= getCorrespondingFrequency(SBG_ECOM_OUTPUT_MODE_PPS))
-  {
-    m_output_mode_ = SBG_ECOM_OUTPUT_MODE_DIV_8;
-  }
-}
-
-uint32_t MessagePublisher::getCorrespondingFrequency(SbgEComOutputMode output_mode) const
-{
-  switch (output_mode)
-  {
-  case SBG_ECOM_OUTPUT_MODE_DISABLED:
-    return 0;
-  
-  case SBG_ECOM_OUTPUT_MODE_MAIN_LOOP:
-    return 200;
-
-  case SBG_ECOM_OUTPUT_MODE_DIV_2:
-    return 100;
-
-  case SBG_ECOM_OUTPUT_MODE_DIV_4:
-    return 50;
-
-  case SBG_ECOM_OUTPUT_MODE_DIV_5:
-    return 40;
-
-  case SBG_ECOM_OUTPUT_MODE_DIV_8:
-    return 25;
-
-  case SBG_ECOM_OUTPUT_MODE_DIV_10:
-    return 20;
-
-  case SBG_ECOM_OUTPUT_MODE_DIV_20:
-    return 10;
-
-  case SBG_ECOM_OUTPUT_MODE_DIV_40:
-    return 5;
-
-  case SBG_ECOM_OUTPUT_MODE_DIV_200:
-    return 1;
-
-  case SBG_ECOM_OUTPUT_MODE_HIGH_FREQ_LOOP:
-    return 1000;
-
-  case SBG_ECOM_OUTPUT_MODE_PPS:
-    return 10000;
-
-  default:
-    return 0;
-  }
-}
 
 std::string MessagePublisher::getOutputTopicName(SbgEComMsgId sbg_message_id) const
 {
@@ -170,8 +97,6 @@ void MessagePublisher::initPublisher(rclcpp::Node& ref_ros_node_handle, SbgEComM
   //
   if (output_conf != SBG_ECOM_OUTPUT_MODE_DISABLED)
   {
-    updateMaxOutputFrequency(output_conf);
-
     switch (sbg_msg_id)
     {
       case SBG_ECOM_LOG_STATUS:
@@ -296,7 +221,6 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
   if (m_sbgImuData_pub_)
   {
     m_temp_pub_     = ref_ros_node_handle.create_publisher<sensor_msgs::msg::Temperature>("imu/temp", m_max_messages_);
-    m_velocity_pub_ = ref_ros_node_handle.create_publisher<geometry_msgs::msg::TwistStamped>("imu/velocity", m_max_messages_);
   }
   else
   {
@@ -312,6 +236,19 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
     RCLCPP_WARN(ref_ros_node_handle.get_logger(), "SBG_DRIVER - [Publisher] SBG Mag data output are not configured, the standard Magnetic publisher can not be defined.");
   }
 
+  //
+  // We need either Euler or quat angles, and we must have Nav and IMU data to
+  // compute Body and angular velocity.
+  //
+  if ((m_sbgEkfEuler_pub_ || m_sbgEkfQuat_pub_) && m_sbgEkfNav_pub_ && m_sbgImuData_pub_)
+  {
+    m_velocity_pub_ = ref_ros_node_handle.create_publisher<geometry_msgs::msg::TwistStamped>("imu/velocity", m_max_messages_);
+  }
+  else
+  {
+    RCLCPP_WARN(ref_ros_node_handle.get_logger(), "SBG_DRIVER - [Publisher] SBG Imu, Nav or Angles data outputs are not configured, the standard Velocity publisher can not be defined.");
+  }
+
   if (m_SbgAirData_pub_)
   {
     m_fluid_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::FluidPressure>("imu/pres", m_max_messages_);
@@ -320,7 +257,6 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
   {
     RCLCPP_WARN(ref_ros_node_handle.get_logger(), "SBG_DRIVER - [Publisher] SBG AirData output are not configured, the standard FluidPressure publisher can not be defined.");
   }
-
 
   if (m_sbgEkfNav_pub_)
   {
@@ -352,9 +288,6 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
 
 void MessagePublisher::publishIMUData(const SbgBinaryLogData &ref_sbg_log)
 {
-  sbg_driver::msg::SbgImuData sbg_message_imu_old;
-  sbg_message_imu_old = m_sbg_imu_message_;
-
   if (m_sbgImuData_pub_)
   {
     m_sbg_imu_message_ = m_message_wrapper_.createSbgImuDataMessage(ref_sbg_log.imuData);
@@ -364,12 +297,24 @@ void MessagePublisher::publishIMUData(const SbgBinaryLogData &ref_sbg_log)
   {
     m_temp_pub_->publish(m_message_wrapper_.createRosTemperatureMessage(m_sbg_imu_message_));
   }
-  if (m_velocity_pub_)
-  {
-    m_velocity_pub_->publish(m_message_wrapper_.createRosTwistStampedMessage(m_sbg_imu_message_, sbg_message_imu_old));
-  }
 
   processRosImuMessage();
+  processRosVelMessage();
+}
+
+void MessagePublisher::processRosVelMessage(void)
+{
+  if (m_velocity_pub_)
+  {
+    if (m_sbgEkfQuat_pub_)
+    {
+      m_velocity_pub_->publish(m_message_wrapper_.createRosTwistStampedMessage(m_sbg_ekf_quat_message_, m_sbg_ekf_nav_message_, m_sbg_imu_message_));
+    }
+    else if (m_sbgEkfEuler_pub_)
+    {
+      m_velocity_pub_->publish(m_message_wrapper_.createRosTwistStampedMessage(m_sbg_ekf_euler_message_, m_sbg_ekf_nav_message_, m_sbg_imu_message_));
+    }
+  }
 }
 
 void MessagePublisher::processRosImuMessage(void)
@@ -415,17 +360,17 @@ void MessagePublisher::publishFluidPressureData(const SbgBinaryLogData &ref_sbg_
 
 void MessagePublisher::publishEkfNavigationData(const SbgBinaryLogData &ref_sbg_log)
 {
-  sbg_driver::msg::SbgEkfNav sbg_ekf_nav_message;
-  sbg_ekf_nav_message = m_message_wrapper_.createSbgEkfNavMessage(ref_sbg_log.ekfNavData);
+  m_sbg_ekf_nav_message_ = m_message_wrapper_.createSbgEkfNavMessage(ref_sbg_log.ekfNavData);
 
   if (m_sbgEkfNav_pub_)
   {
-    m_sbgEkfNav_pub_->publish(sbg_ekf_nav_message);
+    m_sbgEkfNav_pub_->publish(m_sbg_ekf_nav_message_);
   }
   if (m_pos_ecef_pub_)
   {
-    m_pos_ecef_pub_->publish(m_message_wrapper_.createRosPointStampedMessage(sbg_ekf_nav_message));
+    m_pos_ecef_pub_->publish(m_message_wrapper_.createRosPointStampedMessage(m_sbg_ekf_nav_message_));
   }
+  processRosVelMessage();
 }
 
 void MessagePublisher::publishUtcData(const SbgBinaryLogData &ref_sbg_log)
@@ -464,15 +409,6 @@ void MessagePublisher::publishGpsPosData(const SbgBinaryLogData &ref_sbg_log)
 }
 
 //---------------------------------------------------------------------//
-//- Parameters                                                        -//
-//---------------------------------------------------------------------//
-
-uint32_t MessagePublisher::getMaxOutputFrequency(void) const
-{
-  return getCorrespondingFrequency(m_output_mode_);
-}
-
-//---------------------------------------------------------------------//
 //- Operations                                                        -//
 //---------------------------------------------------------------------//
 
@@ -482,6 +418,12 @@ void MessagePublisher::initPublishers(rclcpp::Node& ref_ros_node_handle, const C
   // Initialize all the publishers with the defined SBG output from the config store.
   //
   const std::vector<ConfigStore::SbgLogOutput> &ref_output_modes = ref_config_store.getOutputModes();
+
+  m_message_wrapper_.setTimeReference(ref_config_store.getTimeReference());
+
+  m_message_wrapper_.setFrameId(ref_config_store.getFrameId());
+
+  m_message_wrapper_.setUseEnu(ref_config_store.getUseEnu());
 
   for (const ConfigStore::SbgLogOutput &ref_output : ref_output_modes)
   {
@@ -494,14 +436,12 @@ void MessagePublisher::initPublishers(rclcpp::Node& ref_ros_node_handle, const C
   }
 }
 
-void MessagePublisher::publish(const rclcpp::Time& ref_ros_time, SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgBinaryLogData &ref_sbg_log)
+void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgBinaryLogData &ref_sbg_log)
 {
   //
   // Publish the message with the corresponding publisher and SBG message ID.
   // For each log, check if the publisher has been initialized.
   //
-  m_message_wrapper_.setRosProcessingTime(ref_ros_time);
-
   if(sbg_msg_class == SBG_ECOM_CLASS_LOG_ECOM_0)
   {
     switch (sbg_msg_id)
@@ -541,7 +481,9 @@ void MessagePublisher::publish(const rclcpp::Time& ref_ros_time, SbgEComClass sb
 
       if (m_sbgEkfEuler_pub_)
       {
-        m_sbgEkfEuler_pub_->publish(m_message_wrapper_.createSbgEkfEulerMessage(ref_sbg_log.ekfEulerData));
+        m_sbg_ekf_euler_message_ = m_message_wrapper_.createSbgEkfEulerMessage(ref_sbg_log.ekfEulerData);
+        m_sbgEkfEuler_pub_->publish(m_sbg_ekf_euler_message_);
+        processRosVelMessage();
       }
       break;
 
@@ -552,6 +494,7 @@ void MessagePublisher::publish(const rclcpp::Time& ref_ros_time, SbgEComClass sb
         m_sbg_ekf_quat_message_ = m_message_wrapper_.createSbgEkfQuatMessage(ref_sbg_log.ekfQuatData);
         m_sbgEkfQuat_pub_->publish(m_sbg_ekf_quat_message_);
         processRosImuMessage();
+        processRosVelMessage();
       }
       break;
 

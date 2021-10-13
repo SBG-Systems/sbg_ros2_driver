@@ -120,6 +120,18 @@ public:
   };
 
   /*!
+   * Getter parenthesis operator
+   * \param[in] index					Index of value to retrieve.
+   * \return 							Value at index.
+   */
+  const T operator()(size_t index) const
+  {
+      assert(index < 3);
+
+      return m_data[index];
+  }
+
+  /*!
    * Get the raw data of the sbgVector.
    * 
    * \return                                Raw vector data.
@@ -129,6 +141,10 @@ public:
     return static_cast<const T*>(m_data.data());
   };
 };
+
+typedef SbgVector3<float>  SbgVector3f;
+typedef SbgVector3<double> SbgVector3d;
+
 }
 
 #endif // SBG_VECTOR_3_H

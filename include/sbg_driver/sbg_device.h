@@ -51,8 +51,6 @@ private:
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr    m_calib_service_;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr      m_calib_save_service_;
 
-  rclcpp::Time               m_ros_processing_time_;
-
   //---------------------------------------------------------------------//
   //- Private  methods                                                  -//
   //---------------------------------------------------------------------//

@@ -5,6 +5,10 @@
 #include <sbgEComLib.h>
 #include <sbgEComIds.h>
 
+// Sbg header
+#include <sbg_matrix3.h>
+#include <config_store.h>
+
 // ROS headers
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
@@ -47,33 +51,30 @@ private:
 
   rclcpp::Time               	m_ros_processing_time_;
   sbg_driver::msg::SbgUtcTime  	m_last_sbg_utc_;
-  bool                    	m_first_valid_utc_;
+  bool                          m_first_valid_utc_;
+  std::string                   m_frame_id_;
+  bool                          m_use_enu_;
+  TimeReference                 m_time_reference_;
 
   //---------------------------------------------------------------------//
   //- Internal methods                                                  -//
   //---------------------------------------------------------------------//
 
   /*!
-   * Create a geometry message Vector3 from a raw input vector.
-   * 
-   * \template  T                   Numeric template type.
-   * \param[in] p_array             Raw input vector.
-   * \param[in] array_size          Raw vector size, should be defined as 3.
-   * \return                        GeometryMsg Vector3.
+   * Wrap an angle to 2 PI.
+   *
+   * \param[in] angle_rad			Angle in rad.
+   * \return						Wrapped angle.
    */
-  template <typename T>
-  const geometry_msgs::msg::Vector3 createGeometryVector3(const T* p_array, size_t array_size) const
-  {
-    assert(array_size == 3);
+  float wrapAngle2Pi(float angle_rad) const;
 
-    geometry_msgs::msg::Vector3 geometry_vector;
-
-    geometry_vector.x = p_array[0];
-    geometry_vector.y = p_array[1];
-    geometry_vector.z = p_array[2];
-
-    return geometry_vector;
-  };
+  /*!
+   * Wrap an angle to 360 degres.
+   *
+   * \param[in] angle_deg			Angle in degree.
+   * \return						Wrapped angle.
+   */
+  float wrapAngle360(float angle_deg) const;
 
   /*!
    * Create a ROS message header.
@@ -84,12 +85,12 @@ private:
   const std_msgs::msg::Header createRosHeader(uint32_t device_timestamp) const;
 
   /*!
-   * Compute corrected ROS time for the device timestamp.
+   * Convert INS timestamp from a SBG device to UNIX timestamp.
    * 
    * \param[in] device_timestamp    SBG device timestamp (in microseconds).
    * \return                        ROS time.
    */
-  const rclcpp::Time computeCorrectedRosTime(uint32_t device_timestamp) const;
+  const rclcpp::Time convertInsTimeToUnix(uint32_t device_timestamp) const;
 
   /*!
    * Create SBG-ROS Ekf status message.
@@ -212,6 +213,15 @@ private:
    */
   const sbg_driver::msg::SbgAirDataStatus createAirDataStatusMessage(const SbgLogAirData& ref_sbg_air_data) const;
  
+  /*!
+   * Create a ROS standard TwistStamped message.
+   *
+   * \param[in] body_vel            SBG Body velocity vector.
+   * \param[in] ref_sbg_air_data    SBG IMU message.
+   * \return                        SBG TwistStamped message.
+   */
+  const geometry_msgs::msg::TwistStamped createRosTwistStampedMessage(const sbg::SbgVector3f& body_vel, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const;
+
 public:
 
   //---------------------------------------------------------------------//
@@ -228,12 +238,25 @@ public:
   //---------------------------------------------------------------------//
 
   /*!
-   * Set the wrapper processing ROS time.
-   * This method is call on the SbgDevice periodic handle, in order to have the same processing time for the messages.
+   * Set the time reference.
    * 
-   * \param[in] ref_ros_time        ROS processing time to set.
+   * \param[in] time_reference    Time reference.
    */
-  void setRosProcessingTime(const rclcpp::Time& ref_ros_time);
+  void setTimeReference(TimeReference time_reference);
+
+  /*!
+   * Set Frame ID.
+   *
+   * \param[in]  frame_id      Frame ID.
+   */
+  void setFrameId(const std::string &frame_id);
+
+  /*!
+   * Set use ENU.
+   *
+   * \param[in]  enu          If true publish data in the ENU convention.
+   */
+  void setUseEnu(bool enu);
 
   //---------------------------------------------------------------------//
   //- Operations                                                        -//
@@ -403,11 +426,22 @@ public:
   /*!
    * Create a ROS standard TwistStamped message from SBG messages.
    * 
+   * \param[in] ref_sbg_ekf_euler_msg   SBG-ROS Ekf Euler message.
+   * \param[in] ref_sbg_ekf_nav_msg     SBG-ROS Ekf Nav message.
    * \param[in] ref_sbg_imu_msg     SBG-ROS IMU message.
-   * \param[in] ref_p_sbg_imu_msg   SBG-ROS IMU previous message.
    * \return                        ROS standard TwistStamped message.
    */
-  const geometry_msgs::msg::TwistStamped createRosTwistStampedMessage(const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg, const sbg_driver::msg::SbgImuData& ref_p_sbg_imu_msg) const;
+  const geometry_msgs::msg::TwistStamped createRosTwistStampedMessage(const sbg_driver::msg::SbgEkfEuler& ref_sbg_ekf_euler_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const;
+
+  /*!
+   * Create a ROS standard TwistStamped message from SBG messages.
+   *
+   * \param[in] ref_sbg_ekf_quat_msg    SBG-ROS Ekf Quaternion message.
+   * \param[in] ref_sbg_ekf_nav_msg     SBG-ROS Ekf Nav message.
+   * \param[in] ref_sbg_imu_msg         SBG-ROS IMU message.
+   * \return                            ROS standard TwistStamped message.
+   */
+  const geometry_msgs::msg::TwistStamped createRosTwistStampedMessage(const sbg_driver::msg::SbgEkfQuat& ref_sbg_ekf_vel_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const;
 
   /*!
    * Create a ROS standard PointStamped message from SBG messages.

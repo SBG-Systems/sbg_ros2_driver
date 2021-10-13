@@ -116,12 +116,10 @@ set (SBG_COMMON_RESOURCES
 
 ## Declare a C++ executable
 add_executable(sbg_device ${SBG_COMMON_RESOURCES} src/main.cpp)
-#add_dependencies(sbg_device ${sbg_driver_EXPORTED_TARGETS})
 add_dependencies(sbg_device ${PROJECT_NAME})
 target_compile_options(sbg_device PRIVATE -Wall -Wextra)
 
 add_executable(sbg_device_mag ${SBG_COMMON_RESOURCES} src/main_mag.cpp)
-#add_dependencies(sbg_device_mag ${sbg_driver_EXPORTED_TARGETS})
 add_dependencies(sbg_device_mag ${PROJECT_NAME})
 target_compile_options(sbg_device_mag PRIVATE -Wall -Wextra)
 

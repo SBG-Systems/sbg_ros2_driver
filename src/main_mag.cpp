@@ -5,7 +5,7 @@ using sbg::SbgDevice;
 int main(int argc, char **argv)
 {
   rclcpp::init(argc, argv);
-  rclcpp::Node::SharedPtr node_handle; //("sbg_device_mag");
+  rclcpp::Node::SharedPtr node_handle;
 
   try
   {
