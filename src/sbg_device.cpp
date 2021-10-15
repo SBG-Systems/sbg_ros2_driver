@@ -138,10 +138,14 @@ void SbgDevice::connect(void)
   //
   if (m_config_store_.isInterfaceSerial())
   {
+    RCLCPP_INFO(m_ref_node_.get_logger(), "SBG_DRIVER - serial interface %s at %d bps", m_config_store_.getUartPortName().c_str(), m_config_store_.getBaudRate());
     error_code = sbgInterfaceSerialCreate(&m_sbg_interface_, m_config_store_.getUartPortName().c_str(), m_config_store_.getBaudRate());
   }
   else if (m_config_store_.isInterfaceUdp())
   {
+	char ip[16];
+	sbgNetworkIpToString(m_config_store_.getIpAddress(), ip, sizeof(ip));
+    RCLCPP_INFO(m_ref_node_.get_logger(), "SBG_DRIVER - UDP interface %s %d->%d", ip, m_config_store_.getInputPortAddress(), m_config_store_.getOutputPortAddress());
     error_code = sbgInterfaceUdpCreate(&m_sbg_interface_, m_config_store_.getIpAddress(), m_config_store_.getInputPortAddress(), m_config_store_.getOutputPortAddress());
   }
   else
