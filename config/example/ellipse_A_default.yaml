@@ -86,17 +86,17 @@
       # 5 ALIGNMENT_DOWN      IMU Axis is turned in vehicle's down direction
       axisDirectionY: 3
       # Residual roll error after axis alignment rad
-      misRoll: 0
+      misRoll: 0.0
       # Residual pitch error after axis alignment rad
-      misPitch: 0
+      misPitch: 0.0
       # Residual yaw error after axis alignment rad
-      misYaw: 0
+      misYaw: 0.0
       # X Primary lever arm in IMU X axis (once IMU alignment is applied) m
-      leverArmX: 0
+      leverArmX: 0.0
       # Y Primary lever arm in IMU Y axis (once IMU alignment is applied) m
-      leverArmY: 0
+      leverArmY: 0.0
       # Z Primary lever arm in IMU Z axis (once IMU alignment is applied) m
-      leverArmZ: 0
+      leverArmZ: 0.0
     
     # AIDING_ASSIGNMENT
     # Note: GNSS1 module configuration can only be set to an external port on Ellipse-E version.
@@ -127,8 +127,6 @@
       # 1 Odometer connected only to ODO_A (unidirectional).
       # 2 Odometer connected to both ODO_A (signal A) and ODO_B (Signal B or direction) for bidirectional odometer.
       odometerPinAssignment: 0
-    
-    
     
     magnetometer:
       # Magnetometer model ID
@@ -170,20 +168,20 @@
       gnss_model_id: 102
     
       #GNSS primary antenna lever arm in IMU X axis (m)
-      primaryLeverArmX: 0
+      primaryLeverArmX: 0.0
       #GNSS primary antenna lever arm in IMU Y axis (m)
-      primaryLeverArmY: 0
+      primaryLeverArmY: 0.0
       #GNSS primary antenna lever arm in IMU Z axis (m)
-      primaryLeverArmZ: 0
+      primaryLeverArmZ: 0.0
       #GNSS primary antenna precise. Set to true if the primary lever arm has been accurately entered and doesn't need online re-estimation.
       primaryLeverPrecise: true
     
       #GNSS secondary antenna lever arm in IMU X axis (m)
-      secondaryLeverArmX: 0
+      secondaryLeverArmX: 0.0
       #GNSS secondary antenna lever arm in IMU Y axis (m)
-      secondaryLeverArmY: 0
+      secondaryLeverArmY: 0.0
       #GNSS secondary antenna lever arm in IMU Z axis (m)
-      secondaryLeverArmZ: 0
+      secondaryLeverArmZ: 0.0
     
       # Secondary antenna operating mode.
       # 1 The GNSS will be used in single antenna mode only and the secondary lever arm is not used.
@@ -205,20 +203,20 @@
     # Odometer configuration
     odom:
       # Odometer's gain Pulses/m
-      gain: 4800 
+      gain: 4800.0
       # User gain average error (%)
-      gain_error: 0.1 
+      gain_error: 5
       # Odometer's direction
-      # 0: positive
-      # 1: negative
-      direction: 0
+      # false: positive
+      # true: negative
+      direction: false
     
       # Odometer lever arm in IMU X axis (m)
-      leverArmX: 0
+      leverArmX: 0.0
       # Odometer lever arm in IMU Y axis (m)
-      leverArmY: 0
+      leverArmY: 0.0
       # Odometer lever arm in IMU Z axis (m)
-      leverArmZ: 0
+      leverArmZ: 0.0
     
       # Odometer rejection mode
       # 0 Measurement is not taken into account

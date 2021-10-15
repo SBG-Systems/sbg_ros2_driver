@@ -10,6 +10,16 @@
       #       it can lead to miss data frame and less accurate time stamping.
       frequency: 400
 
+    odometry:
+      # Enable ROS odometry messages.
+      enable: false
+      # Publish odometry transforms.
+      publishTf: true
+      # Odometry frame IDs.
+      odomFrameId: "odom"
+      baseFrameId: "base_link"
+      initFrameId: "map"
+
     # Configuration of the device with ROS.
     confWithRos: false
     
@@ -190,7 +200,7 @@
       # Odometer's gain Pulses/m
       gain: 4800.0 
       # User gain average error (%)
-      gain_error: 0 
+      gain_error: 0
       # Odometer's direction
       # false: positive
       # true: negative
