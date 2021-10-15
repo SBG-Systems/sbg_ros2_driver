@@ -1,6 +1,6 @@
 # sbg_driver
 
-[![Build Status](https://img.shields.io/jenkins/build?jobUrl=http%3A%2F%2Fbuild.ros.org%2Fjob%2FMdev__sbg_driver__ubuntu_bionic_amd64%2F&label=Ubuntu%20bionic)](http://build.ros.org/job/Mdev__sbg_driver__ubuntu_bionic_amd64/) [![Build Status](https://img.shields.io/jenkins/build?jobUrl=http%3A%2F%2Fbuild.ros.org%2Fjob%2FKdev__sbg_driver__ubuntu_xenial_amd64%2F&label=Ubuntu%20xenial)](http://build.ros.org/job/Kdev__sbg_driver__ubuntu_xenial_amd64/)
+TODO - add build status
 
 ## Overview
 ROS package for SBG Systems IMU.<br />
@@ -29,8 +29,8 @@ User can install the sbg_ros2_driver through the standard ROS installation syste
 
 ```
 cd colcon_ws/src
-git clone https://github.com/SBG-Systems/sbg_ros2.git
-cd sbg_ros2
+git clone https://github.com/SBG-Systems/sbg_ros2_driver.git
+cd sbg_ros2_driver
 rosdep update
 rosdep install --from-path .
 cd ../..
@@ -81,6 +81,9 @@ Default config file for an Ellipse-E with an external antenna and external Gnss.
 
 * **ellipse_N_default.yaml** <br />
 Default config file for an Ellipse-N with an external antenna and internal Gnss.
+
+* **ellipse_D_default.yaml** <br />
+Default config file for an Ellipse-D.
 
 ## Launch files
 ### Default launch files
@@ -204,6 +207,11 @@ For each ROS standard, you have to activate the needed SBG outputs.
   Navigation satellite fix for any Global Navigation Satellite System.
   Requires `/sbg/gps_pos`.
   
+* **`/imu/odometry`** [nav_msgs/Odometry](http://docs.ros.org/en/melodic/api/nav_msgs/html/msg/Odometry.html)
+
+  UTM projected position relative to the first valid INS position.
+  Requires `/sbg/imu_data` and `/sbg/ekv_nav` and either `/sbg/ekf_euler` or `/sbg/ekf_quat`.
+  Disabled by default, set odometry.enable in configuration file.
 
 ### sbg_device_mag
 The sbg_device_mag node handles the magnetic calibration for suitable devices.
@@ -312,6 +320,13 @@ The frame convention can be set to NED or ENU
 ```
 # Frame convention:
 use_enu: true
+```
+
+## Troubleshooting
+
+If you experience higher latency than expected and have connected the IMU via an USB interface, you can enable the serial driver low latency mode:
+```
+/bin/setserial /dev/<device> low_latency
 ```
 
 ## Contributing

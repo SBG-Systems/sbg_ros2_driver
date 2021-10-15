@@ -19,7 +19,7 @@ using namespace std;
 using sbg::SbgDevice;
 
 // From ros_com/recorder
-std::string timeToStr() //rclcpp::WallTimer<std::function<void()>> ros_t)
+std::string timeToStr() //rclcpp::WallTimer<std::function<void()>> ros_t) //TODO: FIXME
 {
     //(void)ros_t;
     std::stringstream msg;

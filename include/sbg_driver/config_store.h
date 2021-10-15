@@ -1,3 +1,36 @@
+/*!
+*	\file         config_store.h
+*	\author       SBG Systems
+*	\date         13/03/2020
+*
+*	\brief        Class to handle the device configuration.
+*
+*   Methods to extract configuration values and load it to the ROS node.
+*
+*	\section CodeCopyright Copyright Notice
+*	MIT License
+*
+*	Copyright (c) 2020 SBG Systems
+*
+*	Permission is hereby granted, free of charge, to any person obtaining a copy
+*	of this software and associated documentation files (the "Software"), to deal
+*	in the Software without restriction, including without limitation the rights
+*	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+*	copies of the Software, and to permit persons to whom the Software is
+*	furnished to do so, subject to the following conditions:
+*
+*	The above copyright notice and this permission notice shall be included in all
+*	copies or substantial portions of the Software.
+*
+*	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+*	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+*	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+*	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+*	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+*	SOFTWARE.
+*/
+
 #ifndef SBG_ROS_CONFIG_STORE_H
 #define SBG_ROS_CONFIG_STORE_H
 
@@ -82,6 +115,12 @@ private:
   std::string                 m_frame_id_;
   bool						  m_use_enu_;
 
+  bool						  m_odom_enable_;
+  bool						  m_odom_publish_tf_;
+  std::string                 m_odom_frame_id_;
+  std::string                 m_odom_base_frame_id_;
+  std::string                 m_odom_init_frame_id_;
+
   //---------------------------------------------------------------------//
   //- Private  methods                                                  -//
   //---------------------------------------------------------------------//
@@ -118,6 +157,13 @@ private:
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
   void loadDriverParameters(const rclcpp::Node& ref_node_handle);
+
+  /*!
+   * Load odometry parameters.
+   *
+   * \param[in] ref_node_handle   ROS nodeHandle.
+   */
+  void loadOdomParameters(const rclcpp::Node& ref_node_handle);
 
   /*!
    * Load interface communication parameters.
@@ -413,12 +459,48 @@ public:
    bool getUseEnu(void) const;
 
   /*!
+   * Get odom enable.
+   *
+   * \return					 True if the odometry is enabled.
+   */
+   bool getOdomEnable(void) const;
+
+  /*!
+   * Get odom publish_tf.
+   *
+   * \return					 If true publish odometry transforms.
+   */
+   bool getOdomPublishTf(void) const;
+
+  /*!
+   * Get the odometry frame ID.
+   *
+   * \return                      Odometry frame ID.
+   */
+  const std::string &getOdomFrameId(void) const;
+
+
+  /*!
+   * Get the odometry base frame ID.
+   *
+   * \return                      Odometry base frame ID.
+   */
+  const std::string &getOdomBaseFrameId(void) const;
+
+
+  /*!
+   * Get the odometry init frame ID.
+   *
+   * \return                      Odometry init frame ID.
+   */
+  const std::string &getOdomInitFrameId(void) const;
+
+  /*!
    * Get the time reference.
    *
    * \return                      Time reference.
    */
   TimeReference getTimeReference(void) const;
-
 
   //---------------------------------------------------------------------//
   //- Operations                                                        -//
