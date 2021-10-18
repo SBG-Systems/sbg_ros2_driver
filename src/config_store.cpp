@@ -30,11 +30,11 @@ void ConfigStore::loadDriverParameters(const rclcpp::Node& ref_node_handle)
 
 void ConfigStore::loadOdomParameters(const rclcpp::Node& ref_node_handle)
 {
-  ref_node_handle.get_parameter_or<bool>       ("odometry/enable"   , m_odom_enable_          , false);
-  ref_node_handle.get_parameter_or<bool>       ("odometry/publishTf", m_odom_publish_tf_      , false);
-  ref_node_handle.get_parameter_or<std::string>("odometry/odomFrameId", m_odom_frame_id_      , "odom");
-  ref_node_handle.get_parameter_or<std::string>("odometry/baseFrameId", m_odom_base_frame_id_ , "base_link");
-  ref_node_handle.get_parameter_or<std::string>("odometry/initFrameId", m_odom_init_frame_id_ , "map");
+  ref_node_handle.get_parameter_or<bool>       ("odometry.enable"   , m_odom_enable_          , false);
+  ref_node_handle.get_parameter_or<bool>       ("odometry.publishTf", m_odom_publish_tf_      , false);
+  ref_node_handle.get_parameter_or<std::string>("odometry.odomFrameId", m_odom_frame_id_      , "odom");
+  ref_node_handle.get_parameter_or<std::string>("odometry.baseFrameId", m_odom_base_frame_id_ , "base_link");
+  ref_node_handle.get_parameter_or<std::string>("odometry.initFrameId", m_odom_init_frame_id_ , "map");
 }
 
 void ConfigStore::loadCommunicationParameters(const rclcpp::Node& ref_node_handle)
