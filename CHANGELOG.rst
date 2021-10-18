@@ -2,8 +2,8 @@
 Changelog for package sbg_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2021-10-18)
+------------------
 * Add imu/odometry publisher
   * Fix dependencies
   * Fix wrong SbgGpsHdt description
