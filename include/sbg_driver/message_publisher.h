@@ -1,3 +1,34 @@
+/*!
+*	\file         message_publisher.h
+*	\author       SBG Systems
+*	\date         13/03/2020
+*
+*	\brief        Manage publishment of messages from logs.
+*
+*	\section CodeCopyright Copyright Notice
+*	MIT License
+*
+*	Copyright (c) 2020 SBG Systems
+*
+*	Permission is hereby granted, free of charge, to any person obtaining a copy
+*	of this software and associated documentation files (the "Software"), to deal
+*	in the Software without restriction, including without limitation the rights
+*	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+*	copies of the Software, and to permit persons to whom the Software is
+*	furnished to do so, subject to the following conditions:
+*
+*	The above copyright notice and this permission notice shall be included in all
+*	copies or substantial portions of the Software.
+*
+*	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+*	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+*	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+*	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+*	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+*	SOFTWARE.
+*/
+
 #ifndef SBG_ROS_MESSAGE_PUBLISHER_H
 #define SBG_ROS_MESSAGE_PUBLISHER_H
 
@@ -8,7 +39,7 @@
 namespace sbg
 {
 /*!
- * Class to publish all SBG-ROS messages to the corresponding publishers. 
+ * Class to publish all SBG-ROS messages to the corresponding publishers.
  */
 class MessagePublisher
 {
@@ -49,6 +80,7 @@ private:
   rclcpp::Publisher<geometry_msgs::msg::TwistStamped, std::allocator<void>>::SharedPtr  m_velocity_pub_;
   rclcpp::Publisher<sensor_msgs::msg::TimeReference, std::allocator<void>>::SharedPtr   m_utc_reference_pub_;
   rclcpp::Publisher<sensor_msgs::msg::NavSatFix, std::allocator<void>>::SharedPtr       m_nav_sat_fix_pub_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry, std::allocator<void>>::SharedPtr           m_odometry_pub_;
 
   MessageWrapper          m_message_wrapper_;
   uint32_t                m_max_messages_;
@@ -60,7 +92,7 @@ private:
 
   /*!
    * Get the corresponding topic name output for the SBG output mode.
-   * 
+   *
    * \param[in] sbg_message_id          SBG message ID.
    * \return                            Output topic name.
    */
@@ -68,7 +100,7 @@ private:
 
   /*!
    * Initialize the publisher for the specified SBG Id, and the output configuration.
-   * 
+   *
    * \param[in] ref_ros_node_handle     Ros Node to advertise the publisher.
    * \param[in] sbg_msg_id              Id of the SBG message.
    * \param[in] output_conf             Output configuration.
@@ -78,14 +110,15 @@ private:
 
   /*!
    * Define standard ROS publishers.
-   * 
+   *
    * \param[in] ref_ros_node_handle     Ros Node to advertise the publisher.
+   * \param[in] odom_enable             If true, enable odometry messages.
    */
-  void defineRosStandardPublishers(rclcpp::Node& ref_ros_node_handle);
+  void defineRosStandardPublishers(rclcpp::Node& ref_ros_node_handle, bool odom_enable);
 
   /*!
    * Publish a received SBG IMU log.
-   * 
+   *
    * \param[in] ref_sbg_log             SBG log.
    */
   void publishIMUData(const SbgBinaryLogData &ref_sbg_log);
@@ -101,36 +134,41 @@ private:
   void processRosImuMessage(void);
 
   /*!
+   * Process a ROS odometry standard message.
+   */
+  void processRosOdoMessage(void);
+
+  /*!
    * Publish a received SBG Magnetic log.
-   * 
+   *
    * \param[in] ref_sbg_log             SBG log.
    */
   void publishMagData(const SbgBinaryLogData &ref_sbg_log);
 
   /*!
    * Publish a received SBG Fluid pressure log.
-   * 
+   *
    * \param[in] ref_sbg_log             SBG log.
    */
   void publishFluidPressureData(const SbgBinaryLogData &ref_sbg_log);
 
   /*!
    * Publish a received SBG EkfNav log.
-   * 
+   *
    * \param[in] ref_sbg_log             SBG log.
    */
   void publishEkfNavigationData(const SbgBinaryLogData &ref_sbg_log);
 
   /*!
    * Publish a received SBG UTC log.
-   * 
+   *
    * \param[in] ref_sbg_log             SBG log.
    */
   void publishUtcData(const SbgBinaryLogData &ref_sbg_log);
 
   /*!
    * Publish a received SBG GpsPos log.
-   * 
+   *
    * \param[in] ref_sbg_log             SBG log.
    */
   void publishGpsPosData(const SbgBinaryLogData &ref_sbg_log);
@@ -152,7 +190,7 @@ public:
 
   /*!
    * Initialize the publishers for the output configuration.
-   * 
+   *
    * \param[in] ref_ros_node_handle     Ros Node to advertise the publisher.
    * \param[in] ref_config_store        Store configuration for the publishers.
    */
@@ -160,7 +198,7 @@ public:
 
   /*!
    * Publish the received SbgLog if the corresponding publisher is defined.
-   * 
+   *
    * \param[in] sbg_msg_class           Class ID of the SBG message.
    * \param[in] sbg_msg_id              Id of the SBG message.
    * \param[in] ref_sbg_log             SBG binary log.

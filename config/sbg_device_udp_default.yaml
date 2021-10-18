@@ -2,6 +2,24 @@
   ros__parameters:
     # Configuration file for SBG device through an Udp interface.
     
+    driver:
+      # Node frequency (Hz)
+      # Note: The frequency should be at least two times higher than the highest
+      #       output frequency.
+      #       The frequency can be reduced in order to reduce CPU consumption but
+      #       it can lead to miss data frame and less accurate time stamping.
+      frequency: 400
+
+    odometry:
+      # Enable ROS odometry messages.
+      enable: false
+      # Publish odometry transforms.
+      publishTf: true
+      # Odometry frame IDs.
+      odomFrameId: "odom"
+      baseFrameId: "base_link"
+      initFrameId: "map"
+
     # Configuration of the device with ROS.
     confWithRos: false
     
@@ -53,17 +71,17 @@
       # 5 ALIGNMENT_DOWN      IMU Axis is turned in vehicle's down direction
       axisDirectionY: 3
       # Residual roll error after axis alignment rad
-      misRoll: 0
+      misRoll: 0.0
       # Residual pitch error after axis alignment rad
-      misPitch: 0
+      misPitch: 0.0
       # Residual yaw error after axis alignment rad
-      misYaw: 0
+      misYaw: 0.0
       # X Primary lever arm in IMU X axis (once IMU alignment is applied) m
-      leverArmX: 0
+      leverArmX: 0.0
       # Y Primary lever arm in IMU Y axis (once IMU alignment is applied) m
-      leverArmY: 0
+      leverArmY: 0.0
       # Z Primary lever arm in IMU Z axis (once IMU alignment is applied) m
-      leverArmZ: 0
+      leverArmZ: 0.0
     
     # AIDING_ASSIGNMENT
     # Note: GNSS1 module configuration can only be set to an external port on Ellipse-E version.
@@ -87,15 +105,13 @@
       # 6 Synchronization is done using SYNC_OUT_A pin
       # 7 Synchronization is done using SYNC_OUT_B pin
       gnss1ModuleSyncAssignment: 0
-      # RTCM input port assignment for Ellipse-N DGPS
+      # RTCM input port assignment for Ellipse-N DGPS (see gnss1ModulePortAssignment for values)
       rtcmPortAssignment: 255
       # Odometer module pin assignment
       # 0 Odometer is disabled
       # 1 Odometer connected only to ODO_A (unidirectional).
       # 2 Odometer connected to both ODO_A (signal A) and ODO_B (Signal B or direction) for bidirectional odometer.
       odometerPinAssignment: 0
-    
-    
     
     magnetometer:
       # Magnetometer model ID
@@ -137,20 +153,20 @@
       gnss_model_id: 102
     
       #GNSS primary antenna lever arm in IMU X axis (m)
-      primaryLeverArmX: 0
+      primaryLeverArmX: 0.0
       #GNSS primary antenna lever arm in IMU Y axis (m)
-      primaryLeverArmY: 0
+      primaryLeverArmY: 0.0
       #GNSS primary antenna lever arm in IMU Z axis (m)
-      primaryLeverArmZ: 0
+      primaryLeverArmZ: 0.0
       #GNSS primary antenna precise. Set to true if the primary lever arm has been accurately entered and doesn't need online re-estimation.
       primaryLeverPrecise: true
     
       #GNSS secondary antenna lever arm in IMU X axis (m)
-      secondaryLeverArmX: 0
+      secondaryLeverArmX: 0.0
       #GNSS secondary antenna lever arm in IMU Y axis (m)
-      secondaryLeverArmY: 0
+      secondaryLeverArmY: 0.0
       #GNSS secondary antenna lever arm in IMU Z axis (m)
-      secondaryLeverArmZ: 0
+      secondaryLeverArmZ: 0.0
     
       # Secondary antenna operating mode.
       # 1 The GNSS will be used in single antenna mode only and the secondary lever arm is not used.
@@ -172,20 +188,20 @@
     # Odometer configuration
     odom:
       # Odometer's gain Pulses/m
-      gain: 4800 
+      gain: 4800.0
       # User gain average error (%)
-      gain_error: 0.1 
+      gain_error: 0
       # Odometer's direction
-      # 0: positive
-      # 1: negative
-      direction: 0
+      # false: positive
+      # true: negative
+      direction: false
     
       # Odometer lever arm in IMU X axis (m)
-      leverArmX: 0
+      leverArmX: 0.0
       # Odometer lever arm in IMU Y axis (m)
-      leverArmY: 0
+      leverArmY: 0.0
       # Odometer lever arm in IMU Z axis (m)
-      leverArmZ: 0
+      leverArmZ: 0.0
     
       # Odometer rejection mode
       # 0 Measurement is not taken into account
@@ -213,12 +229,31 @@
     # 10005 Output is generated on a Sync In C event
     # 10006 Output is generated on a Sync In D event
     output:
-      # Time Reference
-      # 0 No external time reference is used. Internal clock is used instead.
-      # 1 The system will be synchronized on the clock input observed at SYNC_IN_A pin.
-      # 2 The system will be synchronized GPS PPS signal, (see GPS module assignment)
-      timeReference: 0
-      ros_standard: true
+      # Time reference:
+      # Note: Set the time reference used to timestamp the header of the published
+      #       messages.
+      #       The header of the ROS standard message sensor_msgs:TimeReference is
+      #       not effected by this parameter and it will be timestamped by the ROS time.
+      #
+      # "ros" : ROS time (default)
+      # "ins_unix" : INS absolute time referenced to UNIX epoch (00:00:00 UTC on 1 January 1970)
+      time_reference: "ros"
+
+      # Ros standard output:
+      # Note: If true publish ROS standard messages.
+      ros_standard: false
+
+      # Frame convention:
+      # Note: If true messages are expressed in the ENU convention.
+      #
+      # true : ENU convention (X east, Y north, Z up)
+      # false (default): NED convention (X north, Y east, Z down)
+      use_enu: false
+
+      # Frame ID:
+      # Note: If the frame convention is NED so the default frame ID is (imu_link_ned)
+      #       else if the convention is ENU so the default frame ID is (imu_link)
+      frame_id: "imu_link_ned"
     
       # Status general, clock, com aiding, solution, heave
       log_status: 200
@@ -257,6 +292,3 @@
       log_air_data: 0
       # Short IMU data
       log_imu_short: 0
-    
-      # Node frequency (Hz) (if set to 0, the node will decide the most appropriate frequency to run)
-      frequency: 0

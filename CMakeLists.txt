@@ -1,17 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(sbg_driver)
 
-#
-#find_package(catkin REQUIRED COMPONENTS
-#  rclcpp
-#  sensor_msgs
-#  std_msgs
-#  std_srvs
-#  geometry_msgs
-#  message_generation
-#)
-
-
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -19,6 +8,10 @@ find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(Boost REQUIRED)
 
@@ -34,6 +27,10 @@ set (USED_LIBRARIES
   std_msgs
   std_srvs
   geometry_msgs
+  nav_msgs
+  tf2_ros
+  tf2_msgs
+  tf2_geometry_msgs
 )
 
 set (msg_files
@@ -76,14 +73,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 )
 
 ament_export_dependencies(rosidl_default_runtime)
-
-
-## Generate added messages and services with any dependencies listed here
-#generate_messages(DEPENDENCIES
-#  std_msgs
-#  geometry_msgs
-#)
-
 
 ###########
 ## Build ##
@@ -170,24 +159,16 @@ install(DIRECTORY config/
 ## catkin specific configuration ##
 ###################################
 
-#catkin_package(
-#  INCLUDE_DIRS src
-#  #LIBRARIES ${PROJECT_NAME} 
-#  CATKIN_DEPENDS 
-#    message_runtime 
-#    rclcpp
-#    sensor_msgs
-#    std_msgs
-#    std_srvs
-#    geometry_msgs
-#)
-
 ament_export_dependencies(
     rclcpp
     sensor_msgs
     std_msgs
     std_srvs
     geometry_msgs
+    nav_msgs
+    tf2_ros
+    tf2_msgs
+    tf2_geometry_msgs
     rosidl_default_runtime
 )
 
