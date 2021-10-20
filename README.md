@@ -1,7 +1,5 @@
 # sbg_driver
 
-TODO - add build status
-
 ## Overview
 ROS package for SBG Systems IMU.<br />
 The driver allows the user to configure the IMU (if possible, according to the device), to receive messages from the Sbg message protocol, publish ROS standard messages , and to calibrate the magnetometers.
