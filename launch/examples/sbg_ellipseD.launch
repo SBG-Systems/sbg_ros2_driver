@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="sbg_driver" name="sbg_ellipseD" exec="sbg_device">
+      <param from="$(find-pkg-share sbg_driver)/config/example/ellipse_D_default.yaml"/>
+    </node>
+</launch>
