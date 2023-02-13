@@ -121,6 +121,9 @@ private:
   std::string                 m_odom_base_frame_id_;
   std::string                 m_odom_init_frame_id_;
 
+  bool                        m_autoware_enable_;
+  std::string                 m_autoware_topic_name_;
+
   //---------------------------------------------------------------------//
   //- Private  methods                                                  -//
   //---------------------------------------------------------------------//
@@ -164,6 +167,14 @@ private:
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
   void loadOdomParameters(const rclcpp::Node& ref_node_handle);
+
+
+  /*!
+   * Load autoware parameters.
+   *
+   * \param[in] ref_node_handle   ROS nodeHandle.
+   */
+  void loadAutowareParameters(const rclcpp::Node& ref_node_handle);
 
   /*!
    * Load interface communication parameters.
@@ -457,6 +468,20 @@ public:
    * \return					 True if the frame convention to use is ENU.
    */
    bool getUseEnu(void) const;
+
+  /*!
+  * Get autoware enable.
+  *
+  * \return					 True if the odometry is enabled.
+  */
+   bool getAutowareEnable(void) const;
+
+  /*!
+   * Get autoware topic name.
+   *
+   * \return					 Topic name
+   */
+   std::string getAutowareTopicName(void) const;
 
   /*!
    * Get odom enable.

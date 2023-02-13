@@ -15,6 +15,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(Boost REQUIRED)
 
+find_package(autoware_sensing_msgs REQUIRED)
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
@@ -31,6 +32,7 @@ set (USED_LIBRARIES
   tf2_ros
   tf2_msgs
   tf2_geometry_msgs
+  autoware_sensing_msgs
 )
 
 set (msg_files
