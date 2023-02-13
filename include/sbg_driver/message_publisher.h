@@ -33,6 +33,7 @@
 #define SBG_ROS_MESSAGE_PUBLISHER_H
 
 // Project headers
+#include <autoware_sensing_msgs/msg/gnss_ins_orientation_stamped.hpp>
 #include <config_store.h>
 #include <message_wrapper.h>
 
@@ -73,6 +74,8 @@ private:
   sbg_driver::msg::SbgEkfNav   m_sbg_ekf_nav_message_;
   sbg_driver::msg::SbgEkfEuler m_sbg_ekf_euler_message_;
 
+  autoware_sensing_msgs::msg::GnssInsOrientationStamped m_gnss_ins_orientation_message_;
+
   rclcpp::Publisher<sensor_msgs::msg::Temperature, std::allocator<void>>::SharedPtr     m_temp_pub_;
   rclcpp::Publisher<sensor_msgs::msg::MagneticField, std::allocator<void>>::SharedPtr   m_mag_pub_;
   rclcpp::Publisher<sensor_msgs::msg::FluidPressure, std::allocator<void>>::SharedPtr   m_fluid_pub_;
@@ -81,6 +84,8 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::TimeReference, std::allocator<void>>::SharedPtr   m_utc_reference_pub_;
   rclcpp::Publisher<sensor_msgs::msg::NavSatFix, std::allocator<void>>::SharedPtr       m_nav_sat_fix_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry, std::allocator<void>>::SharedPtr           m_odometry_pub_;
+
+  rclcpp::Publisher<autoware_sensing_msgs::msg::GnssInsOrientationStamped , std::allocator<void>>::SharedPtr m_autoware_gnss_ins_orientation_pub_;
 
   MessageWrapper          m_message_wrapper_;
   uint32_t                m_max_messages_;
@@ -115,6 +120,22 @@ private:
    * \param[in] odom_enable             If true, enable odometry messages.
    */
   void defineRosStandardPublishers(rclcpp::Node& ref_ros_node_handle, bool odom_enable);
+
+    /*!
+     * Define Autoware publishers.
+     *
+     * \param[in] ref_ros_node_handle     Ros Node to advertise the publisher.
+     * \param[in] autoware_enable             If true, enable autoware messages.
+     * \param[in] ref_topic_name             Topic name for the publisher.
+     */
+  void defineAutowarePublishers(rclcpp::Node& ref_ros_node_handle, bool autoware_enable, std::string ref_topic_name);
+
+  /*!
+   * Publish a received Autoware messages.
+   *
+   * \param[in] ref_ekf_euler_msg            SBG log.
+   */
+  void publishAutowareData(const sbg_driver::msg::SbgEkfEuler & ref_ekf_euler_msg);
 
   /*!
    * Publish a received SBG IMU log.

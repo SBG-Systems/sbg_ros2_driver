@@ -76,6 +76,8 @@
 #include "sbg_driver/msg/sbg_imu_short.hpp"
 #include "sbg_driver/msg/sbg_air_data.hpp"
 
+#include <autoware_sensing_msgs/msg/gnss_ins_orientation_stamped.hpp>
+
 namespace sbg
 {
 typedef struct _UTM0
@@ -99,6 +101,9 @@ private:
   bool                                m_use_enu_;
   TimeReference                       m_time_reference_;
   UTM0					              m_utm0_;
+
+  bool                                m_autoware_enable_;
+  std::string                         m_autoware_topic_name_;
 
   bool                                m_odom_enable_;
   bool                                m_odom_publish_tf_;
@@ -362,11 +367,25 @@ public:
   void setUseEnu(bool enu);
 
   /*!
+   * Set autoware enable.
+   *
+   * \param[in]  autoware_enable           If true enable autoware messages.
+   */
+   void setAutowareEnable(bool autoware_enable);
+
+    /*!
+  * Set autoware messages topic name.
+  *
+  * \param[in]  autoware_topic_name           Output topic name.
+  */
+   void setAutowareTopicName(std::string autoware_topic_name);
+  /*!
    * Set odom enable.
    *
    * \param[in] odom_enable		 If true enable odometry.
    */
    void setOdomEnable(bool odom_enable);
+
 
   /*!
    * Set odom publish_tf.
@@ -472,7 +491,15 @@ public:
    */
   const sbg_driver::msg::SbgImuData createSbgImuDataMessage(const SbgLogImuData& ref_log_imu_data) const;
 
-  /*!
+    /*!
+   * Create a Autoware Orientation data message.
+   *
+   * \param[in] ref_ekf_euler_msg    SBG Ekf Euler log.
+   * \return                         gnss ins orientation message.
+   */
+   const autoware_sensing_msgs::msg::GnssInsOrientationStamped createAutowareGnssInsOrientationMessage(const sbg_driver::msg::SbgEkfEuler & ref_ekf_euler_msg) const;
+
+    /*!
    * Create a SBG-ROS Magnetometer message.
    * 
    * \param[in] ref_log_mag         SBG Magnetometer log.

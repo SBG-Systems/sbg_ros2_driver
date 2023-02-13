@@ -298,6 +298,19 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
   }
 }
 
+
+void MessagePublisher::defineAutowarePublishers(rclcpp::Node& ref_ros_node_handle, bool autoware_enable, std::string gnss_ins_orientation_topic_name) {
+
+    if (autoware_enable) {
+        m_autoware_gnss_ins_orientation_pub_ = ref_ros_node_handle.create_publisher<autoware_sensing_msgs::msg::GnssInsOrientationStamped>(
+                gnss_ins_orientation_topic_name, m_max_messages_);
+    }
+}
+
+void MessagePublisher::publishAutowareData(const sbg_driver::msg::SbgEkfEuler & ref_ekf_euler_msg){
+    m_gnss_ins_orientation_message_ = m_message_wrapper_.createAutowareGnssInsOrientationMessage(ref_ekf_euler_msg);
+    m_autoware_gnss_ins_orientation_pub_->publish(m_gnss_ins_orientation_message_);
+}
 void MessagePublisher::publishIMUData(const SbgBinaryLogData &ref_sbg_log)
 {
   if (m_sbgImuData_pub_)
@@ -469,6 +482,8 @@ void MessagePublisher::initPublishers(rclcpp::Node& ref_ros_node_handle, const C
 
   m_message_wrapper_.setUseEnu(ref_config_store.getUseEnu());
 
+  m_message_wrapper_.setAutowareEnable(ref_config_store.getAutowareEnable());
+  m_message_wrapper_.setAutowareTopicName(ref_config_store.getAutowareTopicName());
   m_message_wrapper_.setOdomEnable(ref_config_store.getOdomEnable());
   m_message_wrapper_.setOdomPublishTf(ref_config_store.getOdomPublishTf());
   m_message_wrapper_.setOdomFrameId(ref_config_store.getOdomFrameId());
@@ -484,6 +499,8 @@ void MessagePublisher::initPublishers(rclcpp::Node& ref_ros_node_handle, const C
   {
     defineRosStandardPublishers(ref_ros_node_handle, ref_config_store.getOdomEnable());
   }
+
+  defineAutowarePublishers(ref_ros_node_handle, ref_config_store.getAutowareEnable(), ref_config_store.getAutowareTopicName());
 }
 
 void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgBinaryLogData &ref_sbg_log)
@@ -496,11 +513,13 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
   {
     switch (sbg_msg_id)
     {
+
     case SBG_ECOM_LOG_STATUS:
 
       if (m_sbgStatus_pub_)
       {
         m_sbgStatus_pub_->publish(m_message_wrapper_.createSbgStatusMessage(ref_sbg_log.statusData));
+
       }
       break;
 
@@ -512,6 +531,7 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
     case SBG_ECOM_LOG_IMU_DATA:
 
       publishIMUData(ref_sbg_log);
+
       break;
 
     case SBG_ECOM_LOG_MAG:
@@ -535,9 +555,9 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         m_sbgEkfEuler_pub_->publish(m_sbg_ekf_euler_message_);
         processRosVelMessage();
         processRosOdoMessage();
+
       }
       break;
-
     case SBG_ECOM_LOG_EKF_QUAT:
 
       if (m_sbgEkfQuat_pub_)
@@ -547,6 +567,11 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         processRosImuMessage();
         processRosVelMessage();
       }
+
+      if(m_autoware_gnss_ins_orientation_pub_){
+        publishAutowareData(m_sbg_ekf_euler_message_);
+      }
+
       break;
 
     case SBG_ECOM_LOG_EKF_NAV:

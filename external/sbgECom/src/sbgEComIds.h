@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  *	\file		sbgEComIds.h
  *  \author		SBG Systems (Raphael Siryani)
  *	\date		25 February 2013

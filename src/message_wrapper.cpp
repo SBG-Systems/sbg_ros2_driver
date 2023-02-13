@@ -533,7 +533,15 @@ void MessageWrapper::setOdomEnable(bool odom_enable)
 {
   m_odom_enable_ = odom_enable;
 }
+void MessageWrapper::setAutowareEnable(bool autoware_enable)
+{
+  m_autoware_enable_ = autoware_enable;
+}
 
+void MessageWrapper::setAutowareTopicName(std::string autoware_topic_name)
+{
+    m_autoware_topic_name_ = autoware_topic_name;
+}
 void MessageWrapper::setOdomPublishTf(bool publish_tf)
 {
   m_odom_publish_tf_ = publish_tf;
@@ -838,6 +846,30 @@ const sbg_driver::msg::SbgImuData MessageWrapper::createSbgImuDataMessage(const 
   return imu_data_message;
 }
 
+const autoware_sensing_msgs::msg::GnssInsOrientationStamped MessageWrapper::createAutowareGnssInsOrientationMessage(const sbg_driver::msg::SbgEkfEuler& ref_ekf_euler_msg) const{
+
+    autoware_sensing_msgs::msg::GnssInsOrientationStamped gnss_ins_orientation_message;
+    gnss_ins_orientation_message.header = ref_ekf_euler_msg.header;
+    gnss_ins_orientation_message.header.frame_id = "gnss_ins_link";
+
+    tf2::Quaternion quaternion;
+    quaternion.setRPY(
+            ref_ekf_euler_msg.angle.x,
+            ref_ekf_euler_msg.angle.y,
+            ref_ekf_euler_msg.angle.z
+    );
+    gnss_ins_orientation_message.orientation.orientation.x = quaternion.x();
+    gnss_ins_orientation_message.orientation.orientation.y = quaternion.y();
+    gnss_ins_orientation_message.orientation.orientation.z = quaternion.z();
+    gnss_ins_orientation_message.orientation.orientation.w = quaternion.w();
+
+    gnss_ins_orientation_message.orientation.rmse_rotation_x = ref_ekf_euler_msg.accuracy.x;
+    gnss_ins_orientation_message.orientation.rmse_rotation_y = ref_ekf_euler_msg.accuracy.y;
+    gnss_ins_orientation_message.orientation.rmse_rotation_z = ref_ekf_euler_msg.accuracy.z;
+
+
+    return gnss_ins_orientation_message;
+}
 const sbg_driver::msg::SbgMag MessageWrapper::createSbgMagMessage(const SbgLogMag& ref_log_mag) const
 {
   sbg_driver::msg::SbgMag  mag_message;
