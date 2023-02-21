@@ -36,7 +36,7 @@
 #include <autoware_sensing_msgs/msg/gnss_ins_orientation_stamped.hpp>
 #include <config_store.h>
 #include <message_wrapper.h>
-
+#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 namespace sbg
 {
 /*!
@@ -80,7 +80,7 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::MagneticField, std::allocator<void>>::SharedPtr   m_mag_pub_;
   rclcpp::Publisher<sensor_msgs::msg::FluidPressure, std::allocator<void>>::SharedPtr   m_fluid_pub_;
   rclcpp::Publisher<geometry_msgs::msg::PointStamped, std::allocator<void>>::SharedPtr  m_pos_ecef_pub_;
-  rclcpp::Publisher<geometry_msgs::msg::TwistStamped, std::allocator<void>>::SharedPtr  m_velocity_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::TwistWithCovarianceStamped, std::allocator<void>>::SharedPtr  m_velocity_pub_;
   rclcpp::Publisher<sensor_msgs::msg::TimeReference, std::allocator<void>>::SharedPtr   m_utc_reference_pub_;
   rclcpp::Publisher<sensor_msgs::msg::NavSatFix, std::allocator<void>>::SharedPtr       m_nav_sat_fix_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry, std::allocator<void>>::SharedPtr           m_odometry_pub_;

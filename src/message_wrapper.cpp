@@ -6,7 +6,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
-
+#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 // Project headers
 #include <sbg_vector3.h>
 
@@ -1209,7 +1209,7 @@ const sensor_msgs::msg::MagneticField MessageWrapper::createRosMagneticMessage(c
   return magnetic_message;
 }
 
-const geometry_msgs::msg::TwistStamped MessageWrapper::createRosTwistStampedMessage(const sbg_driver::msg::SbgEkfEuler& ref_sbg_ekf_euler_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const
+const geometry_msgs::msg::TwistWithCovarianceStamped MessageWrapper::createRosTwistStampedMessage(const sbg_driver::msg::SbgEkfEuler& ref_sbg_ekf_euler_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const
 {
   sbg::SbgMatrix3f tdcm;
   tdcm.makeDcm(sbg::SbgVector3f(ref_sbg_ekf_euler_msg.angle.x, ref_sbg_ekf_euler_msg.angle.y, ref_sbg_ekf_euler_msg.angle.z));
@@ -1220,7 +1220,7 @@ const geometry_msgs::msg::TwistStamped MessageWrapper::createRosTwistStampedMess
   return createRosTwistStampedMessage(res, ref_sbg_imu_msg);
 }
 
-const geometry_msgs::msg::TwistStamped MessageWrapper::createRosTwistStampedMessage(const sbg_driver::msg::SbgEkfQuat& ref_sbg_ekf_quat_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const
+const geometry_msgs::msg::TwistWithCovarianceStamped MessageWrapper::createRosTwistStampedMessage(const sbg_driver::msg::SbgEkfQuat& ref_sbg_ekf_quat_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const
 {
   sbg::SbgMatrix3f tdcm;
   tdcm.makeDcm(ref_sbg_ekf_quat_msg.quaternion.w, ref_sbg_ekf_quat_msg.quaternion.x, ref_sbg_ekf_quat_msg.quaternion.y, ref_sbg_ekf_quat_msg.quaternion.z);
@@ -1230,16 +1230,16 @@ const geometry_msgs::msg::TwistStamped MessageWrapper::createRosTwistStampedMess
   return createRosTwistStampedMessage(res, ref_sbg_imu_msg);
 }
 
-const geometry_msgs::msg::TwistStamped MessageWrapper::createRosTwistStampedMessage(const sbg::SbgVector3f& body_vel, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const
+const geometry_msgs::msg::TwistWithCovarianceStamped MessageWrapper::createRosTwistStampedMessage(const sbg::SbgVector3f& body_vel, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const
 {
-  geometry_msgs::msg::TwistStamped twist_stamped_message;
+  geometry_msgs::msg::TwistWithCovarianceStamped twist_stamped_message;
 
   twist_stamped_message.header        = createRosHeader(ref_sbg_imu_msg.time_stamp);
-  twist_stamped_message.twist.angular = ref_sbg_imu_msg.delta_angle;
+  twist_stamped_message.twist.twist.angular = ref_sbg_imu_msg.delta_angle;
 
-  twist_stamped_message.twist.linear.x = body_vel(0);
-  twist_stamped_message.twist.linear.y = body_vel(1);
-  twist_stamped_message.twist.linear.z = body_vel(2);
+  twist_stamped_message.twist.twist.linear.x = body_vel(0);
+  twist_stamped_message.twist.twist.linear.y = body_vel(1);
+  twist_stamped_message.twist.twist.linear.z = body_vel(2);
 
   return twist_stamped_message;
 }

@@ -1,5 +1,4 @@
 #include "message_publisher.h"
-
 using sbg::MessagePublisher;
 
 /*!
@@ -242,7 +241,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
   //
   if ((m_sbgEkfEuler_pub_ || m_sbgEkfQuat_pub_) && m_sbgEkfNav_pub_ && m_sbgImuData_pub_)
   {
-    m_velocity_pub_ = ref_ros_node_handle.create_publisher<geometry_msgs::msg::TwistStamped>("imu/velocity", m_max_messages_);
+    m_velocity_pub_ = ref_ros_node_handle.create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>("imu/velocity", m_max_messages_);
   }
   else
   {
