@@ -568,10 +568,6 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         processRosVelMessage();
       }
 
-      if(m_autoware_gnss_ins_orientation_pub_){
-        publishAutowareData(m_sbg_ekf_euler_message_);
-      }
-
       break;
 
     case SBG_ECOM_LOG_EKF_NAV:
@@ -684,7 +680,12 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
 
     default:
       break;
-    } 
+    }
+
+    if(m_autoware_gnss_ins_orientation_pub_){
+          publishAutowareData(m_sbg_ekf_euler_message_);
+    }
+
   }
   else if (sbg_msg_class == SBG_ECOM_CLASS_LOG_ECOM_1)
   {
