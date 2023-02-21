@@ -26,6 +26,13 @@
       baseFrameId: "base_link"
       initFrameId: "map"
 
+    # Autoware messages settings.
+    autowareOrientation:
+      # Enable Autoware messages.
+      enable: true
+      # Autoware orientation topic name.
+      topicName: "orientation"
+
     # Configuration of the device with ROS.
     confWithRos: true
 
