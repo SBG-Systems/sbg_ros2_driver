@@ -36,7 +36,6 @@
 #include <autoware_sensing_msgs/msg/gnss_ins_orientation_stamped.hpp>
 #include <config_store.h>
 #include <message_wrapper.h>
-#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 namespace sbg
 {
 /*!
@@ -135,7 +134,7 @@ private:
    *
    * \param[in] ref_ekf_euler_msg            SBG log.
    */
-  void publishAutowareData(const sbg_driver::msg::SbgEkfEuler & ref_ekf_euler_msg);
+  void publishAutowareData(const sbg_driver::msg::SbgEkfQuat & ref_ekf_quat_msg);
 
   /*!
    * Publish a received SBG IMU log.

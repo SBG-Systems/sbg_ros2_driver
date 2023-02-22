@@ -177,7 +177,7 @@ For each ROS standard, you have to activate the needed SBG outputs.
   IMU temperature data.
   Requires `/sbg/imu_data`.
   
-* **`/imu/velocity`** [geometry_msgs/TwistStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/TwistStamped.html)
+* **`/imu/velocity`** [geometry_msgs/TwistWithCovarianceStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/TwistStamped.html)
 
   IMU velocity data.
   Requires `/sbg/imu_data`.

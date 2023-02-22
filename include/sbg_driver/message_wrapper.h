@@ -44,7 +44,7 @@
 
 // ROS headers
 #include <rclcpp/rclcpp.hpp>
-#include <geometry_msgs/msg/twist_stamped.hpp>
+#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/temperature.hpp>
@@ -77,7 +77,6 @@
 #include "sbg_driver/msg/sbg_air_data.hpp"
 
 #include <autoware_sensing_msgs/msg/gnss_ins_orientation_stamped.hpp>
-#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 namespace sbg
 {
 typedef struct _UTM0
@@ -277,13 +276,14 @@ private:
   const sbg_driver::msg::SbgAirDataStatus createAirDataStatusMessage(const SbgLogAirData& ref_sbg_air_data) const;
  
   /*!
-   * Create a ROS standard TwistStamped message.
+   * Create a ROS standard
+   * TwistWithCovarianceStamped message.
    *
    * \param[in] body_vel            SBG Body velocity vector.
    * \param[in] ref_sbg_air_data    SBG IMU message.
-   * \return                        SBG TwistStamped message.
+   * \return                        SBG TwistWithCovarianceStamped message.
    */
-  const geometry_msgs::msg::TwistWithCovarianceStamped createRosTwistStampedMessage(const sbg::SbgVector3f& body_vel, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const;
+  const geometry_msgs::msg::TwistWithCovarianceStamped createRosTwistWithCovarianceStampedMessage(const sbg::SbgVector3f& body_vel, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const;
 
   /*!
    * Fill a transformation.
@@ -494,10 +494,10 @@ public:
     /*!
    * Create a Autoware Orientation data message.
    *
-   * \param[in] ref_ekf_euler_msg    SBG Ekf Euler log.
+   * \param[in] ref_ekf_quat_msg    SBG Ekf Quat log.
    * \return                         gnss ins orientation message.
    */
-   const autoware_sensing_msgs::msg::GnssInsOrientationStamped createAutowareGnssInsOrientationMessage(const sbg_driver::msg::SbgEkfEuler & ref_ekf_euler_msg) const;
+   const autoware_sensing_msgs::msg::GnssInsOrientationStamped createAutowareGnssInsOrientationMessage(const sbg_driver::msg::SbgEkfQuat & ref_ekf_quat_msg) const;
 
     /*!
    * Create a SBG-ROS Magnetometer message.
@@ -621,24 +621,24 @@ public:
   const sensor_msgs::msg::MagneticField createRosMagneticMessage(const sbg_driver::msg::SbgMag& ref_sbg_mag_msg) const;
 
   /*!
-   * Create a ROS standard TwistStamped message from SBG messages.
+   * Create a ROS standard TwistWithCovarianceStamped message from SBG messages.
    * 
    * \param[in] ref_sbg_ekf_euler_msg   SBG-ROS Ekf Euler message.
    * \param[in] ref_sbg_ekf_nav_msg     SBG-ROS Ekf Nav message.
    * \param[in] ref_sbg_imu_msg     SBG-ROS IMU message.
-   * \return                        ROS standard TwistStamped message.
+   * \return                        ROS standard TwistWithCovarianceStamped message.
    */
-  const geometry_msgs::msg::TwistWithCovarianceStamped createRosTwistStampedMessage(const sbg_driver::msg::SbgEkfEuler& ref_sbg_ekf_euler_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const;
+  const geometry_msgs::msg::TwistWithCovarianceStamped createRosTwistWithCovarianceStampedMessage(const sbg_driver::msg::SbgEkfEuler& ref_sbg_ekf_euler_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const;
 
   /*!
-   * Create a ROS standard TwistStamped message from SBG messages.
+   * Create a ROS standard TwistWithCovarianceStamped message from SBG messages.
    *
    * \param[in] ref_sbg_ekf_quat_msg    SBG-ROS Ekf Quaternion message.
    * \param[in] ref_sbg_ekf_nav_msg     SBG-ROS Ekf Nav message.
    * \param[in] ref_sbg_imu_msg         SBG-ROS IMU message.
-   * \return                            ROS standard TwistStamped message.
+   * \return                            ROS standard TwistWithCovarianceStamped message.
    */
-  const geometry_msgs::msg::TwistWithCovarianceStamped createRosTwistStampedMessage(const sbg_driver::msg::SbgEkfQuat& ref_sbg_ekf_vel_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const;
+  const geometry_msgs::msg::TwistWithCovarianceStamped createRosTwistWithCovarianceStampedMessage(const sbg_driver::msg::SbgEkfQuat& ref_sbg_ekf_vel_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const;
 
   /*!
    * Create a ROS standard PointStamped message from SBG messages.
