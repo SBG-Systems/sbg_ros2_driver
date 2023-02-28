@@ -39,7 +39,7 @@
 
     uartConf:
       # Port Name
-      portName: "/dev/GNSS_USB"
+      portName: "/dev/ttyUSB0"
 
       # Baude rate (4800 ,9600 ,19200 ,38400 ,115200 [default],230400 ,460800 ,921600)
       baudRate: 460800
@@ -73,7 +73,7 @@
       # 3 MARINE          Used in marine and underwater applications
       # 4 AIRPLANE        For fixed wings aircraft
       # 5 HELICOPTER      For rotary wing aircraft
-      motionProfile: 1
+      motionProfile: 2
 
     # IMU_ALIGNMENT_LEVER_ARM
     imuAlignementLeverArm:
@@ -92,7 +92,7 @@
       # 3 ALIGNMENT_RIGHT     IMU Axis is turned in vehicle's right direction
       # 4 ALIGNMENT_UP        IMU Axis is turned in vehicle's up direction
       # 5 ALIGNMENT_DOWN      IMU Axis is turned in vehicle's down direction
-      axisDirectionY: 3
+      axisDirectionY: 2
       # Residual roll error after axis alignment rad
       misRoll: 0.0
       # Residual pitch error after axis alignment rad
@@ -271,12 +271,12 @@
       #
       # true : ENU convention (X east, Y north, Z up)
       # false (default): NED convention (X north, Y east, Z down)
-      use_enu: false
+      use_enu: true
 
       # Frame ID:
       # Note: If the frame convention is NED so the default frame ID is (GNSS_INS)
       #       else if the convention is ENU so the default frame ID is (imu_link)
-      frame_id: "gnss_ins_base_link"
+      frame_id: "GNSS_INS/gnss_ins_base_link"
 
       # Status general, clock, com aiding, solution, heave
       log_status: 1

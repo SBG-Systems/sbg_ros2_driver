@@ -323,7 +323,7 @@ void MessagePublisher::publishIMUData(const SbgBinaryLogData &ref_sbg_log)
   }
 
   processRosImuMessage();
-  processRosVelMessage();
+  //processRosVelMessage();
   processRosOdoMessage();
 }
 
@@ -552,7 +552,7 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
       {
         m_sbg_ekf_euler_message_ = m_message_wrapper_.createSbgEkfEulerMessage(ref_sbg_log.ekfEulerData);
         m_sbgEkfEuler_pub_->publish(m_sbg_ekf_euler_message_);
-        processRosVelMessage();
+        //processRosVelMessage();
         processRosOdoMessage();
 
       }
@@ -564,7 +564,7 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         m_sbg_ekf_quat_message_ = m_message_wrapper_.createSbgEkfQuatMessage(ref_sbg_log.ekfQuatData);
         m_sbgEkfQuat_pub_->publish(m_sbg_ekf_quat_message_);
         processRosImuMessage();
-        processRosVelMessage();
+        //processRosVelMessage();
       }
 
       break;
