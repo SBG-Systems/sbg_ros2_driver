@@ -103,6 +103,7 @@ private:
 
   bool                                m_autoware_enable_;
   std::string                         m_autoware_topic_name_;
+  std::string                         m_ekf_navsatfix_topic_name_;
 
   bool                                m_odom_enable_;
   bool                                m_odom_publish_tf_;
@@ -371,14 +372,22 @@ public:
    *
    * \param[in]  autoware_enable           If true enable autoware messages.
    */
-   void setAutowareEnable(bool autoware_enable);
+  void setAutowareEnable(bool autoware_enable);
 
-    /*!
-  * Set autoware messages topic name.
-  *
-  * \param[in]  autoware_topic_name           Output topic name.
-  */
-   void setAutowareTopicName(std::string autoware_topic_name);
+  /*!
+   * Set autoware messages topic name.
+   *
+   * \param[in]  autoware_topic_name           Output topic name.
+   */
+  void setAutowareTopicName(std::string autoware_topic_name);
+
+  /*!
+   * Set EkfNavsatfix messages topic name.
+   *
+   * \param[in]  ekf_navsatfix_topic_name           Output topic name.
+   */
+  void setEkfNavsatfixTopicName(std::string ekf_navsatfix_topic_name);
+
   /*!
    * Set odom enable.
    *
@@ -497,7 +506,15 @@ public:
    * \param[in] ref_ekf_quat_msg    SBG Ekf Quat log.
    * \return                         gnss ins orientation message.
    */
-   const autoware_sensing_msgs::msg::GnssInsOrientationStamped createAutowareGnssInsOrientationMessage(const sbg_driver::msg::SbgEkfQuat & ref_ekf_quat_msg) const;
+  const autoware_sensing_msgs::msg::GnssInsOrientationStamped createAutowareGnssInsOrientationMessage(const sbg_driver::msg::SbgEkfQuat & ref_ekf_quat_msg) const;
+
+  /*!
+   * Create a EkfNavsatfix data message.
+   *
+   * \param[in] ref_ekf_nav_msg      SBG Ekf Nav .
+   * \return                         sensor_msgs::msg::NavSatFix message.
+   */
+   const sensor_msgs::msg::NavSatFix createEkfNavsatfixMessage(const sbg_driver::msg::SbgEkfNav & ref_ekf_nav_msg) const;
 
     /*!
    * Create a SBG-ROS Magnetometer message.

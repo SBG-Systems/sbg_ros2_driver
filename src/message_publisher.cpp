@@ -306,10 +306,23 @@ void MessagePublisher::defineAutowarePublishers(rclcpp::Node& ref_ros_node_handl
     }
 }
 
+void MessagePublisher::defineEkfNavsatfixPublishers(rclcpp::Node& ref_ros_node_handle, std::string ekf_nav_sat_fix_topic_name) {
+
+    m_ekf_nav_sat_fix_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::NavSatFix>(
+              ekf_nav_sat_fix_topic_name, m_max_messages_);
+
+}
+
 void MessagePublisher::publishAutowareData(const sbg_driver::msg::SbgEkfQuat & ref_ekf_quat_msg){
     m_gnss_ins_orientation_message_ = m_message_wrapper_.createAutowareGnssInsOrientationMessage(ref_ekf_quat_msg);
     m_autoware_gnss_ins_orientation_pub_->publish(m_gnss_ins_orientation_message_);
 }
+
+void MessagePublisher::publishEkfNavsatfixData(const sbg_driver::msg::SbgEkfNav & ref_ekf_nav_msg){
+    m_ekf_nav_sat_fix_message_ = m_message_wrapper_.createEkfNavsatfixMessage(ref_ekf_nav_msg);
+    m_ekf_nav_sat_fix_pub_->publish(m_ekf_nav_sat_fix_message_);
+}
+
 void MessagePublisher::publishIMUData(const SbgBinaryLogData &ref_sbg_log)
 {
   if (m_sbgImuData_pub_)
@@ -483,6 +496,7 @@ void MessagePublisher::initPublishers(rclcpp::Node& ref_ros_node_handle, const C
 
   m_message_wrapper_.setAutowareEnable(ref_config_store.getAutowareEnable());
   m_message_wrapper_.setAutowareTopicName(ref_config_store.getAutowareTopicName());
+  m_message_wrapper_.setEkfNavsatfixTopicName(ref_config_store.getEkfNavsatfixTopicName());
   m_message_wrapper_.setOdomEnable(ref_config_store.getOdomEnable());
   m_message_wrapper_.setOdomPublishTf(ref_config_store.getOdomPublishTf());
   m_message_wrapper_.setOdomFrameId(ref_config_store.getOdomFrameId());
@@ -500,6 +514,8 @@ void MessagePublisher::initPublishers(rclcpp::Node& ref_ros_node_handle, const C
   }
 
   defineAutowarePublishers(ref_ros_node_handle, ref_config_store.getAutowareEnable(), ref_config_store.getAutowareTopicName());
+  defineEkfNavsatfixPublishers(ref_ros_node_handle, ref_config_store.getEkfNavsatfixTopicName());
+
 }
 
 void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgBinaryLogData &ref_sbg_log)
@@ -573,6 +589,7 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
 
       publishEkfNavigationData(ref_sbg_log);
       processRosOdoMessage();
+      publishEkfNavsatfixData(m_sbg_ekf_nav_message_);
       break;
 
     case SBG_ECOM_LOG_SHIP_MOTION:

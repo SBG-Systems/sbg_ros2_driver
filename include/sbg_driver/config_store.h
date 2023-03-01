@@ -123,6 +123,7 @@ private:
 
   bool                        m_autoware_enable_;
   std::string                 m_autoware_topic_name_;
+  std::string                 m_ekf_navsatfix_topic_name_;
 
   //---------------------------------------------------------------------//
   //- Private  methods                                                  -//
@@ -176,7 +177,14 @@ private:
    */
   void loadAutowareParameters(const rclcpp::Node& ref_node_handle);
 
-  /*!
+    /*!
+   * Load Ekf Navsatfix parameters.
+   *
+   * \param[in] ref_node_handle   ROS nodeHandle.
+   */
+  void loadEkfNavsatfixParameters(const rclcpp::Node& ref_node_handle);
+
+    /*!
    * Load interface communication parameters.
    *
    * \param[in] ref_node_handle   ROS nodeHandle.
@@ -483,7 +491,14 @@ public:
    */
    std::string getAutowareTopicName(void) const;
 
-  /*!
+   /*!
+   * Get EkfNavsatfix topic name.
+   *
+   * \return					 Topic name
+   */
+   std::string getEkfNavsatfixTopicName(void) const;
+
+   /*!
    * Get odom enable.
    *
    * \return					 True if the odometry is enabled.

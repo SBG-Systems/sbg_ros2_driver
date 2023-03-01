@@ -542,6 +542,11 @@ void MessageWrapper::setAutowareTopicName(std::string autoware_topic_name)
 {
     m_autoware_topic_name_ = autoware_topic_name;
 }
+
+void MessageWrapper::setEkfNavsatfixTopicName(std::string ekf_navsatfix_topic_name)
+{
+    m_ekf_navsatfix_topic_name_ = ekf_navsatfix_topic_name;
+}
 void MessageWrapper::setOdomPublishTf(bool publish_tf)
 {
   m_odom_publish_tf_ = publish_tf;
@@ -863,6 +868,20 @@ const autoware_sensing_msgs::msg::GnssInsOrientationStamped MessageWrapper::crea
 
 
     return gnss_ins_orientation_message;
+}
+
+const sensor_msgs::msg::NavSatFix MessageWrapper::createEkfNavsatfixMessage(const sbg_driver::msg::SbgEkfNav& ref_ekf_nav_msg) const {
+    sensor_msgs::msg::NavSatFix ekf_navsatfix_message;
+    ekf_navsatfix_message.header = ref_ekf_nav_msg.header;
+    ekf_navsatfix_message.header.frame_id = m_frame_id_;
+    ekf_navsatfix_message.latitude = ref_ekf_nav_msg.latitude;
+    ekf_navsatfix_message.longitude = ref_ekf_nav_msg.longitude;
+    ekf_navsatfix_message.altitude = ref_ekf_nav_msg.altitude;
+    ekf_navsatfix_message.position_covariance[0] = ref_ekf_nav_msg.position_accuracy.x * ref_ekf_nav_msg.position_accuracy.x;
+    ekf_navsatfix_message.position_covariance[4] = ref_ekf_nav_msg.position_accuracy.y * ref_ekf_nav_msg.position_accuracy.y;
+    ekf_navsatfix_message.position_covariance[8] = ref_ekf_nav_msg.position_accuracy.z * ref_ekf_nav_msg.position_accuracy.z;
+
+    return ekf_navsatfix_message;
 }
 const sbg_driver::msg::SbgMag MessageWrapper::createSbgMagMessage(const SbgLogMag& ref_log_mag) const
 {
@@ -1221,7 +1240,17 @@ const geometry_msgs::msg::TwistWithCovarianceStamped MessageWrapper::createRosTw
   tdcm.transpose();
 
   const sbg::SbgVector3f res = tdcm * sbg::SbgVector3f(ref_sbg_ekf_nav_msg.velocity.x, ref_sbg_ekf_nav_msg.velocity.y, ref_sbg_ekf_nav_msg.velocity.z);
-  return createRosTwistWithCovarianceStampedMessage(res, ref_sbg_imu_msg);
+  geometry_msgs::msg::TwistWithCovarianceStamped twist_with_covariance_stamped_message;
+  twist_with_covariance_stamped_message = createRosTwistWithCovarianceStampedMessage(res, ref_sbg_imu_msg);
+
+  twist_with_covariance_stamped_message.twist.covariance[0*6 + 0] = ref_sbg_ekf_nav_msg.velocity_accuracy.x * ref_sbg_ekf_nav_msg.velocity_accuracy.x;
+  twist_with_covariance_stamped_message.twist.covariance[1*6 + 1] = ref_sbg_ekf_nav_msg.velocity_accuracy.y * ref_sbg_ekf_nav_msg.velocity_accuracy.y;
+  twist_with_covariance_stamped_message.twist.covariance[2*6 + 2] = ref_sbg_ekf_nav_msg.velocity_accuracy.z * ref_sbg_ekf_nav_msg.velocity_accuracy.z;
+  twist_with_covariance_stamped_message.twist.covariance[3*6 + 3] = 10000.0;
+  twist_with_covariance_stamped_message.twist.covariance[4*6 + 4] = 10000.0;
+  twist_with_covariance_stamped_message.twist.covariance[5*6 + 5] = 0.1;
+
+  return twist_with_covariance_stamped_message;
 }
 
 const geometry_msgs::msg::TwistWithCovarianceStamped MessageWrapper::createRosTwistWithCovarianceStampedMessage(const sbg::SbgVector3f& body_vel, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const

@@ -74,6 +74,7 @@ private:
   sbg_driver::msg::SbgEkfEuler m_sbg_ekf_euler_message_;
 
   autoware_sensing_msgs::msg::GnssInsOrientationStamped m_gnss_ins_orientation_message_;
+  sensor_msgs::msg::NavSatFix m_ekf_nav_sat_fix_message_;
 
   rclcpp::Publisher<sensor_msgs::msg::Temperature, std::allocator<void>>::SharedPtr     m_temp_pub_;
   rclcpp::Publisher<sensor_msgs::msg::MagneticField, std::allocator<void>>::SharedPtr   m_mag_pub_;
@@ -85,6 +86,7 @@ private:
   rclcpp::Publisher<nav_msgs::msg::Odometry, std::allocator<void>>::SharedPtr           m_odometry_pub_;
 
   rclcpp::Publisher<autoware_sensing_msgs::msg::GnssInsOrientationStamped , std::allocator<void>>::SharedPtr m_autoware_gnss_ins_orientation_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::NavSatFix , std::allocator<void>>::SharedPtr m_ekf_nav_sat_fix_pub_;
 
   MessageWrapper          m_message_wrapper_;
   uint32_t                m_max_messages_;
@@ -129,12 +131,27 @@ private:
      */
   void defineAutowarePublishers(rclcpp::Node& ref_ros_node_handle, bool autoware_enable, std::string ref_topic_name);
 
+   /*!
+   * Define EkfNavsatfix publishers.
+   *
+   * \param[in] ref_ros_node_handle        Ros Node to advertise the publisher.
+   * \param[in] ref_topic_name             Topic name for the publisher.
+   */
+  void defineEkfNavsatfixPublishers(rclcpp::Node& ref_ros_node_handle, std::string ref_topic_name);
+
   /*!
    * Publish a received Autoware messages.
    *
-   * \param[in] ref_ekf_euler_msg            SBG log.
+   * \param[in] ref_ekf_quat_msg            SBG ekf quat log.
    */
   void publishAutowareData(const sbg_driver::msg::SbgEkfQuat & ref_ekf_quat_msg);
+
+  /*!
+   * Publish a received Ekf Navsatfix messages.
+   *
+   * \param[in] ref_ekf_nav_msg            SBG ekf navsatfix log.
+   */
+  void publishEkfNavsatfixData(const sbg_driver::msg::SbgEkfNav & ref_ekf_nav_msg);
 
   /*!
    * Publish a received SBG IMU log.

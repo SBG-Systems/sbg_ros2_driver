@@ -33,6 +33,9 @@
       # Autoware orientation topic name.
       topicName: "/autoware_orientation"
 
+    # Ekf Navsatfix messages settings.000
+    ekfNavsatfix:
+      topicName: "/autoware_orientation"
 
     # Configuration of the device with ROS.
     confWithRos: false
