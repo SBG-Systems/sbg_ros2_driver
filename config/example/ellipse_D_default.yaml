@@ -26,15 +26,26 @@
       baseFrameId: "base_link"
       initFrameId: "map"
 
+    # Autoware messages settings.
+    autowareOrientation:
+      # Enable Autoware messages.
+      enable: true
+      # Autoware orientation topic name.
+      topicName: "/sbg/autoware_orientation"
+
+    # Ekf Navsatfix messages settings.000
+    ekfNavsatfix:
+      topicName: "/sbg/ros/ekf_nav_sat_fix"
+
     # Configuration of the device with ROS.
-    confWithRos: true
+    confWithRos: false
 
     uartConf:
       # Port Name
-      portName: "/dev/ttyUSB0"
+      portName: "/dev/GNSS_USB"
 
       # Baude rate (4800 ,9600 ,19200 ,38400 ,115200 [default],230400 ,460800 ,921600)
-      baudRate: 921600
+      baudRate: 460800
 
       # Port Id
       # 0 PORT_A: Main communication interface. Full duplex.
@@ -65,7 +76,7 @@
       # 3 MARINE          Used in marine and underwater applications
       # 4 AIRPLANE        For fixed wings aircraft
       # 5 HELICOPTER      For rotary wing aircraft
-      motionProfile: 1
+      motionProfile: 2
 
     # IMU_ALIGNMENT_LEVER_ARM
     imuAlignementLeverArm:
@@ -84,7 +95,7 @@
       # 3 ALIGNMENT_RIGHT     IMU Axis is turned in vehicle's right direction
       # 4 ALIGNMENT_UP        IMU Axis is turned in vehicle's up direction
       # 5 ALIGNMENT_DOWN      IMU Axis is turned in vehicle's down direction
-      axisDirectionY: 3
+      axisDirectionY: 2
       # Residual roll error after axis alignment rad
       misRoll: 0.0
       # Residual pitch error after axis alignment rad
@@ -263,27 +274,27 @@
       #
       # true : ENU convention (X east, Y north, Z up)
       # false (default): NED convention (X north, Y east, Z down)
-      use_enu: false
+      use_enu: true
 
       # Frame ID:
-      # Note: If the frame convention is NED so the default frame ID is (imu_link_ned)
+      # Note: If the frame convention is NED so the default frame ID is (GNSS_INS)
       #       else if the convention is ENU so the default frame ID is (imu_link)
-      frame_id: "imu_link_ned"
+      frame_id: "GNSS_INS/gnss_ins_base_link"
 
       # Status general, clock, com aiding, solution, heave
-      log_status: 8
+      log_status: 1
       # Includes IMU status, acc., gyro, temp delta speeds and delta angles values
-      log_imu_data: 8
+      log_imu_data: 1
       # Includes roll, pitch, yaw and their accuracies on each axis
-      log_ekf_euler: 0
+      log_ekf_euler: 1
       # Includes the 4 quaternions values
-      log_ekf_quat: 8
+      log_ekf_quat: 1
       # Position and velocities in NED coordinates with the accuracies on each axis
-      log_ekf_nav: 8
+      log_ekf_nav: 1
       # Heave, surge and sway and accelerations on each axis for up to 4 points
       log_ship_motion: 0
       # Provides UTC time reference
-      log_utc_time: 8
+      log_utc_time: 1
       # Magnetic data with associated accelerometer on each axis
       log_mag: 8
       # Magnetometer calibration data (raw buffer)
@@ -306,4 +317,4 @@
       # Air data
       log_air_data: 0
       # Short IMU data
-      log_imu_short: 0
+      log_imu_short: 1

@@ -3,7 +3,7 @@
 
 // ROS headers
 #include <tf2/LinearMath/Quaternion.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 
@@ -533,7 +533,20 @@ void MessageWrapper::setOdomEnable(bool odom_enable)
 {
   m_odom_enable_ = odom_enable;
 }
+void MessageWrapper::setAutowareEnable(bool autoware_enable)
+{
+  m_autoware_enable_ = autoware_enable;
+}
 
+void MessageWrapper::setAutowareTopicName(std::string autoware_topic_name)
+{
+    m_autoware_topic_name_ = autoware_topic_name;
+}
+
+void MessageWrapper::setEkfNavsatfixTopicName(std::string ekf_navsatfix_topic_name)
+{
+    m_ekf_navsatfix_topic_name_ = ekf_navsatfix_topic_name;
+}
 void MessageWrapper::setOdomPublishTf(bool publish_tf)
 {
   m_odom_publish_tf_ = publish_tf;
@@ -838,6 +851,38 @@ const sbg_driver::msg::SbgImuData MessageWrapper::createSbgImuDataMessage(const 
   return imu_data_message;
 }
 
+const autoware_sensing_msgs::msg::GnssInsOrientationStamped MessageWrapper::createAutowareGnssInsOrientationMessage(const sbg_driver::msg::SbgEkfQuat& ref_ekf_quat_msg) const{
+
+    autoware_sensing_msgs::msg::GnssInsOrientationStamped gnss_ins_orientation_message;
+    gnss_ins_orientation_message.header = ref_ekf_quat_msg.header;
+    gnss_ins_orientation_message.header.frame_id = m_frame_id_;
+
+    gnss_ins_orientation_message.orientation.orientation.x = ref_ekf_quat_msg.quaternion.x;
+    gnss_ins_orientation_message.orientation.orientation.y = ref_ekf_quat_msg.quaternion.y;
+    gnss_ins_orientation_message.orientation.orientation.z = ref_ekf_quat_msg.quaternion.z;
+    gnss_ins_orientation_message.orientation.orientation.w = ref_ekf_quat_msg.quaternion.w;
+
+    gnss_ins_orientation_message.orientation.rmse_rotation_x = ref_ekf_quat_msg.accuracy.x;
+    gnss_ins_orientation_message.orientation.rmse_rotation_y = ref_ekf_quat_msg.accuracy.y;
+    gnss_ins_orientation_message.orientation.rmse_rotation_z = ref_ekf_quat_msg.accuracy.z;
+
+
+    return gnss_ins_orientation_message;
+}
+
+const sensor_msgs::msg::NavSatFix MessageWrapper::createEkfNavsatfixMessage(const sbg_driver::msg::SbgEkfNav& ref_ekf_nav_msg) const {
+    sensor_msgs::msg::NavSatFix ekf_navsatfix_message;
+    ekf_navsatfix_message.header = ref_ekf_nav_msg.header;
+    ekf_navsatfix_message.header.frame_id = m_frame_id_;
+    ekf_navsatfix_message.latitude = ref_ekf_nav_msg.latitude;
+    ekf_navsatfix_message.longitude = ref_ekf_nav_msg.longitude;
+    ekf_navsatfix_message.altitude = ref_ekf_nav_msg.altitude;
+    ekf_navsatfix_message.position_covariance[0] = ref_ekf_nav_msg.position_accuracy.x * ref_ekf_nav_msg.position_accuracy.x;
+    ekf_navsatfix_message.position_covariance[4] = ref_ekf_nav_msg.position_accuracy.y * ref_ekf_nav_msg.position_accuracy.y;
+    ekf_navsatfix_message.position_covariance[8] = ref_ekf_nav_msg.position_accuracy.z * ref_ekf_nav_msg.position_accuracy.z;
+
+    return ekf_navsatfix_message;
+}
 const sbg_driver::msg::SbgMag MessageWrapper::createSbgMagMessage(const SbgLogMag& ref_log_mag) const
 {
   sbg_driver::msg::SbgMag  mag_message;
@@ -1177,7 +1222,7 @@ const sensor_msgs::msg::MagneticField MessageWrapper::createRosMagneticMessage(c
   return magnetic_message;
 }
 
-const geometry_msgs::msg::TwistStamped MessageWrapper::createRosTwistStampedMessage(const sbg_driver::msg::SbgEkfEuler& ref_sbg_ekf_euler_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const
+const geometry_msgs::msg::TwistWithCovarianceStamped MessageWrapper::createRosTwistWithCovarianceStampedMessage(const sbg_driver::msg::SbgEkfEuler& ref_sbg_ekf_euler_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const
 {
   sbg::SbgMatrix3f tdcm;
   tdcm.makeDcm(sbg::SbgVector3f(ref_sbg_ekf_euler_msg.angle.x, ref_sbg_ekf_euler_msg.angle.y, ref_sbg_ekf_euler_msg.angle.z));
@@ -1185,31 +1230,41 @@ const geometry_msgs::msg::TwistStamped MessageWrapper::createRosTwistStampedMess
 
   const sbg::SbgVector3f res = tdcm * sbg::SbgVector3f(ref_sbg_ekf_nav_msg.velocity.x, ref_sbg_ekf_nav_msg.velocity.y, ref_sbg_ekf_nav_msg.velocity.z);
 
-  return createRosTwistStampedMessage(res, ref_sbg_imu_msg);
+  return createRosTwistWithCovarianceStampedMessage(res, ref_sbg_imu_msg);
 }
 
-const geometry_msgs::msg::TwistStamped MessageWrapper::createRosTwistStampedMessage(const sbg_driver::msg::SbgEkfQuat& ref_sbg_ekf_quat_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const
+const geometry_msgs::msg::TwistWithCovarianceStamped MessageWrapper::createRosTwistWithCovarianceStampedMessage(const sbg_driver::msg::SbgEkfQuat& ref_sbg_ekf_quat_msg, const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_nav_msg, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const
 {
   sbg::SbgMatrix3f tdcm;
   tdcm.makeDcm(ref_sbg_ekf_quat_msg.quaternion.w, ref_sbg_ekf_quat_msg.quaternion.x, ref_sbg_ekf_quat_msg.quaternion.y, ref_sbg_ekf_quat_msg.quaternion.z);
   tdcm.transpose();
 
   const sbg::SbgVector3f res = tdcm * sbg::SbgVector3f(ref_sbg_ekf_nav_msg.velocity.x, ref_sbg_ekf_nav_msg.velocity.y, ref_sbg_ekf_nav_msg.velocity.z);
-  return createRosTwistStampedMessage(res, ref_sbg_imu_msg);
+  geometry_msgs::msg::TwistWithCovarianceStamped twist_with_covariance_stamped_message;
+  twist_with_covariance_stamped_message = createRosTwistWithCovarianceStampedMessage(res, ref_sbg_imu_msg);
+
+  twist_with_covariance_stamped_message.twist.covariance[0*6 + 0] = ref_sbg_ekf_nav_msg.velocity_accuracy.x * ref_sbg_ekf_nav_msg.velocity_accuracy.x;
+  twist_with_covariance_stamped_message.twist.covariance[1*6 + 1] = ref_sbg_ekf_nav_msg.velocity_accuracy.y * ref_sbg_ekf_nav_msg.velocity_accuracy.y;
+  twist_with_covariance_stamped_message.twist.covariance[2*6 + 2] = ref_sbg_ekf_nav_msg.velocity_accuracy.z * ref_sbg_ekf_nav_msg.velocity_accuracy.z;
+  twist_with_covariance_stamped_message.twist.covariance[3*6 + 3] = 10000.0;
+  twist_with_covariance_stamped_message.twist.covariance[4*6 + 4] = 10000.0;
+  twist_with_covariance_stamped_message.twist.covariance[5*6 + 5] = 0.1;
+
+  return twist_with_covariance_stamped_message;
 }
 
-const geometry_msgs::msg::TwistStamped MessageWrapper::createRosTwistStampedMessage(const sbg::SbgVector3f& body_vel, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const
+const geometry_msgs::msg::TwistWithCovarianceStamped MessageWrapper::createRosTwistWithCovarianceStampedMessage(const sbg::SbgVector3f& body_vel, const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg) const
 {
-  geometry_msgs::msg::TwistStamped twist_stamped_message;
+  geometry_msgs::msg::TwistWithCovarianceStamped twist_with_covariance_stamped_message;
 
-  twist_stamped_message.header        = createRosHeader(ref_sbg_imu_msg.time_stamp);
-  twist_stamped_message.twist.angular = ref_sbg_imu_msg.delta_angle;
+  twist_with_covariance_stamped_message.header        = createRosHeader(ref_sbg_imu_msg.time_stamp);
+  twist_with_covariance_stamped_message.twist.twist.angular = ref_sbg_imu_msg.delta_angle;
 
-  twist_stamped_message.twist.linear.x = body_vel(0);
-  twist_stamped_message.twist.linear.y = body_vel(1);
-  twist_stamped_message.twist.linear.z = body_vel(2);
+  twist_with_covariance_stamped_message.twist.twist.linear.x = body_vel(0);
+  twist_with_covariance_stamped_message.twist.twist.linear.y = body_vel(1);
+  twist_with_covariance_stamped_message.twist.twist.linear.z = body_vel(2);
 
-  return twist_stamped_message;
+  return twist_with_covariance_stamped_message;
 }
 
 const geometry_msgs::msg::PointStamped MessageWrapper::createRosPointStampedMessage(const sbg_driver::msg::SbgEkfNav& ref_sbg_ekf_msg) const

@@ -26,16 +26,23 @@
       baseFrameId: "base_link"
       initFrameId: "map"
 
+    # Autoware messages settings.
+    autowareOrientation:
+      # Enable Autoware messages.
+      enable: true
+      # Autoware orientation topic name.
+      topicName: "orientation"
+
     # Configuration of the device with ROS.
     confWithRos: false
 
     uartConf:
       # Port Name
-      portName: "/dev/ttyUSB0"
-
+      portName: "/dev/GNSS_USB"
+    
       # Baude rate (4800 ,9600 ,19200 ,38400 ,115200 [default],230400 ,460800 ,921600)
       baudRate: 460800
-
+    
       # Port Id
       # 0 PORT_A: Main communication interface. Full duplex.
       # 1 PORT_B: Auxiliary input interface for RTCM
@@ -47,18 +54,18 @@
     # Sensor Parameters
     sensorParameters:
       # Initial latitude (°)
-      initLat: 48.419727
+      initLat: 41.11732700
       # Initial longitude (°)
-      initLong: -4.472119
+      initLong: 29.01616900
       # Initial altitude (above WGS84 ellipsoid) (m)
       initAlt: 100.0
       # Year at startup
-      year: 2018
+      year: 2023
       # month in year at startup
-      month: 03
+      month: 2
       # day in month at startup
-      day: 10
-
+      day: 3
+    
       # Montion profile ID
       # 1 GENERAL_PURPOSE Should be used as a default when other profiles do not apply
       # 2 AUTOMOTIVE      Dedicated to car applications

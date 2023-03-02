@@ -37,6 +37,15 @@ void ConfigStore::loadOdomParameters(const rclcpp::Node& ref_node_handle)
   ref_node_handle.get_parameter_or<std::string>("odometry.initFrameId", m_odom_init_frame_id_ , "map");
 }
 
+void ConfigStore::loadAutowareParameters(const rclcpp::Node& ref_node_handle)
+{
+  ref_node_handle.get_parameter_or<bool>       ("autowareOrientation.enable"   , m_autoware_enable_          , false);
+  ref_node_handle.get_parameter_or<std::string>       ("autowareOrientation.topicName"   , m_autoware_topic_name_          , "gnss_ins_orientation");
+}
+void ConfigStore::loadEkfNavsatfixParameters(const rclcpp::Node& ref_node_handle)
+{
+    ref_node_handle.get_parameter_or<std::string>       ("ekfNavsatfix.topicName"   , m_ekf_navsatfix_topic_name_          , "ekf_nav_sat_fix");
+}
 void ConfigStore::loadCommunicationParameters(const rclcpp::Node& ref_node_handle)
 {
   ref_node_handle.get_parameter_or<bool>("confWithRos", m_configure_through_ros_, false);
@@ -345,6 +354,21 @@ sbg::TimeReference ConfigStore::getTimeReference(void) const
   return m_time_reference_;
 }
 
+bool ConfigStore::getAutowareEnable(void) const
+{
+  return m_autoware_enable_;
+}
+
+std::string ConfigStore::getAutowareTopicName(void) const
+{
+  return m_autoware_topic_name_;
+}
+
+std::string ConfigStore::getEkfNavsatfixTopicName(void) const
+{
+    return m_ekf_navsatfix_topic_name_;
+}
+
 bool ConfigStore::getOdomEnable(void) const
 {
   return m_odom_enable_;
@@ -378,6 +402,8 @@ void ConfigStore::loadFromRosNodeHandle(const rclcpp::Node& ref_node_handle)
 {
   loadDriverParameters(ref_node_handle);
   loadOdomParameters(ref_node_handle);
+  loadAutowareParameters(ref_node_handle);
+  loadEkfNavsatfixParameters(ref_node_handle);
   loadCommunicationParameters(ref_node_handle);
   loadSensorParameters(ref_node_handle);
   loadImuAlignementParameters(ref_node_handle);
