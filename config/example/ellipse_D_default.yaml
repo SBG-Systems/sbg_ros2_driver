@@ -31,11 +31,11 @@
       # Enable Autoware messages.
       enable: true
       # Autoware orientation topic name.
-      topicName: "/autoware_orientation"
+      topicName: "/sbg/autoware_orientation"
 
     # Ekf Navsatfix messages settings.000
     ekfNavsatfix:
-      topicName: "/ekfnavsatfix"
+      topicName: "/sbg/ros/ekf_nav_sat_fix"
 
     # Configuration of the device with ROS.
     confWithRos: false

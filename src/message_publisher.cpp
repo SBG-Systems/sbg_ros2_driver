@@ -210,7 +210,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
 {
   if (m_sbgImuData_pub_ && m_sbgEkfQuat_pub_)
   {
-    m_imu_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::Imu>("imu/data", m_max_messages_);
+    m_imu_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::Imu>("/sbg/ros/imu/data", m_max_messages_);
   }
   else
   {
@@ -219,7 +219,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
 
   if (m_sbgImuData_pub_)
   {
-    m_temp_pub_     = ref_ros_node_handle.create_publisher<sensor_msgs::msg::Temperature>("imu/temp", m_max_messages_);
+    m_temp_pub_     = ref_ros_node_handle.create_publisher<sensor_msgs::msg::Temperature>("/sbg/ros/imu/temp", m_max_messages_);
   }
   else
   {
@@ -228,7 +228,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
 
   if (m_sbgMag_pub_)
   {
-    m_mag_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::MagneticField>("imu/mag", m_max_messages_);
+    m_mag_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::MagneticField>("/sbg/ros/imu/mag", m_max_messages_);
   }
   else
   {
@@ -241,7 +241,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
   //
   if ((m_sbgEkfEuler_pub_ || m_sbgEkfQuat_pub_) && m_sbgEkfNav_pub_ && m_sbgImuData_pub_)
   {
-    m_velocity_pub_ = ref_ros_node_handle.create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>("imu/velocity", m_max_messages_);
+    m_velocity_pub_ = ref_ros_node_handle.create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>("/sbg/ros/imu/twist_with_covariance_stamped", m_max_messages_);
   }
   else
   {
@@ -250,7 +250,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
 
   if (m_SbgAirData_pub_)
   {
-    m_fluid_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::FluidPressure>("imu/pres", m_max_messages_);
+    m_fluid_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::FluidPressure>("/sbg/ros/imu/pres", m_max_messages_);
   }
   else
   {
@@ -259,7 +259,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
 
   if (m_sbgEkfNav_pub_)
   {
-    m_pos_ecef_pub_ = ref_ros_node_handle.create_publisher<geometry_msgs::msg::PointStamped>("imu/pos_ecef", m_max_messages_);
+    m_pos_ecef_pub_ = ref_ros_node_handle.create_publisher<geometry_msgs::msg::PointStamped>("/sbg/ros/imu/pos_ecef", m_max_messages_);
   }
   else
   {
@@ -268,7 +268,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
 
   if (m_sbgUtcTime_pub_)
   {
-    m_utc_reference_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::TimeReference>("imu/utc_ref", m_max_messages_);
+    m_utc_reference_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::TimeReference>("/sbg/ros/imu/utc_ref", m_max_messages_);
   }
   else
   {
@@ -277,7 +277,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
 
   if (m_sbgGpsPos_pub_)
   {
-    m_nav_sat_fix_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::NavSatFix>("imu/nav_sat_fix", m_max_messages_);
+    m_nav_sat_fix_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::NavSatFix>("/sbg/ros/imu/nav_sat_fix", m_max_messages_);
   }
   else
   {
@@ -288,7 +288,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
   {
     if (m_sbgImuData_pub_ && m_sbgEkfNav_pub_ && (m_sbgEkfEuler_pub_ || m_sbgEkfQuat_pub_))
     {
-      m_odometry_pub_ = ref_ros_node_handle.create_publisher<nav_msgs::msg::Odometry>("imu/odometry", m_max_messages_);
+      m_odometry_pub_ = ref_ros_node_handle.create_publisher<nav_msgs::msg::Odometry>("/sbg/ros/imu/odometry", m_max_messages_);
     }
     else
     {
