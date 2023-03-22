@@ -45,7 +45,7 @@
       portName: "/dev/GNSS_USB"
 
       # Baude rate (4800 ,9600 ,19200 ,38400 ,115200 [default],230400 ,460800 ,921600)
-      baudRate: 921600
+      baudRate: 460800
 
       # Port Id
       # 0 PORT_A: Main communication interface. Full duplex.
@@ -279,7 +279,7 @@
       # Frame ID:
       # Note: If the frame convention is NED so the default frame ID is (GNSS_INS)
       #       else if the convention is ENU so the default frame ID is (imu_link)
-      frame_id: "GNSS_INS/gnss_ins_base_link"
+      frame_id: "GNSS_INS/gnss_ins_link"
 
       # Status general, clock, com aiding, solution, heave
       log_status: 1
