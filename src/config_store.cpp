@@ -435,7 +435,7 @@ void ConfigStore::loadFromRosNodeHandle(const rclcpp::Node& ref_node_handle)
   loadRtcmParameters(ref_node_handle);
   loadNmeaParameters(ref_node_handle);
 
-  loadOutputTimeReference(ref_node_handle, "output/time_reference");
+  loadOutputTimeReference(ref_node_handle, "output.time_reference");
 
   loadOutputConfiguration(ref_node_handle, "output.log_status", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_STATUS);
   loadOutputConfiguration(ref_node_handle, "output.log_imu_data", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_IMU_DATA);
