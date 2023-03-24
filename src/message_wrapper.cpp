@@ -35,6 +35,22 @@ Node("tf_broadcaster")
 //- Internal methods                                                  -//
 //---------------------------------------------------------------------//
 
+float MessageWrapper::wrapAnglePi(float angle_rad) const
+{
+  angle_rad = std::fmod(angle_rad, SBG_PI_F * 2.0f);
+  if (angle_rad > SBG_PI_F)
+  {
+    angle_rad -= SBG_PI_F * 2.0f;
+  }
+
+  if (angle_rad <= -SBG_PI_F)
+  {
+    angle_rad += SBG_PI_F * 2.0f;
+  }
+
+  return angle_rad;
+}
+
 float MessageWrapper::wrapAngle2Pi(float angle_rad) const
 {
   if ((angle_rad < -SBG_PI_F * 2.0f) || (angle_rad > SBG_PI_F * 2.0f))
@@ -570,7 +586,7 @@ const sbg_driver::msg::SbgEkfEuler MessageWrapper::createSbgEkfEulerMessage(cons
   {
     ekf_euler_message.angle.x  = ref_log_ekf_euler.euler[0];
     ekf_euler_message.angle.y  = -ref_log_ekf_euler.euler[1];
-    ekf_euler_message.angle.z  = wrapAngle2Pi((SBG_PI_F / 2.0f) - ref_log_ekf_euler.euler[2]);
+    ekf_euler_message.angle.z  = wrapAnglePi((SBG_PI_F / 2.0f) - ref_log_ekf_euler.euler[2]);
   }
   else
   {
@@ -643,19 +659,22 @@ const sbg_driver::msg::SbgEkfQuat MessageWrapper::createSbgEkfQuatMessage(const 
   ekf_quat_message.accuracy.y   = ref_log_ekf_quat.eulerStdDev[1];
   ekf_quat_message.accuracy.z   = ref_log_ekf_quat.eulerStdDev[2];
 
+  
+  ekf_quat_message.quaternion.x = ref_log_ekf_quat.quaternion[1];
+  ekf_quat_message.quaternion.y = ref_log_ekf_quat.quaternion[2];
+  ekf_quat_message.quaternion.z = ref_log_ekf_quat.quaternion[3];
+  ekf_quat_message.quaternion.w = ref_log_ekf_quat.quaternion[0];
+
   if (m_use_enu_)
   {
-    ekf_quat_message.quaternion.x = ref_log_ekf_quat.quaternion[1];
-    ekf_quat_message.quaternion.y = -ref_log_ekf_quat.quaternion[2];
-    ekf_quat_message.quaternion.z = -ref_log_ekf_quat.quaternion[3];
-    ekf_quat_message.quaternion.w = ref_log_ekf_quat.quaternion[0];
-  }
-  else
-  {
-    ekf_quat_message.quaternion.x = ref_log_ekf_quat.quaternion[1];
-    ekf_quat_message.quaternion.y = ref_log_ekf_quat.quaternion[2];
-    ekf_quat_message.quaternion.z = ref_log_ekf_quat.quaternion[3];
-    ekf_quat_message.quaternion.w = ref_log_ekf_quat.quaternion[0];
+    double ned_roll, ned_pitch, ned_yaw;
+    auto ned_quat = tf2::Quaternion{};
+    tf2::fromMsg(ekf_quat_message.quaternion, ned_quat);
+    tf2::Matrix3x3(ned_quat).getRPY(ned_roll, ned_pitch, ned_yaw);
+
+    auto enu_quat = tf2::Quaternion{};
+    enu_quat.setRPY(ned_roll, -ned_pitch, wrapAnglePi((SBG_PI_F / 2.0f) - ned_yaw));
+    ekf_quat_message.quaternion = tf2::toMsg(enu_quat);
   }
 
   return ekf_quat_message;
