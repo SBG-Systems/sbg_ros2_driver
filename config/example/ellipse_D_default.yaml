@@ -18,9 +18,9 @@
 
     odometry:
       # Enable ROS odometry messages.
-      enable: true
+      enable: false
       # Publish odometry transforms.
-      publishTf: true
+      publishTf: false
       # Odometry frame IDs.
       odomFrameId: "odom"
       baseFrameId: "base_link"
@@ -58,11 +58,11 @@
     # Sensor Parameters
     sensorParameters:
       # Initial latitude (°)
-      initLat: 41.11732700
+      initLat: 41.023996553613905
       # Initial longitude (°)
-      initLong: 29.01616900
+      initLong: 28.886452364733607
       # Initial altitude (above WGS84 ellipsoid) (m)
-      initAlt: 95.0
+      initAlt: 110.0
       # Year at startup
       year: 2023
       # month in year at startup
@@ -87,7 +87,7 @@
       # 3 ALIGNMENT_RIGHT     IMU Axis is turned in vehicle's right direction
       # 4 ALIGNMENT_UP        IMU Axis is turned in vehicle's up direction
       # 5 ALIGNMENT_DOWN      IMU Axis is turned in vehicle's down direction
-      axisDirectionX: 0
+      axisDirectionX: 1
       # IMU Y axis direction in vehicle frame
       # 0 ALIGNMENT_FORWARD   IMU Axis is turned in vehicle's forward direction
       # 1 ALIGNMENT_BACKWARD  IMU Axis is turned in vehicle's backward direction
@@ -95,7 +95,7 @@
       # 3 ALIGNMENT_RIGHT     IMU Axis is turned in vehicle's right direction
       # 4 ALIGNMENT_UP        IMU Axis is turned in vehicle's up direction
       # 5 ALIGNMENT_DOWN      IMU Axis is turned in vehicle's down direction
-      axisDirectionY: 2
+      axisDirectionY: 3
       # Residual roll error after axis alignment rad
       misRoll: 0.0
       # Residual pitch error after axis alignment rad
@@ -103,11 +103,11 @@
       # Residual yaw error after axis alignment rad
       misYaw: 0.0
       # X Primary lever arm in IMU X axis (once IMU alignment is applied) m
-      leverArmX: 0.0
+      leverArmX: -1.31
       # Y Primary lever arm in IMU Y axis (once IMU alignment is applied) m
-      leverArmY: 0.0
+      leverArmY: 0.10
       # Z Primary lever arm in IMU Z axis (once IMU alignment is applied) m
-      leverArmZ: 0.0
+      leverArmZ: 1.28
 
     # AIDING_ASSIGNMENT
     # Note: GNSS1 module configuration can only be set to an external port on Ellipse-E version.
@@ -148,7 +148,7 @@
       # 0 Measurement is not taken into account
       # 1 Measurement is rejected if inconsistent with current estimate (depending on error model)
       # 2 Measurement is always accepted
-      magnetometerRejectMode: 1
+      magnetometerRejectMode: 0
 
       # Theses parameters are only used for a calibration run
       calibration:
@@ -179,27 +179,27 @@
       gnss_model_id: 107
 
       #GNSS primary antenna lever arm in IMU X axis (m)
-      primaryLeverArmX: 0.0
+      primaryLeverArmX: -1.4
       #GNSS primary antenna lever arm in IMU Y axis (m)
-      primaryLeverArmY: 0.0
+      primaryLeverArmY: -0.548
       #GNSS primary antenna lever arm in IMU Z axis (m)
-      primaryLeverArmZ: 0.0
+      primaryLeverArmZ: 0.25
       #GNSS primary antenna precise. Set to true if the primary lever arm has been accurately entered and doesn't need online re-estimation.
-      primaryLeverPrecise: false
+      primaryLeverPrecise: true
 
       #GNSS secondary antenna lever arm in IMU X axis (m)
-      secondaryLeverArmX: 0.0
+      secondaryLeverArmX: -1.4
       #GNSS secondary antenna lever arm in IMU Y axis (m)
-      secondaryLeverArmY: 0.0
+      secondaryLeverArmY: 0.548
       #GNSS secondary antenna lever arm in IMU Z axis (m)
-      secondaryLeverArmZ: 0.0
+      secondaryLeverArmZ: 0.25
 
       # Secondary antenna operating mode.
       # 1 The GNSS will be used in single antenna mode only and the secondary lever arm is not used.
       # 2 [Reserved] The GNSS dual antenna information will be used but the secondary lever arm is not known.
       # 3 The GNSS dual antenna information will be used and we have a rough guess for the secondary lever arm.
       # 4 The GNSS dual antenna information will be used and the secondary lever arm is accurately entered and doesn't need online re-estimation.
-      secondaryLeverMode: 3
+      secondaryLeverMode: 4
 
       # Rejection mode for position
       # 0 Measurement is not taken into account
@@ -274,7 +274,7 @@
       #
       # true : ENU convention (X east, Y north, Z up)
       # false (default): NED convention (X north, Y east, Z down)
-      use_enu: true
+      use_enu: false
 
       # Frame ID:
       # Note: If the frame convention is NED so the default frame ID is (GNSS_INS)
