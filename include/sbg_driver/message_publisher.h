@@ -144,7 +144,7 @@ private:
    *
    * \param[in] ref_ekf_quat_msg            SBG ekf quat log.
    */
-  void publishAutowareData(const sbg_driver::msg::SbgEkfQuat & ref_ekf_quat_msg);
+  void publishAutowareData(const sbg_driver::msg::SbgEkfEuler & ref_ekf_euler_msg);
 
   /*!
    * Publish a received Ekf Navsatfix messages.

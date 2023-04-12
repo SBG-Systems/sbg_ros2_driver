@@ -313,8 +313,8 @@ void MessagePublisher::defineEkfNavsatfixPublishers(rclcpp::Node& ref_ros_node_h
 
 }
 
-void MessagePublisher::publishAutowareData(const sbg_driver::msg::SbgEkfQuat & ref_ekf_quat_msg){
-    m_gnss_ins_orientation_message_ = m_message_wrapper_.createAutowareGnssInsOrientationMessage(ref_ekf_quat_msg);
+void MessagePublisher::publishAutowareData(const sbg_driver::msg::SbgEkfEuler & ref_ekf_euler_msg){
+    m_gnss_ins_orientation_message_ = m_message_wrapper_.createAutowareGnssInsOrientationMessage(ref_ekf_euler_msg);
     m_autoware_gnss_ins_orientation_pub_->publish(m_gnss_ins_orientation_message_);
 }
 
@@ -699,7 +699,7 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
     }
 
     if(m_autoware_gnss_ins_orientation_pub_){
-          publishAutowareData(m_sbg_ekf_quat_message_);
+          publishAutowareData(m_sbg_ekf_euler_message_);
     }
 
   }

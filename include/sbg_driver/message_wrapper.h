@@ -503,10 +503,10 @@ public:
     /*!
    * Create a Autoware Orientation data message.
    *
-   * \param[in] ref_ekf_quat_msg    SBG Ekf Quat log.
+   * \param[in] ref_ekf_euler_msg    SBG Ekf Quat log.
    * \return                         gnss ins orientation message.
    */
-  const autoware_sensing_msgs::msg::GnssInsOrientationStamped createAutowareGnssInsOrientationMessage(const sbg_driver::msg::SbgEkfQuat & ref_ekf_quat_msg) const;
+  const autoware_sensing_msgs::msg::GnssInsOrientationStamped createAutowareGnssInsOrientationMessage(const sbg_driver::msg::SbgEkfEuler & ref_ekf_euler_msg) const;
 
   /*!
    * Create a EkfNavsatfix data message.

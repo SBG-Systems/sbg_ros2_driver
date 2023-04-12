@@ -6,7 +6,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
-
+#include <Eigen/Eigen>
 // Project headers
 #include <sbg_vector3.h>
 
@@ -851,20 +851,26 @@ const sbg_driver::msg::SbgImuData MessageWrapper::createSbgImuDataMessage(const 
   return imu_data_message;
 }
 
-const autoware_sensing_msgs::msg::GnssInsOrientationStamped MessageWrapper::createAutowareGnssInsOrientationMessage(const sbg_driver::msg::SbgEkfQuat& ref_ekf_quat_msg) const{
+const autoware_sensing_msgs::msg::GnssInsOrientationStamped MessageWrapper::createAutowareGnssInsOrientationMessage(const sbg_driver::msg::SbgEkfEuler& ref_ekf_euler_msg) const{
 
     autoware_sensing_msgs::msg::GnssInsOrientationStamped gnss_ins_orientation_message;
-    gnss_ins_orientation_message.header = ref_ekf_quat_msg.header;
+
+    gnss_ins_orientation_message.header = ref_ekf_euler_msg.header;
     gnss_ins_orientation_message.header.frame_id = m_frame_id_;
 
-    gnss_ins_orientation_message.orientation.orientation.x = ref_ekf_quat_msg.quaternion.x;
-    gnss_ins_orientation_message.orientation.orientation.y = ref_ekf_quat_msg.quaternion.y;
-    gnss_ins_orientation_message.orientation.orientation.z = ref_ekf_quat_msg.quaternion.z;
-    gnss_ins_orientation_message.orientation.orientation.w = ref_ekf_quat_msg.quaternion.w;
+    Eigen::Quaternion<float> q;
+    q = Eigen::AngleAxisf(ref_ekf_euler_msg.angle.x, Eigen::Vector3f::UnitX()) *
+        Eigen::AngleAxisf(ref_ekf_euler_msg.angle.y, Eigen::Vector3f::UnitY()) *
+        Eigen::AngleAxisf(- ref_ekf_euler_msg.angle.z + 1.57 , Eigen::Vector3f::UnitZ());
 
-    gnss_ins_orientation_message.orientation.rmse_rotation_x = ref_ekf_quat_msg.accuracy.x;
-    gnss_ins_orientation_message.orientation.rmse_rotation_y = ref_ekf_quat_msg.accuracy.y;
-    gnss_ins_orientation_message.orientation.rmse_rotation_z = ref_ekf_quat_msg.accuracy.z;
+    gnss_ins_orientation_message.orientation.orientation.x = q.x();
+    gnss_ins_orientation_message.orientation.orientation.y = q.y();
+    gnss_ins_orientation_message.orientation.orientation.z = q.z();
+    gnss_ins_orientation_message.orientation.orientation.w = q.w();
+
+    gnss_ins_orientation_message.orientation.rmse_rotation_x = ref_ekf_euler_msg.accuracy.x;
+    gnss_ins_orientation_message.orientation.rmse_rotation_y = ref_ekf_euler_msg.accuracy.y;
+    gnss_ins_orientation_message.orientation.rmse_rotation_z = ref_ekf_euler_msg.accuracy.z;
 
 
     return gnss_ins_orientation_message;
