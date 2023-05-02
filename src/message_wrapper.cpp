@@ -859,9 +859,9 @@ const autoware_sensing_msgs::msg::GnssInsOrientationStamped MessageWrapper::crea
     gnss_ins_orientation_message.header.frame_id = m_frame_id_;
 
     Eigen::Quaternion<float> q;
-    q = Eigen::AngleAxisf(ref_ekf_euler_msg.angle.x, Eigen::Vector3f::UnitX()) *
-        Eigen::AngleAxisf(ref_ekf_euler_msg.angle.y, Eigen::Vector3f::UnitY()) *
-        Eigen::AngleAxisf(- ref_ekf_euler_msg.angle.z + 1.57 , Eigen::Vector3f::UnitZ());
+    q = Eigen::AngleAxisf(ref_ekf_euler_msg.angle.z , Eigen::Vector3f::UnitZ()) *
+        Eigen::AngleAxisf(ref_ekf_euler_msg.angle.y , Eigen::Vector3f::UnitY()) *
+        Eigen::AngleAxisf(ref_ekf_euler_msg.angle.x , Eigen::Vector3f::UnitX());
 
     gnss_ins_orientation_message.orientation.orientation.x = q.x();
     gnss_ins_orientation_message.orientation.orientation.y = q.y();
