@@ -33,6 +33,7 @@
   <run_depend>std_srvs</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>nav_msgs</run_depend>
+  <run_depend>mavros_msgs</run_depend>
   <run_depend>tf2_ros</run_depend>
   <run_depend>tf2_msgs</run_depend>
   <run_depend>tf2_geometry_msgs</run_depend>
@@ -47,6 +48,7 @@
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>nav_msgs</depend>
+  <depend>mavros_msgs</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_msgs</depend>
   <depend>tf2_geometry_msgs</depend>
