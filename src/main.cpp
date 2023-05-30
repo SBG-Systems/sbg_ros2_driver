@@ -27,6 +27,7 @@ int main(int argc, char **argv)
       loop_rate.sleep();
     }
 
+    rclcpp::shutdown();
     return 0;
   }
   catch (std::exception const& refE)
