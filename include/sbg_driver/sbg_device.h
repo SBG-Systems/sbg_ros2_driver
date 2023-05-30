@@ -14,6 +14,7 @@
 #include <config_applier.h>
 #include <config_store.h>
 #include <message_publisher.h>
+#include <message_subscriber.h>
 
 namespace sbg
 {
@@ -41,6 +42,7 @@ private:
   SbgInterface            m_sbg_interface_;
   rclcpp::Node&        	  m_ref_node_;
   MessagePublisher        m_message_publisher_;
+  std::shared_ptr<MessageSubscriber> m_message_subscriber_;
   ConfigStore             m_config_store_;
 
   uint32_t                m_rate_frequency_;
@@ -107,6 +109,11 @@ private:
    * Initialize the publishers according to the configuration.
    */
   void initPublishers(void);
+
+  /*!
+   * Initialize the subscribers according to the configuration.
+   */
+  void initSubscribers(void);
 
   /*!
    * Configure the connected SBG device.

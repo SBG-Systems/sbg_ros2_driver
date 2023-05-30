@@ -9,6 +9,7 @@ find_package(std_srvs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(mavros_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
@@ -28,6 +29,7 @@ set (USED_LIBRARIES
   std_srvs
   geometry_msgs
   nav_msgs
+  mavros_msgs
   tf2_ros
   tf2_msgs
   tf2_geometry_msgs
@@ -98,6 +100,7 @@ include_directories(
 set (SBG_COMMON_RESOURCES
   src/config_applier.cpp
   src/message_publisher.cpp
+  src/message_subscriber.cpp
   src/message_wrapper.cpp
   src/config_store.cpp
   src/sbg_device.cpp
@@ -174,6 +177,7 @@ ament_export_dependencies(
     std_srvs
     geometry_msgs
     nav_msgs
+    mavros_msgs
     tf2_ros
     tf2_msgs
     tf2_geometry_msgs
