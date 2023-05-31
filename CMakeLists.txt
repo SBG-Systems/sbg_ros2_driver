@@ -13,6 +13,7 @@ find_package(mavros_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(nmea_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(Boost REQUIRED)
 
@@ -33,6 +34,7 @@ set (USED_LIBRARIES
   tf2_ros
   tf2_msgs
   tf2_geometry_msgs
+  nmea_msgs
 )
 
 set (msg_files
