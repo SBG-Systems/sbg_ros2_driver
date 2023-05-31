@@ -56,6 +56,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <nav_msgs/msg/odometry.hpp>
+#include <nmea_msgs/msg/sentence.hpp>
 
 // SbgRos message headers
 #include "sbg_driver/msg/sbg_status.hpp"
@@ -85,6 +86,19 @@ typedef struct _UTM0
 	double			altitude;
 	int				zone;
 } UTM0;
+
+typedef enum _SbgNmeaGpsQuality
+{
+    SBG_NMEA_GPS_QUALITY_NO_FIX	                = 0,
+    SBG_NMEA_GPS_QUALITY_GPS_FIX	            = 1,
+    SBG_NMEA_GPS_QUALITY_DIFFERENTIAL_GPS_FIX	= 2,
+    SBG_NMEA_GPS_QUALITY_PPS_FIX		        = 3,
+    SBG_NMEA_GPS_QUALITY_RTK	            	= 4,
+    SBG_NMEA_GPS_QUALITY_RTK_FLOAT	           	= 5,
+    SBG_NMEA_GPS_QUALITY_ESTIMATED		        = 6,
+    SBG_NMEA_GPS_QUALITY_MANUAL_INPUT	    	= 7,
+    SBG_NMEA_GPS_QUALITY_SIMULATED		        = 8,
+} SbgNmeaGpsQuality;
 
 /*!
  * Class to wrap the SBG logs into ROS messages.
@@ -317,6 +331,8 @@ private:
    * \param[out] UTMEasting             UTM easting, in meters.
    */
    void LLtoUTM(double Lat, double Long, int zoneNumber, double &UTMNorthing, double &UTMEasting) const;
+
+   static uint32_t convertSbgGpsTypeToNmeaGpsType(uint32_t sbgGpsType);
 
 public:
 
@@ -643,7 +659,15 @@ public:
    * \param[in] ref_sbg_air_msg     SBG-ROS AirData message.
    * \return                        ROS standard fluid pressure message.
    */
-  const sensor_msgs::msg::FluidPressure createRosFluidPressureMessage(const sbg_driver::msg::SbgAirData& ref_sbg_air_msg) const; 
+  const sensor_msgs::msg::FluidPressure createRosFluidPressureMessage(const sbg_driver::msg::SbgAirData& ref_sbg_air_msg) const;
+
+  /*!
+   * Create a SBG-ROS GPS-Position message.
+   *
+   * \param[in] ref_log_gps_pos     SBG GPS Position log.
+   * \return                        GPS Position message in nmea format.
+   */
+    const nmea_msgs::msg::Sentence createSbgGpsPosMessageGGA(const SbgLogGpsPos& ref_log_gps_pos) const;
 };
 }
 
