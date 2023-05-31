@@ -450,6 +450,10 @@ void MessagePublisher::publishGpsPosData(const SbgBinaryLogData &ref_sbg_log)
   {
     m_nav_sat_fix_pub_->publish(m_message_wrapper_.createRosNavSatFixMessage(sbg_gps_pos_message));
   }
+  if (m_SbgGpsPos_gga_pub_)
+  {
+    m_SbgGpsPos_gga_pub_->publish(m_message_wrapper_.createSbgGpsPosMessageGGA(ref_sbg_log.gpsPosData));
+  }
 }
 
 //---------------------------------------------------------------------//
@@ -479,6 +483,8 @@ void MessagePublisher::initPublishers(rclcpp::Node& ref_ros_node_handle, const C
   {
     initPublisher(ref_ros_node_handle, ref_output.message_id, ref_output.output_mode, getOutputTopicName(ref_output.message_id));
   }
+
+  m_SbgGpsPos_gga_pub_ = ref_ros_node_handle.create_publisher<nmea_msgs::msg::Sentence>("ntrip_client/nmea", m_max_messages_);
 
   if (ref_config_store.checkRosStandardMessages())
   {
@@ -659,14 +665,14 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
 
     default:
       break;
-    } 
+    }
   }
   else if (sbg_msg_class == SBG_ECOM_CLASS_LOG_ECOM_1)
   {
     switch (sbg_msg_id)
     {
     default:
-      break;  
+      break;
     }
   }
 }

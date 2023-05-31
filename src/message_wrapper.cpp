@@ -510,6 +510,33 @@ void MessageWrapper::LLtoUTM(double Lat, double Long, int zoneNumber, double &UT
   }
 }
 
+uint32_t MessageWrapper::convertSbgGpsTypeToNmeaGpsType(uint32_t sbgGpsType)
+{
+    switch (sbgGpsType) {
+        case SBG_ECOM_POS_NO_SOLUTION:
+        case SBG_ECOM_POS_UNKNOWN_TYPE:
+            return SBG_NMEA_GPS_QUALITY_NO_FIX;
+        case SBG_ECOM_POS_SINGLE:
+        case SBG_ECOM_POS_FIXED:
+            return SBG_NMEA_GPS_QUALITY_GPS_FIX;
+        case SBG_ECOM_POS_PSRDIFF:
+            return SBG_NMEA_GPS_QUALITY_DIFFERENTIAL_GPS_FIX;
+        case SBG_ECOM_POS_SBAS:
+        case SBG_ECOM_POS_OMNISTAR:
+            return SBG_NMEA_GPS_QUALITY_PPS_FIX;
+        case SBG_ECOM_POS_RTK_FLOAT:
+            return SBG_NMEA_GPS_QUALITY_RTK_FLOAT;
+        case SBG_ECOM_POS_RTK_INT:
+            return SBG_NMEA_GPS_QUALITY_RTK;
+        case SBG_ECOM_POS_PPP_FLOAT:
+        case SBG_ECOM_POS_PPP_INT:
+            return SBG_NMEA_GPS_QUALITY_SIMULATED;
+        default:
+            return SBG_NMEA_GPS_QUALITY_NO_FIX;
+    }
+}
+
+
 //---------------------------------------------------------------------//
 //- Parameters                                                        -//
 //---------------------------------------------------------------------//
@@ -1309,4 +1336,85 @@ const sensor_msgs::msg::FluidPressure MessageWrapper::createRosFluidPressureMess
   fluid_pressure_message.variance       = 0.0;
 
   return fluid_pressure_message;
+}
+
+const nmea_msgs::msg::Sentence sbg::MessageWrapper::createSbgGpsPosMessageGGA(const SbgLogGpsPos &ref_log_gps_pos) const
+{
+    nmea_msgs::msg::Sentence gps_pos_nmea_msg;
+
+    // Latitude conversion
+    char lat_dir;
+    int32_t lat_degs = ref_log_gps_pos.latitude;
+    float lat_mins = (ref_log_gps_pos.latitude - static_cast<float>(lat_degs)) * 60.0f;
+    if(lat_degs < 0)
+    {
+        lat_degs *= -1;
+        lat_mins *= -1.0f;
+        lat_dir = 'S';
+    }
+    else
+    {
+        lat_dir = 'N';
+    }
+
+    // Longitude conversion
+    char lon_dir;
+    int32_t lon_degs = ref_log_gps_pos.longitude;
+    float lon_mins = (ref_log_gps_pos.longitude - static_cast<float>(lon_degs)) * 60.0f;
+    if(lon_degs < 0)
+    {
+        lon_degs *= -1;
+        lon_mins *= -1.0f;
+        lon_dir = 'W';
+    }
+    else
+    {
+        lon_dir = 'E';
+    }
+
+    // Gps time of week To UTC
+    auto time_of_week_ms = ref_log_gps_pos.timeOfWeek;
+    auto nb_hours = time_of_week_ms / (3600 * 1000);
+    auto current_hour = nb_hours % 24;
+    auto nb_minutes = time_of_week_ms / (60 * 1000);
+    auto current_minute = nb_minutes % 60;
+    auto current_second = (time_of_week_ms / 1000) % 60;
+    auto current_ms = time_of_week_ms % (60 * 1000);
+
+    // Writing NMEA sentence
+    constexpr uint32_t nmea_sentence_buffer_size = 128;
+    char nmeas_sentence_buff[nmea_sentence_buffer_size]{};
+    auto len = snprintf(nmeas_sentence_buff, nmea_sentence_buffer_size, "$GPGGA,%02d%02d%02d.%03d,%02d%02.3f,%c,%03d%02.3f,%c,%d,%d,%.3f,%.3f,M,%.3f,M,%d,%d",
+        current_hour,
+        current_minute,
+        current_second,
+        current_ms - (current_second * 1000),
+        lat_degs,
+        lat_mins,
+        lat_dir,
+        lon_degs,
+        lon_mins,
+        lon_dir,
+        convertSbgGpsTypeToNmeaGpsType(sbgEComLogGpsPosGetType(ref_log_gps_pos.status)),
+        ref_log_gps_pos.numSvUsed,
+        ref_log_gps_pos.altitudeAccuracy,
+        ref_log_gps_pos.altitude,
+        ref_log_gps_pos.undulation,
+        ref_log_gps_pos.differentialAge,
+        ref_log_gps_pos.baseStationId
+        );
+
+    // Checksum computation
+    uint8_t checksum = 0;
+    for(int32_t i = 1; i < len; i++)
+    {
+        checksum ^= nmeas_sentence_buff[i];
+    }
+    snprintf(&nmeas_sentence_buff[len], nmea_sentence_buffer_size - len, "*%02X\r\n", checksum);
+
+    // Populating ROS message
+    gps_pos_nmea_msg.header      = createRosHeader(ref_log_gps_pos.timeStamp);
+    gps_pos_nmea_msg.sentence = nmeas_sentence_buff;
+
+    return gps_pos_nmea_msg;
 }
