@@ -14,7 +14,9 @@ ConfigStore::ConfigStore(void):
 m_serial_communication_(false),
 m_upd_communication_(false),
 m_configure_through_ros_(false),
-m_ros_standard_output_(false)
+m_ros_standard_output_(false),
+m_listen_rtcm_(false),
+m_publish_nmea_(false)
 {
 
 }
@@ -189,6 +191,22 @@ void ConfigStore::loadOutputTimeReference(const rclcpp::Node& ref_node_handle, c
   {
     rclcpp::exceptions::throw_from_rcl_error(RMW_RET_ERROR, "unknown time reference: " + time_reference);
   }
+}
+
+void sbg::ConfigStore::loadRtcmParameters(const rclcpp::Node &ref_node_handle)
+{
+    ref_node_handle.get_parameter_or<bool>("rtcm.listen_rtcm", m_listen_rtcm_, false);
+    ref_node_handle.get_parameter_or<std::string>("rtcm.topic_name", m_rtcm_topic_name_, "rtcm");
+    ref_node_handle.get_parameter_or<std::string>("rtcm.namespace", m_rtcm_topic_namespace_, "ntrip_client");
+    m_rtcm_full_topic_ = m_rtcm_topic_namespace_ + "/" + m_rtcm_topic_name_;
+}
+
+void sbg::ConfigStore::loadNmeaParameters(const rclcpp::Node &ref_node_handle)
+{
+    ref_node_handle.get_parameter_or<bool>("nmea.publish_nmea", m_publish_nmea_, false);
+    ref_node_handle.get_parameter_or<std::string>("nmea.topic_name", m_nmea_topic_name_, "nmea");
+    ref_node_handle.get_parameter_or<std::string>("nmea.namespace", m_nmea_topic_namespace_, "ntrip_client");
+    m_nmea_full_topic_ = m_nmea_topic_namespace_ + "/" + m_nmea_topic_name_;
 }
 
 //---------------------------------------------------------------------//
@@ -370,6 +388,26 @@ const std::string &ConfigStore::getOdomInitFrameId(void) const
   return m_odom_init_frame_id_;
 }
 
+bool sbg::ConfigStore::shouldListenRtcm(void) const
+{
+    return m_listen_rtcm_;
+}
+
+const std::string &sbg::ConfigStore::getRtcmFullTopic(void) const
+{
+    return m_rtcm_full_topic_;
+}
+
+bool sbg::ConfigStore::shouldPublishNmea(void) const
+{
+    return m_publish_nmea_;
+}
+
+const std::string &sbg::ConfigStore::getNmeaFullTopic(void) const
+{
+    return m_nmea_full_topic_;
+}
+
 //---------------------------------------------------------------------//
 //- Operations                                                        -//
 //---------------------------------------------------------------------//
@@ -386,6 +424,8 @@ void ConfigStore::loadFromRosNodeHandle(const rclcpp::Node& ref_node_handle)
   loadGnssParameters(ref_node_handle);
   loadOdometerParameters(ref_node_handle);
   loadOutputFrameParameters(ref_node_handle);
+  loadRtcmParameters(ref_node_handle);
+  loadNmeaParameters(ref_node_handle);
 
   loadOutputTimeReference(ref_node_handle, "output/time_reference");
 
