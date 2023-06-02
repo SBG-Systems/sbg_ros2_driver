@@ -484,7 +484,10 @@ void MessagePublisher::initPublishers(rclcpp::Node& ref_ros_node_handle, const C
     initPublisher(ref_ros_node_handle, ref_output.message_id, ref_output.output_mode, getOutputTopicName(ref_output.message_id));
   }
 
-  m_SbgGpsPos_gga_pub_ = ref_ros_node_handle.create_publisher<nmea_msgs::msg::Sentence>("ntrip_client/nmea", m_max_messages_);
+  if (ref_config_store.shouldPublishNmea())
+  {
+    m_SbgGpsPos_gga_pub_ = ref_ros_node_handle.create_publisher<nmea_msgs::msg::Sentence>(ref_config_store.getNmeaFullTopic(),m_max_messages_);
+  }
 
   if (ref_config_store.checkRosStandardMessages())
   {

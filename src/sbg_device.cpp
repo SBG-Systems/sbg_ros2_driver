@@ -209,8 +209,12 @@ void SbgDevice::initPublishers(void)
 
 void SbgDevice::initSubscribers(void)
 {
-    m_message_subscriber_ = std::make_shared<MessageSubscriber>(&m_sbg_interface_);
+    if (!m_config_store_.shouldListenRtcm())
+    {
+        return;
+    }
 
+    m_message_subscriber_ = std::make_shared<MessageSubscriber>(&m_sbg_interface_);
     m_message_subscriber_->initTopicSubscriptions(m_config_store_);
     std::thread([&]{
         rclcpp::spin(m_message_subscriber_);
