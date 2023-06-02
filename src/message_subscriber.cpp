@@ -30,7 +30,8 @@ void MessageSubscriber::readRosRtcmMessage(const mavros_msgs::msg::RTCM::SharedP
 
     auto rtcm_data = msg->data;
     auto error_code = sbgInterfaceWrite(m_sbg_interface_, rtcm_data.data(), rtcm_data.size());
-    if (error_code != SBG_NO_ERROR) {
+    if (error_code != SBG_NO_ERROR)
+    {
         char error_str[256];
 
         sbgEComErrorToString(error_code, error_str);
@@ -39,18 +40,19 @@ void MessageSubscriber::readRosRtcmMessage(const mavros_msgs::msg::RTCM::SharedP
 
 }
 
-
-
 //---------------------------------------------------------------------//
 //- Operations                                                        -//
 //---------------------------------------------------------------------//
 
-void MessageSubscriber::initTopicSubscriptions(const sbg::ConfigStore &ref_config_store) {
-    SBG_UNUSED_PARAMETER(ref_config_store);
-
+void MessageSubscriber::initTopicSubscriptions(const sbg::ConfigStore &ref_config_store)
+{
     auto rtcm_cb = [&](const mavros_msgs::msg::RTCM::SharedPtr msg) -> void {
         this->readRosRtcmMessage(msg);
     };
-    m_rtcm_sub_ = create_subscription<mavros_msgs::msg::RTCM>(
-            "ntrip_client/rtcm", m_max_messages_, rtcm_cb);
+
+    if (ref_config_store.shouldListenRtcm())
+    {
+        m_rtcm_sub_ = create_subscription<mavros_msgs::msg::RTCM>(
+                ref_config_store.getRtcmFullTopic(), m_max_messages_, rtcm_cb);
+    }
 }

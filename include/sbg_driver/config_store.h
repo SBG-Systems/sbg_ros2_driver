@@ -121,6 +121,16 @@ private:
   std::string                 m_odom_base_frame_id_;
   std::string                 m_odom_init_frame_id_;
 
+  bool                        m_listen_rtcm_;
+  std::string                 m_rtcm_topic_name_;
+  std::string                 m_rtcm_topic_namespace_;
+  std::string                 m_rtcm_full_topic_;
+
+  bool                        m_publish_nmea_;
+  std::string                 m_nmea_topic_name_;
+  std::string                 m_nmea_topic_namespace_;
+  std::string                 m_nmea_full_topic_;
+
   //---------------------------------------------------------------------//
   //- Private  methods                                                  -//
   //---------------------------------------------------------------------//
@@ -238,6 +248,10 @@ private:
    * \param[in] ref_key           String key for the output config.
    */
   void loadOutputTimeReference(const rclcpp::Node& ref_node_handle, const std::string& ref_key);
+
+  void loadRtcmParameters(const rclcpp::Node& ref_node_handle);
+
+  void loadNmeaParameters(const rclcpp::Node& ref_node_handle);
 
 public:
 
@@ -456,21 +470,21 @@ public:
    *
    * \return					 True if the frame convention to use is ENU.
    */
-   bool getUseEnu(void) const;
+  bool getUseEnu(void) const;
 
   /*!
    * Get odom enable.
    *
    * \return					 True if the odometry is enabled.
    */
-   bool getOdomEnable(void) const;
+  bool getOdomEnable(void) const;
 
   /*!
    * Get odom publish_tf.
    *
    * \return					 If true publish odometry transforms.
    */
-   bool getOdomPublishTf(void) const;
+  bool getOdomPublishTf(void) const;
 
   /*!
    * Get the odometry frame ID.
@@ -502,7 +516,15 @@ public:
    */
   TimeReference getTimeReference(void) const;
 
-  //---------------------------------------------------------------------//
+  bool shouldListenRtcm(void) const;
+
+  const std::string &getRtcmFullTopic(void) const;
+
+  bool shouldPublishNmea() const;
+
+  const std::string &getNmeaFullTopic(void) const;
+
+    //---------------------------------------------------------------------//
   //- Operations                                                        -//
   //---------------------------------------------------------------------//
 
