@@ -173,7 +173,7 @@ private:
    *
    * \param[in] ref_sbg_log             SBG log.
    */
-  void publishGpsPosData(const SbgBinaryLogData &ref_sbg_log);
+  void publishGpsPosData(const SbgBinaryLogData &ref_sbg_log, SbgEComMsgId sbg_msg_id);
 
 public:
 
