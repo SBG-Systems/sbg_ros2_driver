@@ -89,13 +89,13 @@ typedef struct _UTM0
 
 typedef enum _SbgNmeaGpsQuality
 {
-    SBG_NMEA_GPS_QUALITY_NO_FIX	                = 0,
-    SBG_NMEA_GPS_QUALITY_GPS_FIX	            = 1,
-    SBG_NMEA_GPS_QUALITY_DIFFERENTIAL_GPS_FIX	= 2,
-    SBG_NMEA_GPS_QUALITY_PPS_FIX		        = 3,
+    SBG_NMEA_GPS_QUALITY_INVALID	            = 0,
+    SBG_NMEA_GPS_QUALITY_SINGLE	                = 1,
+    SBG_NMEA_GPS_QUALITY_DGPS	                = 2,
+    SBG_NMEA_GPS_QUALITY_PPS		            = 3,
     SBG_NMEA_GPS_QUALITY_RTK	            	= 4,
     SBG_NMEA_GPS_QUALITY_RTK_FLOAT	           	= 5,
-    SBG_NMEA_GPS_QUALITY_ESTIMATED		        = 6,
+    SBG_NMEA_GPS_QUALITY_FIX_DEAD_RECKONING		= 6,
     SBG_NMEA_GPS_QUALITY_MANUAL_INPUT	    	= 7,
     SBG_NMEA_GPS_QUALITY_SIMULATED		        = 8,
 } SbgNmeaGpsQuality;
