@@ -436,7 +436,7 @@ void MessagePublisher::publishUtcData(const SbgBinaryLogData &ref_sbg_log)
   }
 }
 
-void MessagePublisher::publishGpsPosData(const SbgBinaryLogData &ref_sbg_log)
+void MessagePublisher::publishGpsPosData(const SbgBinaryLogData &ref_sbg_log, SbgEComMsgId sbg_msg_id)
 {
   sbg_driver::msg::SbgGpsPos sbg_gps_pos_message;
 
@@ -450,7 +450,7 @@ void MessagePublisher::publishGpsPosData(const SbgBinaryLogData &ref_sbg_log)
   {
     m_nav_sat_fix_pub_->publish(m_message_wrapper_.createRosNavSatFixMessage(sbg_gps_pos_message));
   }
-  if (m_SbgGpsPos_gga_pub_)
+  if (m_SbgGpsPos_gga_pub_ && sbg_msg_id == SBG_ECOM_LOG_GPS1_POS)
   {
     m_SbgGpsPos_gga_pub_->publish(m_message_wrapper_.createSbgGpsPosMessageGGA(ref_sbg_log.gpsPosData));
   }
@@ -584,7 +584,7 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
     case SBG_ECOM_LOG_GPS1_POS:
     case SBG_ECOM_LOG_GPS2_POS:
 
-      publishGpsPosData(ref_sbg_log);
+      publishGpsPosData(ref_sbg_log, sbg_msg_id);
       break;
 
     case SBG_ECOM_LOG_GPS1_HDT:
