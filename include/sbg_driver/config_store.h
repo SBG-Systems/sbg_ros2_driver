@@ -249,8 +249,18 @@ private:
    */
   void loadOutputTimeReference(const rclcpp::Node& ref_node_handle, const std::string& ref_key);
 
+  /*!
+   * Load RTCM parameters.
+   *
+   * \param[in] ref_node_handle   ROS nodeHandle.
+   */
   void loadRtcmParameters(const rclcpp::Node& ref_node_handle);
 
+  /*!
+   * Load NMEA parameters.
+   *
+   * \param[in] ref_node_handle   ROS nodeHandle.
+   */
   void loadNmeaParameters(const rclcpp::Node& ref_node_handle);
 
 public:
@@ -516,12 +526,32 @@ public:
    */
   TimeReference getTimeReference(void) const;
 
+  /*!
+   * Get RTCM enable.
+   *
+   * \return                      True if RTCM is enabled.
+   */
   bool shouldListenRtcm(void) const;
 
+  /*!
+   * Get RTCM full topic.
+   *
+   * \return                      String with RTCM namespace + topic.
+   */
   const std::string &getRtcmFullTopic(void) const;
 
+  /*!
+   * Get NMEA enable.
+   *
+   * \return                      True if NMEA is enabled.
+   */
   bool shouldPublishNmea() const;
 
+  /*!
+   * Get NMEA full topic.
+   *
+   * \return                      String with NMEA namespace + topic.
+   */
   const std::string &getNmeaFullTopic(void) const;
 
     //---------------------------------------------------------------------//
