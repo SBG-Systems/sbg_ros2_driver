@@ -512,7 +512,8 @@ void MessageWrapper::LLtoUTM(double Lat, double Long, int zoneNumber, double &UT
 
 uint32_t MessageWrapper::convertSbgGpsTypeToNmeaGpsType(uint32_t sbgGpsType)
 {
-    switch (sbgGpsType) {
+    switch (sbgGpsType)
+    {
         case SBG_ECOM_POS_NO_SOLUTION:
             return SBG_NMEA_GPS_QUALITY_INVALID;
         case SBG_ECOM_POS_SINGLE:
@@ -1446,39 +1447,39 @@ const nmea_msgs::msg::Sentence sbg::MessageWrapper::createSbgGpsPosMessageGGA(co
 
     // Writing NMEA sentence
     constexpr uint32_t nmea_sentence_buffer_size = 128;
-    char nmeas_sentence_buff[nmea_sentence_buffer_size]{};
-    auto len = snprintf(nmeas_sentence_buff, nmea_sentence_buffer_size,
+    char nmea_sentence_buff[nmea_sentence_buffer_size]{};
+    auto len = snprintf(nmea_sentence_buff, nmea_sentence_buffer_size,
                         "$GPGGA,%02d%02d%02d.%02d,%02d%02.4f,%c,%03d%02.4f,%c,%d,%d,%.1f,%.1f,M,%d,M,%.1f,%04d",
-        current_hour,
-        current_minute,
-        current_second,
-        current_ms,
-        lat_degs,
-        lat_mins,
-        lat_dir,
-        lon_degs,
-        lon_mins,
-        lon_dir,
-        convertSbgGpsTypeToNmeaGpsType(sbgEComLogGpsPosGetType(ref_log_gps_pos.status)),
-        svUsed,
-        h_dop,
-        altitude,
-        static_cast<uint32_t>(undulation),
-        diff_age,
-        baseStationId
+                        current_hour,
+                        current_minute,
+                        current_second,
+                        current_ms,
+                        lat_degs,
+                        lat_mins,
+                        lat_dir,
+                        lon_degs,
+                        lon_mins,
+                        lon_dir,
+                        convertSbgGpsTypeToNmeaGpsType(sbgEComLogGpsPosGetType(ref_log_gps_pos.status)),
+                        svUsed,
+                        h_dop,
+                        altitude,
+                        static_cast<uint32_t>(undulation),
+                        diff_age,
+                        baseStationId
         );
 
     // Checksum computation
     uint8_t checksum = 0;
     for(int32_t i = 1; i < len; i++)
     {
-        checksum ^= nmeas_sentence_buff[i];
+        checksum ^= nmea_sentence_buff[i];
     }
-    snprintf(&nmeas_sentence_buff[len], nmea_sentence_buffer_size - len, "*%02X\r\n", checksum);
+    snprintf(&nmea_sentence_buff[len], nmea_sentence_buffer_size - len, "*%02X\r\n", checksum);
 
     // Populating ROS message
     gps_pos_nmea_msg.header      = createRosHeader(ref_log_gps_pos.timeStamp);
-    gps_pos_nmea_msg.sentence = nmeas_sentence_buff;
+    gps_pos_nmea_msg.sentence = nmea_sentence_buff;
 
     return gps_pos_nmea_msg;
 }
