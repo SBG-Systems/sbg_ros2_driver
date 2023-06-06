@@ -39,7 +39,7 @@
 namespace sbg
 {
 /*!
- * Class to publish all SBG-ROS messages to the corresponding publishers.
+ * Class to subscribe to all corresponding topics.
  */
 class MessageSubscriber: public rclcpp::Node
 {
@@ -53,6 +53,11 @@ private:
   //---------------------------------------------------------------------//
   //- Private methods                                                   -//
   //---------------------------------------------------------------------//
+  /*!
+   * Handler for subscription to RTCM topic.
+   *
+   * \param[in] msg             ROS RTCM message.
+   */
   void readRosRtcmMessage(const mavros_msgs::msg::RTCM::SharedPtr msg) const;
 
 public:
@@ -63,6 +68,8 @@ public:
 
   /*!
    * Default constructor.
+   *
+   * \param[in] sbg_interface   SBG Interface handle.
    */
   MessageSubscriber(SbgInterface *sbg_interface);
 
@@ -71,9 +78,9 @@ public:
   //---------------------------------------------------------------------//
 
   /*!
-   * Initialize the publishers for the output configuration.
+   * Initialize the subscribers with configuration.
    *
-   * \param[in] ref_config_store        Store configuration for the publishers.
+   * \param[in] ref_config_store        Store configuration for the subscribers.
    */
   void initTopicSubscriptions(const sbg::ConfigStore &ref_config_store);
 };

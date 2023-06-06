@@ -302,26 +302,26 @@ private:
    * \param[in] ref_pose                Pose.
    * \param[out] ref_transform_stamped  Stamped transformation.
    */
-   void fillTransform(const std::string &ref_parent_frame_id, const std::string &ref_child_frame_id, const geometry_msgs::msg::Pose &ref_pose, geometry_msgs::msg::TransformStamped &ref_transform_stamped);
+  void fillTransform(const std::string &ref_parent_frame_id, const std::string &ref_child_frame_id, const geometry_msgs::msg::Pose &ref_pose, geometry_msgs::msg::TransformStamped &ref_transform_stamped);
 
-   /*!
+  /*!
    * Get UTM letter designator for the given latitude.
    *
    * \param[in] Lat                     Latitude, in degrees.
    * \return                            UTM letter designator.
    */
-   char UTMLetterDesignator(double Lat);
+  char UTMLetterDesignator(double Lat);
 
-   /*!
+  /*!
    * Set UTM initial position.
    *
    * \param[in] Lat                     Latitude, in degrees.
    * \param[in] Long                    Longitude, in degrees.
    * \param[in] altitude                Altitude, in meters.
    */
-   void initUTM(double Lat, double Long, double altitude);
+  void initUTM(double Lat, double Long, double altitude);
 
-   /*!
+  /*!
    * Convert latitude and longitude to a position relative to UTM initial position.
    *
    * \param[in] Lat                     Latitude, in degrees.
@@ -330,9 +330,15 @@ private:
    * \param[out] UTMNorthing            UTM northing, in meters.
    * \param[out] UTMEasting             UTM easting, in meters.
    */
-   void LLtoUTM(double Lat, double Long, int zoneNumber, double &UTMNorthing, double &UTMEasting) const;
+  void LLtoUTM(double Lat, double Long, int zoneNumber, double &UTMNorthing, double &UTMEasting) const;
 
-   static uint32_t convertSbgGpsTypeToNmeaGpsType(uint32_t sbgGpsType);
+  /*!
+   * Convert SbgEComGpsPosType enum to SbgNmeaGpsQuality enum
+   *
+   * \param[in] sbgGpsType              SbgECom GPS type
+   * \return                            NMEA GPS type
+   */
+  static uint32_t convertSbgGpsTypeToNmeaGpsType(uint32_t sbgGpsType);
 
 public:
 

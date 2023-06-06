@@ -172,6 +172,7 @@ private:
    * Publish a received SBG GpsPos log.
    *
    * \param[in] ref_sbg_log             SBG log.
+   * \param[in] sbg_msg_id              Id of the SBG message.
    */
   void publishGpsPosData(const SbgBinaryLogData &ref_sbg_log, SbgEComMsgId sbg_msg_id);
 
