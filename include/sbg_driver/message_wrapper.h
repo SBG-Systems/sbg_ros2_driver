@@ -338,7 +338,7 @@ private:
    * \param[in] sbgGpsType              SbgECom GPS type
    * \return                            NMEA GPS type
    */
-  static uint32_t convertSbgGpsTypeToNmeaGpsType(uint32_t sbgGpsType);
+  static SbgNmeaGpsQuality convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbgGpsType);
 
 public:
 
