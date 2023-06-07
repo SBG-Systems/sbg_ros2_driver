@@ -510,12 +510,10 @@ void MessageWrapper::LLtoUTM(double Lat, double Long, int zoneNumber, double &UT
   }
 }
 
-uint32_t MessageWrapper::convertSbgGpsTypeToNmeaGpsType(uint32_t sbgGpsType)
+sbg::SbgNmeaGpsQuality MessageWrapper::convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbgGpsType)
 {
     switch (sbgGpsType)
     {
-        case SBG_ECOM_POS_NO_SOLUTION:
-            return SBG_NMEA_GPS_QUALITY_INVALID;
         case SBG_ECOM_POS_SINGLE:
         case SBG_ECOM_POS_UNKNOWN_TYPE:
         case SBG_ECOM_POS_FIXED:
@@ -531,6 +529,7 @@ uint32_t MessageWrapper::convertSbgGpsTypeToNmeaGpsType(uint32_t sbgGpsType)
             return SBG_NMEA_GPS_QUALITY_RTK;
         case SBG_ECOM_POS_RTK_FLOAT:
             return SBG_NMEA_GPS_QUALITY_RTK_FLOAT;
+        case SBG_ECOM_POS_NO_SOLUTION:
         default:
             return SBG_NMEA_GPS_QUALITY_INVALID;
     }
@@ -1354,13 +1353,13 @@ const nmea_msgs::msg::Sentence sbg::MessageWrapper::createSbgGpsPosMessageGGA(co
     // Latitude conversion
     char lat_dir;
     float latitude = ref_log_gps_pos.latitude;
-    if (latitude >= 1000.0f)
+    if (latitude >= 90.0f)
     {
-        latitude = 999.9999f;
+        latitude = 90.0;
     }
-    if (latitude <= -100.0f)
+    if (latitude <= -90.0f)
     {
-        latitude = -99.9999f;
+        latitude = -90.0f;
     }
     int32_t lat_degs = latitude;
     float lat_mins = (latitude - static_cast<float>(lat_degs)) * 60.0f;
@@ -1378,13 +1377,13 @@ const nmea_msgs::msg::Sentence sbg::MessageWrapper::createSbgGpsPosMessageGGA(co
     // Longitude conversion
     char lon_dir;
     float longitude =  ref_log_gps_pos.longitude;
-    if (longitude >= 10000.0f)
+    if (longitude >= 180.0f)
     {
-        longitude = 9999.9999f;
+        longitude = 180.0f;
     }
-    if (longitude <= -1000.0f)
+    if (longitude <= -180.0f)
     {
-        longitude = -999.9999f;
+        longitude = -180.0f;
     }
     int32_t lon_degs = longitude;
     float lon_mins = (longitude - static_cast<float>(lon_degs)) * 60.0f;
@@ -1400,8 +1399,7 @@ const nmea_msgs::msg::Sentence sbg::MessageWrapper::createSbgGpsPosMessageGGA(co
     }
 
     // DOP computation
-    double h_dop = sqrt((ref_log_gps_pos.latitudeAccuracy * ref_log_gps_pos.latitudeAccuracy) + \
-    (ref_log_gps_pos.longitudeAccuracy * ref_log_gps_pos.longitudeAccuracy));
+    double h_dop = std::hypot(ref_log_gps_pos.latitudeAccuracy, ref_log_gps_pos.longitudeAccuracy);
     if (h_dop >= 10.0)
     {
         h_dop = 9.9;
@@ -1478,7 +1476,7 @@ const nmea_msgs::msg::Sentence sbg::MessageWrapper::createSbgGpsPosMessageGGA(co
     snprintf(&nmea_sentence_buff[len], nmea_sentence_buffer_size - len, "*%02X\r\n", checksum);
 
     // Populating ROS message
-    gps_pos_nmea_msg.header      = createRosHeader(ref_log_gps_pos.timeStamp);
+    gps_pos_nmea_msg.header   = createRosHeader(ref_log_gps_pos.timeStamp);
     gps_pos_nmea_msg.sentence = nmea_sentence_buff;
 
     return gps_pos_nmea_msg;
