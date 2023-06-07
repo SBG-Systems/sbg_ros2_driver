@@ -1337,7 +1337,7 @@ const sensor_msgs::msg::FluidPressure MessageWrapper::createRosFluidPressureMess
   return fluid_pressure_message;
 }
 
-const nmea_msgs::msg::Sentence sbg::MessageWrapper::createSbgGpsPosMessageGGA(const SbgLogGpsPos &ref_log_gps_pos) const
+const nmea_msgs::msg::Sentence MessageWrapper::createSbgGpsPosMessageGGA(const SbgLogGpsPos &ref_log_gps_pos) const
 {
     nmea_msgs::msg::Sentence gps_pos_nmea_msg;
 

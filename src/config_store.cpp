@@ -193,7 +193,7 @@ void ConfigStore::loadOutputTimeReference(const rclcpp::Node& ref_node_handle, c
   }
 }
 
-void sbg::ConfigStore::loadRtcmParameters(const rclcpp::Node &ref_node_handle)
+void ConfigStore::loadRtcmParameters(const rclcpp::Node &ref_node_handle)
 {
     ref_node_handle.get_parameter_or<bool>("rtcm.listen_rtcm", m_listen_rtcm_, false);
     ref_node_handle.get_parameter_or<std::string>("rtcm.topic_name", m_rtcm_topic_name_, "rtcm");
@@ -201,7 +201,7 @@ void sbg::ConfigStore::loadRtcmParameters(const rclcpp::Node &ref_node_handle)
     m_rtcm_full_topic_ = m_rtcm_topic_namespace_ + "/" + m_rtcm_topic_name_;
 }
 
-void sbg::ConfigStore::loadNmeaParameters(const rclcpp::Node &ref_node_handle)
+void ConfigStore::loadNmeaParameters(const rclcpp::Node &ref_node_handle)
 {
     ref_node_handle.get_parameter_or<bool>("nmea.publish_nmea", m_publish_nmea_, false);
     ref_node_handle.get_parameter_or<std::string>("nmea.topic_name", m_nmea_topic_name_, "nmea");
@@ -388,22 +388,22 @@ const std::string &ConfigStore::getOdomInitFrameId(void) const
   return m_odom_init_frame_id_;
 }
 
-bool sbg::ConfigStore::shouldListenRtcm(void) const
+bool ConfigStore::shouldListenRtcm(void) const
 {
     return m_listen_rtcm_;
 }
 
-const std::string &sbg::ConfigStore::getRtcmFullTopic(void) const
+const std::string &ConfigStore::getRtcmFullTopic(void) const
 {
     return m_rtcm_full_topic_;
 }
 
-bool sbg::ConfigStore::shouldPublishNmea(void) const
+bool ConfigStore::shouldPublishNmea(void) const
 {
     return m_publish_nmea_;
 }
 
-const std::string &sbg::ConfigStore::getNmeaFullTopic(void) const
+const std::string &ConfigStore::getNmeaFullTopic(void) const
 {
     return m_nmea_full_topic_;
 }

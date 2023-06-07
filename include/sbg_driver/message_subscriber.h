@@ -82,7 +82,7 @@ public:
    *
    * \param[in] ref_config_store        Store configuration for the subscribers.
    */
-  void initTopicSubscriptions(const sbg::ConfigStore &ref_config_store);
+  void initTopicSubscriptions(const ConfigStore &ref_config_store);
 };
 }
 

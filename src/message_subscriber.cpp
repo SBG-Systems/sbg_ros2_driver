@@ -44,7 +44,7 @@ void MessageSubscriber::readRosRtcmMessage(const mavros_msgs::msg::RTCM::SharedP
 //- Operations                                                        -//
 //---------------------------------------------------------------------//
 
-void MessageSubscriber::initTopicSubscriptions(const sbg::ConfigStore &ref_config_store)
+void MessageSubscriber::initTopicSubscriptions(const ConfigStore &ref_config_store)
 {
     auto rtcm_cb = [&](const mavros_msgs::msg::RTCM::SharedPtr msg) -> void {
         this->readRosRtcmMessage(msg);
