@@ -38,19 +38,19 @@ private:
   //- Private variables                                                 -//
   //---------------------------------------------------------------------//
 
-  SbgEComHandle           m_com_handle_;
-  SbgInterface            m_sbg_interface_;
-  rclcpp::Node&        	  m_ref_node_;
-  MessagePublisher        m_message_publisher_;
-  std::shared_ptr<MessageSubscriber> m_message_subscriber_;
-  ConfigStore             m_config_store_;
+  SbgEComHandle                                           m_com_handle_;
+  SbgInterface                                            m_sbg_interface_;
+  rclcpp::Node&        	                                  m_ref_node_;
+  MessagePublisher                                        m_message_publisher_;
+  std::shared_ptr<MessageSubscriber>                      m_message_subscriber_;
+  ConfigStore                                             m_config_store_;
 
-  uint32_t                m_rate_frequency_;
+  uint32_t                                                m_rate_frequency_;
 
-  bool                    m_mag_calibration_ongoing_;
-  bool                    m_mag_calibration_done_;
-  SbgEComMagCalibResults  m_magCalibResults;
-  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr    m_calib_service_;
+  bool                                                    m_mag_calibration_ongoing_;
+  bool                                                    m_mag_calibration_done_;
+  SbgEComMagCalibResults                                  m_magCalibResults;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr      m_calib_service_;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr      m_calib_save_service_;
 
   //---------------------------------------------------------------------//
