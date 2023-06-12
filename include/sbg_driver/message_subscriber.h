@@ -48,7 +48,6 @@ private:
   rclcpp::Subscription<mavros_msgs::msg::RTCM>::SharedPtr m_rtcm_sub_;
 
   uint32_t                m_max_messages_;
-  SbgInterface            *m_sbg_interface_;
 
   //---------------------------------------------------------------------//
   //- Private methods                                                   -//
@@ -58,7 +57,7 @@ private:
    *
    * \param[in] msg             ROS RTCM message.
    */
-  void readRosRtcmMessage(const mavros_msgs::msg::RTCM::SharedPtr msg) const;
+  void readRosRtcmMessage(SbgInterface &sbg_interface, const mavros_msgs::msg::RTCM::SharedPtr msg) const;
 
 public:
 
@@ -75,13 +74,14 @@ public:
   //- Operations                                                        -//
   //---------------------------------------------------------------------//
 
-  void setSbgInterface(SbgInterface *sbg_interface);
   /*!
    * Initialize the subscribers with configuration.
    *
    * \param[in] ref_config_store        Store configuration for the subscribers.
    */
-  void initTopicSubscriptions(rclcpp::Node& ref_ros_node_handle, const ConfigStore &ref_config_store);
+  void initTopicSubscriptions(rclcpp::Node& ref_ros_node_handle,
+                              SbgInterface &sbg_interface,
+                              const ConfigStore &ref_config_store);
 };
 }
 

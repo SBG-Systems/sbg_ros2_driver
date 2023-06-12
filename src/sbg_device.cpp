@@ -214,9 +214,7 @@ void SbgDevice::initSubscribers(void)
         return;
     }
 
-    // TODO no pointer
-    m_message_subscriber_.setSbgInterface(&m_sbg_interface_);
-    m_message_subscriber_.initTopicSubscriptions(m_ref_node_,m_config_store_);
+    m_message_subscriber_.initTopicSubscriptions(m_ref_node_, m_sbg_interface_, m_config_store_);
 }
 
 void SbgDevice::configure(void)
