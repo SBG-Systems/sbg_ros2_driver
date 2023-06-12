@@ -9,14 +9,14 @@
 using sbg::MessageSubscriber;
 
 /*!
- * Class to publish all SBG-ROS messages to the corresponding publishers. 
+ * Class to subscribe to all corresponding topics.
  */
 //---------------------------------------------------------------------//
 //- Constructor                                                       -//
 //---------------------------------------------------------------------//
 
-MessageSubscriber::MessageSubscriber(SbgInterface *sbg_interface): Node("sbg_subscriber"),
-m_max_messages_(10), m_sbg_interface_(sbg_interface)
+MessageSubscriber::MessageSubscriber():
+m_max_messages_(10), m_sbg_interface_(nullptr)
 {
 }
 
@@ -44,7 +44,12 @@ void MessageSubscriber::readRosRtcmMessage(const mavros_msgs::msg::RTCM::SharedP
 //- Operations                                                        -//
 //---------------------------------------------------------------------//
 
-void MessageSubscriber::initTopicSubscriptions(const ConfigStore &ref_config_store)
+void MessageSubscriber::setSbgInterface(SbgInterface *sbg_interface)
+{
+    m_sbg_interface_ = sbg_interface;
+}
+
+void MessageSubscriber::initTopicSubscriptions(rclcpp::Node& ref_ros_node_handle, const ConfigStore &ref_config_store)
 {
     auto rtcm_cb = [&](const mavros_msgs::msg::RTCM::SharedPtr msg) -> void {
         this->readRosRtcmMessage(msg);
@@ -52,7 +57,7 @@ void MessageSubscriber::initTopicSubscriptions(const ConfigStore &ref_config_sto
 
     if (ref_config_store.shouldListenRtcm())
     {
-        m_rtcm_sub_ = create_subscription<mavros_msgs::msg::RTCM>(
+        m_rtcm_sub_ = ref_ros_node_handle.create_subscription<mavros_msgs::msg::RTCM>(
                 ref_config_store.getRtcmFullTopic(), m_max_messages_, rtcm_cb);
     }
 }

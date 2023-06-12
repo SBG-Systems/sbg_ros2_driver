@@ -214,11 +214,9 @@ void SbgDevice::initSubscribers(void)
         return;
     }
 
-    m_message_subscriber_ = std::make_shared<MessageSubscriber>(&m_sbg_interface_);
-    m_message_subscriber_->initTopicSubscriptions(m_config_store_);
-    std::thread([&]{
-        rclcpp::spin(m_message_subscriber_);
-    }).detach();
+    // TODO no pointer
+    m_message_subscriber_.setSbgInterface(&m_sbg_interface_);
+    m_message_subscriber_.initTopicSubscriptions(m_ref_node_,m_config_store_);
 }
 
 void SbgDevice::configure(void)
