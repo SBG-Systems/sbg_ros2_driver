@@ -102,7 +102,6 @@ include_directories(
 set (SBG_COMMON_RESOURCES
   src/config_applier.cpp
   src/message_publisher.cpp
-  src/message_subscriber.cpp
   src/message_wrapper.cpp
   src/config_store.cpp
   src/sbg_device.cpp
