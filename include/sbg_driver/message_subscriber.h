@@ -34,7 +34,7 @@
 
 // Project headers
 #include <config_store.h>
-#include <mavros_msgs/msg/rtcm.hpp>
+#include <rtcm_msgs/msg/message.hpp>
 
 namespace sbg
 {
@@ -45,7 +45,7 @@ class MessageSubscriber
 {
 private:
 
-  rclcpp::Subscription<mavros_msgs::msg::RTCM>::SharedPtr m_rtcm_sub_;
+  rclcpp::Subscription<rtcm_msgs::msg::Message>::SharedPtr m_rtcm_sub_;
 
   uint32_t                m_max_messages_;
 
@@ -58,7 +58,7 @@ private:
    * \param[in] sbg_interface         Interface to use for read/write operations.
    * \param[in] msg                   ROS RTCM message.
    */
-  void readRosRtcmMessage(SbgInterface &sbg_interface, const mavros_msgs::msg::RTCM::SharedPtr msg) const;
+  void readRosRtcmMessage(SbgInterface &sbg_interface, const rtcm_msgs::msg::Message::SharedPtr msg) const;
 
 public:
 
