@@ -207,14 +207,22 @@ void SbgDevice::initPublishers(void)
   m_rate_frequency_ = m_config_store_.getReadingRateFrequency();
 }
 
-void SbgDevice::initSubscribers(void)
+void SbgDevice::initSubscribers()
 {
     if (!m_config_store_.shouldListenRtcm())
     {
         return;
     }
 
-    m_message_subscriber_.initTopicSubscriptions(m_ref_node_, m_sbg_interface_, m_config_store_);
+    auto rtcm_cb = [&](const rtcm_msgs::msg::Message::SharedPtr msg) -> void {
+        this->writeRtcmMessageToDevice(msg);
+    };
+
+    if (m_config_store_.shouldListenRtcm())
+    {
+        rtcm_sub_ = m_ref_node_.create_subscription<rtcm_msgs::msg::Message>(
+                m_config_store_.getRtcmFullTopic(), 10, rtcm_cb);
+    }
 }
 
 void SbgDevice::configure(void)
@@ -461,6 +469,19 @@ void SbgDevice::exportMagCalibrationResults(void) const
   RCLCPP_INFO(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Magnetometers calibration results saved to file %s", output_filename.c_str());
 }
 
+void SbgDevice::writeRtcmMessageToDevice(const rtcm_msgs::msg::Message::SharedPtr msg)
+{
+    auto rtcm_data = msg->message;
+    auto error_code = sbgInterfaceWrite(&m_sbg_interface_, rtcm_data.data(), rtcm_data.size());
+    if (error_code != SBG_NO_ERROR)
+    {
+        char error_str[256];
+
+        sbgEComErrorToString(error_code, error_str);
+        SBG_LOG_ERROR(SBG_ERROR, "Failed to sent RTCM data to device: %s", error_str);
+    }
+}
+
 //---------------------------------------------------------------------//
 //- Parameters                                                        -//
 //---------------------------------------------------------------------//
@@ -478,7 +499,6 @@ void SbgDevice::initDeviceForReceivingData(void)
 {
   SbgErrorCode error_code;
   initPublishers();
-  initSubscribers();
   configure();
 
   error_code = sbgEComSetReceiveLogCallback(&m_com_handle_, onLogReceivedCallback, this);
@@ -487,6 +507,8 @@ void SbgDevice::initDeviceForReceivingData(void)
   {
     rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Init] Unable to set the callback function - " + std::string(sbgErrorCodeToString(error_code)));
   }
+
+  initSubscribers();
 }
 
 void SbgDevice::initDeviceForMagCalibration(void)
@@ -500,5 +522,4 @@ void SbgDevice::initDeviceForMagCalibration(void)
 void SbgDevice::periodicHandle(void)
 {
   sbgEComHandle(&m_com_handle_);
-
 }

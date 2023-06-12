@@ -9,12 +9,12 @@
 // ROS headers
 #include <std_srvs/srv/set_bool.hpp>
 #include <std_srvs/srv/trigger.hpp>
+#include <rtcm_msgs/msg/message.hpp>
 
 // Project headers
 #include <config_applier.h>
 #include <config_store.h>
 #include <message_publisher.h>
-#include <message_subscriber.h>
 
 namespace sbg
 {
@@ -38,20 +38,21 @@ private:
   //- Private variables                                                 -//
   //---------------------------------------------------------------------//
 
-  SbgEComHandle                                           m_com_handle_;
-  SbgInterface                                            m_sbg_interface_;
-  rclcpp::Node&        	                                  m_ref_node_;
-  MessagePublisher                                        m_message_publisher_;
-  MessageSubscriber                                       m_message_subscriber_;
-  ConfigStore                                             m_config_store_;
+  SbgEComHandle                                            m_com_handle_;
+  SbgInterface                                             m_sbg_interface_;
+  rclcpp::Node&        	                                   m_ref_node_;
+  MessagePublisher                                         m_message_publisher_;
+  ConfigStore                                              m_config_store_;
 
-  uint32_t                                                m_rate_frequency_;
+  uint32_t                                                 m_rate_frequency_;
 
-  bool                                                    m_mag_calibration_ongoing_;
-  bool                                                    m_mag_calibration_done_;
-  SbgEComMagCalibResults                                  m_magCalibResults;
-  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr      m_calib_service_;
-  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr      m_calib_save_service_;
+  bool                                                     m_mag_calibration_ongoing_;
+  bool                                                     m_mag_calibration_done_;
+  SbgEComMagCalibResults                                   m_magCalibResults;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr       m_calib_service_;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr       m_calib_save_service_;
+
+  rclcpp::Subscription<rtcm_msgs::msg::Message>::SharedPtr rtcm_sub_;
 
   //---------------------------------------------------------------------//
   //- Private  methods                                                  -//
@@ -113,7 +114,7 @@ private:
   /*!
    * Initialize the subscribers according to the configuration.
    */
-  void initSubscribers(void);
+  void initSubscribers();
 
   /*!
    * Configure the connected SBG device.
@@ -172,6 +173,13 @@ private:
    * Export magnetometers calibration results.
    */
   void exportMagCalibrationResults(void) const;
+
+  /*!
+   * Handler for subscription to RTCM topic.
+   *
+   * \param[in] msg             ROS RTCM message.
+   */
+  void writeRtcmMessageToDevice(const rtcm_msgs::msg::Message::SharedPtr msg);
 
 public:
 
