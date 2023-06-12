@@ -24,9 +24,9 @@ m_max_messages_(10)
 //- Private methods                                                   -//
 //---------------------------------------------------------------------//
 
-void MessageSubscriber::readRosRtcmMessage(SbgInterface &sbg_interface, const mavros_msgs::msg::RTCM::SharedPtr msg) const
+void MessageSubscriber::readRosRtcmMessage(SbgInterface &sbg_interface, const rtcm_msgs::msg::Message::SharedPtr msg) const
 {
-    auto rtcm_data = msg->data;
+    auto rtcm_data = msg->message;
     auto error_code = sbgInterfaceWrite(&sbg_interface, rtcm_data.data(), rtcm_data.size());
     if (error_code != SBG_NO_ERROR)
     {
@@ -46,13 +46,13 @@ void MessageSubscriber::initTopicSubscriptions(rclcpp::Node& ref_ros_node_handle
                                                SbgInterface &sbg_interface,
                                                const ConfigStore &ref_config_store)
 {
-    auto rtcm_cb = [&](const mavros_msgs::msg::RTCM::SharedPtr msg) -> void {
+    auto rtcm_cb = [&](const rtcm_msgs::msg::Message::SharedPtr msg) -> void {
         this->readRosRtcmMessage(sbg_interface, msg);
     };
 
     if (ref_config_store.shouldListenRtcm())
     {
-        m_rtcm_sub_ = ref_ros_node_handle.create_subscription<mavros_msgs::msg::RTCM>(
+        m_rtcm_sub_ = ref_ros_node_handle.create_subscription<rtcm_msgs::msg::Message>(
                 ref_config_store.getRtcmFullTopic(), m_max_messages_, rtcm_cb);
     }
 }
