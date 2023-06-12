@@ -93,10 +93,7 @@ Launch the sbg_device_mag node to calibrate the magnetometers, and load the `ell
 
 ## Nodes
 ### sbg_device
-The `sbg_device` node handles the communication with the connected device, and publishes the SBG output to the Ros environment.  
-
-### sbg_subscriber
-The `sbg_subscriber` node handles the subscriptions to the Ros environment topics, and forward data the device.  
+The `sbg_device` node handles the communication with the connected device, publishes the SBG output to the Ros environment and subscribes to topics.
 
 #### Published Topics
 ##### SBG specific topics
