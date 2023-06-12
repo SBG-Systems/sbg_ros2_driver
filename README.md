@@ -224,7 +224,7 @@ Data published on that topic can be used by a third party ROS2 module for NTRIP 
 ##### RTCM topics
 SBG ROS Driver will listen to some topics published by third party ROS2 modules.  
 
-* **`/ntrip_client/rtcm`** [mavros_msgs/RTCM](http://docs.ros.org/en/noetic/api/mavros_msgs/html/msg/RTCM.html)
+* **`/ntrip_client/rtcm`** [rtcm_msgs/Message](https://github.com/tilk/rtcm_msgs/blob/master/msg/Message.msg)
 
   RTCM data from `/ntrip_client/rtcm` will be forwarded to the IMU.    
   Namespace `ntrip_client` and topic_name `rtcm` can be customized in .yaml config files.
