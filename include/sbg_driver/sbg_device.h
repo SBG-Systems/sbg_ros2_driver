@@ -42,7 +42,7 @@ private:
   SbgInterface                                            m_sbg_interface_;
   rclcpp::Node&        	                                  m_ref_node_;
   MessagePublisher                                        m_message_publisher_;
-  std::shared_ptr<MessageSubscriber>                      m_message_subscriber_;
+  MessageSubscriber                                       m_message_subscriber_;
   ConfigStore                                             m_config_store_;
 
   uint32_t                                                m_rate_frequency_;

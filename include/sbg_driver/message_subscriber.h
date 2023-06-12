@@ -41,7 +41,7 @@ namespace sbg
 /*!
  * Class to subscribe to all corresponding topics.
  */
-class MessageSubscriber: public rclcpp::Node
+class MessageSubscriber
 {
 private:
 
@@ -68,21 +68,20 @@ public:
 
   /*!
    * Default constructor.
-   *
-   * \param[in] sbg_interface   SBG Interface handle.
    */
-  MessageSubscriber(SbgInterface *sbg_interface);
+  MessageSubscriber();
 
   //---------------------------------------------------------------------//
   //- Operations                                                        -//
   //---------------------------------------------------------------------//
 
+  void setSbgInterface(SbgInterface *sbg_interface);
   /*!
    * Initialize the subscribers with configuration.
    *
    * \param[in] ref_config_store        Store configuration for the subscribers.
    */
-  void initTopicSubscriptions(const ConfigStore &ref_config_store);
+  void initTopicSubscriptions(rclcpp::Node& ref_ros_node_handle, const ConfigStore &ref_config_store);
 };
 }
 
