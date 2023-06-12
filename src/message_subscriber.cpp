@@ -16,7 +16,7 @@ using sbg::MessageSubscriber;
 //---------------------------------------------------------------------//
 
 MessageSubscriber::MessageSubscriber():
-m_max_messages_(10), m_sbg_interface_(nullptr)
+m_max_messages_(10)
 {
 }
 
@@ -24,12 +24,10 @@ m_max_messages_(10), m_sbg_interface_(nullptr)
 //- Private methods                                                   -//
 //---------------------------------------------------------------------//
 
-void MessageSubscriber::readRosRtcmMessage(const mavros_msgs::msg::RTCM::SharedPtr msg) const
+void MessageSubscriber::readRosRtcmMessage(SbgInterface &sbg_interface, const mavros_msgs::msg::RTCM::SharedPtr msg) const
 {
-    assert(m_sbg_interface_);
-
     auto rtcm_data = msg->data;
-    auto error_code = sbgInterfaceWrite(m_sbg_interface_, rtcm_data.data(), rtcm_data.size());
+    auto error_code = sbgInterfaceWrite(&sbg_interface, rtcm_data.data(), rtcm_data.size());
     if (error_code != SBG_NO_ERROR)
     {
         char error_str[256];
@@ -44,15 +42,12 @@ void MessageSubscriber::readRosRtcmMessage(const mavros_msgs::msg::RTCM::SharedP
 //- Operations                                                        -//
 //---------------------------------------------------------------------//
 
-void MessageSubscriber::setSbgInterface(SbgInterface *sbg_interface)
-{
-    m_sbg_interface_ = sbg_interface;
-}
-
-void MessageSubscriber::initTopicSubscriptions(rclcpp::Node& ref_ros_node_handle, const ConfigStore &ref_config_store)
+void MessageSubscriber::initTopicSubscriptions(rclcpp::Node& ref_ros_node_handle,
+                                               SbgInterface &sbg_interface,
+                                               const ConfigStore &ref_config_store)
 {
     auto rtcm_cb = [&](const mavros_msgs::msg::RTCM::SharedPtr msg) -> void {
-        this->readRosRtcmMessage(msg);
+        this->readRosRtcmMessage(sbg_interface, msg);
     };
 
     if (ref_config_store.shouldListenRtcm())
