@@ -55,7 +55,8 @@ private:
   /*!
    * Handler for subscription to RTCM topic.
    *
-   * \param[in] msg             ROS RTCM message.
+   * \param[in] sbg_interface         Interface to use for read/write operations.
+   * \param[in] msg                   ROS RTCM message.
    */
   void readRosRtcmMessage(SbgInterface &sbg_interface, const mavros_msgs::msg::RTCM::SharedPtr msg) const;
 
@@ -77,6 +78,8 @@ public:
   /*!
    * Initialize the subscribers with configuration.
    *
+   * \param[in] ref_ros_node_handle     Ros Node to advertise the subscribers.
+   * \param[in] sbg_interface           Interface to use for read/write operations.
    * \param[in] ref_config_store        Store configuration for the subscribers.
    */
   void initTopicSubscriptions(rclcpp::Node& ref_ros_node_handle,
