@@ -253,6 +253,11 @@ confWithRos: true
 
 Then, modify the desired parameters in the config file, using the <i>SBG Firmware Manual</i>, to see which features are configurable, and which parameter values are available.
 
+### Configuration for SBG device and RTCM messages  
+The SBG Ros driver forwards RTCM messages received to the device. For the device to listen to those messages, a specific configuration must be applied manually.  
+Use `sbgCenter`, to configure the device.  
+In `Assignment panel`, `RTCM` should be set to `Port A`.
+
 ### Calibrate the magnetometers
 Ellipse-A/E/N use magnemoter to provide heading. A calibration is then required to compensate soft and hard iron distortions due to the environmenent (motors, batteries, ...). The magnetic calibration procedure should be held in a non magnetic area (outside of buildings).
 
