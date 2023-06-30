@@ -1155,9 +1155,19 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
     {
       // Publish UTM initial transformation.
       geometry_msgs::msg::Pose pose;
-      pose.position.x = m_utm0_.easting;
-      pose.position.y = m_utm0_.northing;
-      pose.position.z = m_utm0_.altitude;
+      if (m_use_enu_)
+      {
+        pose.position.x = m_utm0_.easting;
+        pose.position.y = m_utm0_.northing;
+        pose.position.z = m_utm0_.altitude;
+      }
+      else
+      {
+        pose.position.x = m_utm0_.northing;
+        pose.position.y = m_utm0_.easting;
+        pose.position.z = m_utm0_.altitude;
+      }
+
       fillTransform(m_odom_init_frame_id_, m_odom_frame_id_, pose, transform);
       m_static_tf_broadcaster_->sendTransform(transform);
     }
