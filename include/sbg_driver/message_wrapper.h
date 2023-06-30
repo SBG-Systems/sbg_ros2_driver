@@ -363,6 +363,23 @@ private:
    */
   static NmeaGGAQuality convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbgGpsType);
 
+   /*!
+   * Convert a NED array to an ENU vector.
+   *
+   * \param[in] nedArray                Reference to a NED formatted array.
+   * \return                            An ENU formatted Vector3.
+   */
+   template<class T>
+   static inline geometry_msgs::msg::Vector3 nedToEnu(const T (&nedArray)[3])
+   {
+       geometry_msgs::msg::Vector3 enuVector;
+
+       enuVector.x = nedArray[1];
+       enuVector.y = nedArray[0];
+       enuVector.z = -nedArray[2];
+       return (enuVector);
+   }
+
 public:
 
   //---------------------------------------------------------------------//
