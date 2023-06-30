@@ -681,9 +681,7 @@ const sbg_driver::msg::SbgEkfNav MessageWrapper::createSbgEkfNavMessage(const Sb
 
   if (m_use_enu_)
   {
-    ekf_nav_message.velocity.x = ref_log_ekf_nav.velocity[1];
-    ekf_nav_message.velocity.y = ref_log_ekf_nav.velocity[0];
-    ekf_nav_message.velocity.z = -ref_log_ekf_nav.velocity[2];
+    ekf_nav_message.velocity = nedToEnu(ref_log_ekf_nav.velocity);
 
     ekf_nav_message.velocity_accuracy.x = ref_log_ekf_nav.velocityStdDev[1];
     ekf_nav_message.velocity_accuracy.y = ref_log_ekf_nav.velocityStdDev[0];
@@ -846,9 +844,7 @@ const sbg_driver::msg::SbgGpsVel MessageWrapper::createSbgGpsVelMessage(const Sb
 
   if (m_use_enu_)
   {
-    gps_vel_message.velocity.x = ref_log_gps_vel.velocity[1];
-    gps_vel_message.velocity.y = ref_log_gps_vel.velocity[0];
-    gps_vel_message.velocity.z = -ref_log_gps_vel.velocity[2];
+    gps_vel_message.velocity  = nedToEnu(ref_log_gps_vel.velocity);
 
     gps_vel_message.velocity_accuracy.x = ref_log_gps_vel.velocityAcc[1];
     gps_vel_message.velocity_accuracy.y = ref_log_gps_vel.velocityAcc[0];
@@ -883,21 +879,10 @@ const sbg_driver::msg::SbgImuData MessageWrapper::createSbgImuDataMessage(const 
 
   if (m_use_enu_)
   {
-    imu_data_message.accel.x        = ref_log_imu_data.accelerometers[1];
-    imu_data_message.accel.y        = ref_log_imu_data.accelerometers[0];
-    imu_data_message.accel.z        = -ref_log_imu_data.accelerometers[2];
-
-    imu_data_message.gyro.x         = ref_log_imu_data.gyroscopes[1];
-    imu_data_message.gyro.y         = ref_log_imu_data.gyroscopes[0];
-    imu_data_message.gyro.z         = -ref_log_imu_data.gyroscopes[2];
-
-    imu_data_message.delta_vel.x    = ref_log_imu_data.deltaVelocity[1];
-    imu_data_message.delta_vel.y    = ref_log_imu_data.deltaVelocity[0];
-    imu_data_message.delta_vel.z    = -ref_log_imu_data.deltaVelocity[2];
-
-    imu_data_message.delta_angle.x  = ref_log_imu_data.deltaAngle[1];
-    imu_data_message.delta_angle.y  = ref_log_imu_data.deltaAngle[0];
-    imu_data_message.delta_angle.z  = -ref_log_imu_data.deltaAngle[2];
+    imu_data_message.accel          = nedToEnu(ref_log_imu_data.accelerometers);
+    imu_data_message.gyro           = nedToEnu(ref_log_imu_data.gyroscopes);
+    imu_data_message.delta_vel      = nedToEnu(ref_log_imu_data.deltaVelocity);
+    imu_data_message.delta_angle    = nedToEnu(ref_log_imu_data.deltaAngle);
   }
   else
   {
@@ -931,13 +916,8 @@ const sbg_driver::msg::SbgMag MessageWrapper::createSbgMagMessage(const SbgLogMa
 
   if (m_use_enu_)
   {
-    mag_message.mag.x   = ref_log_mag.magnetometers[1];
-    mag_message.mag.y   = ref_log_mag.magnetometers[0];
-    mag_message.mag.z   = -ref_log_mag.magnetometers[2];
-
-    mag_message.accel.x = ref_log_mag.accelerometers[1];
-    mag_message.accel.y = ref_log_mag.accelerometers[0];
-    mag_message.accel.z = -ref_log_mag.accelerometers[2];
+    mag_message.mag       = nedToEnu(ref_log_mag.magnetometers);
+    mag_message.accel     = nedToEnu(ref_log_mag.accelerometers);
   }
   else
   {
@@ -1077,13 +1057,8 @@ const sbg_driver::msg::SbgImuShort MessageWrapper::createSbgImuShortMessage(cons
 
   if (m_use_enu_)
   {
-    imu_short_message.delta_velocity.x  = ref_short_imu_log.deltaVelocity[1];
-    imu_short_message.delta_velocity.y  = ref_short_imu_log.deltaVelocity[0];
-    imu_short_message.delta_velocity.z  = -ref_short_imu_log.deltaVelocity[2];
-
-    imu_short_message.delta_angle.x     = ref_short_imu_log.deltaAngle[1];
-    imu_short_message.delta_angle.y     = ref_short_imu_log.deltaAngle[0];
-    imu_short_message.delta_angle.z     = -ref_short_imu_log.deltaAngle[2];
+    imu_short_message.delta_velocity    = nedToEnu(ref_short_imu_log.deltaVelocity);
+    imu_short_message.delta_angle       = nedToEnu(ref_short_imu_log.deltaAngle);
   }
   else
   {
@@ -1105,7 +1080,7 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
 
   imu_ros_message.header = createRosHeader(ref_sbg_imu_msg.time_stamp);
 
-  imu_ros_message.orientation                       = ref_sbg_quat_msg.quaternion;
+  imu_ros_message.orientation               = ref_sbg_quat_msg.quaternion;
   imu_ros_message.angular_velocity          = ref_sbg_imu_msg.delta_angle;
   imu_ros_message.linear_acceleration       = ref_sbg_imu_msg.delta_vel;
 
@@ -1127,8 +1102,6 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
 
 void MessageWrapper::fillTransform(const std::string &ref_parent_frame_id, const std::string &ref_child_frame_id, const geometry_msgs::msg::Pose &ref_pose, geometry_msgs::msg::TransformStamped &refTransformStamped)
 {
-  tf2::Quaternion q;
-
   refTransformStamped.header.stamp = rclcpp::Clock().now();
   refTransformStamped.header.frame_id = ref_parent_frame_id;
   refTransformStamped.child_frame_id = ref_child_frame_id;
