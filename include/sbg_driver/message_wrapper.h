@@ -138,6 +138,14 @@ private:
   float wrapAngle2Pi(float angle_rad) const;
 
   /*!
+   * Wrap an angle to PI.
+   *
+   * \param[in] angle_rad			Angle in rad.
+   * \return						Wrapped angle.
+   */
+  float wrapAnglePi(float angle_rad) const;
+
+  /*!
    * Wrap an angle to 360 degres.
    *
    * \param[in] angle_deg			Angle in degree.

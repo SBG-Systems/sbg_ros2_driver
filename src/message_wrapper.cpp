@@ -53,6 +53,22 @@ float MessageWrapper::wrapAngle2Pi(float angle_rad) const
   return angle_rad;
 }
 
+float MessageWrapper::wrapAnglePi(float angle_rad) const
+{
+    angle_rad = fmodf(angle_rad, SBG_PI_F * 2.0f);
+    if (angle_rad > SBG_PI_F)
+    {
+        angle_rad = SBG_PI_F * 2.0f - angle_rad;
+    }
+
+    if (angle_rad < -SBG_PI_F)
+    {
+        angle_rad = SBG_PI_F * 2.0f + angle_rad;
+    }
+
+    return angle_rad;
+}
+
 float MessageWrapper::wrapAngle360(float angle_deg) const
 {
   if ( (angle_deg < -360.0f) || (angle_deg > 360.0f) )
@@ -634,7 +650,7 @@ const sbg_driver::msg::SbgEkfEuler MessageWrapper::createSbgEkfEulerMessage(cons
   {
     ekf_euler_message.angle.x  = ref_log_ekf_euler.euler[0];
     ekf_euler_message.angle.y  = -ref_log_ekf_euler.euler[1];
-    ekf_euler_message.angle.z  = wrapAngle2Pi((SBG_PI_F / 2.0f) - ref_log_ekf_euler.euler[2]);
+    ekf_euler_message.angle.z  = wrapAnglePi((SBG_PI_F / 2.0f) - ref_log_ekf_euler.euler[2]);
   }
   else
   {
@@ -709,10 +725,13 @@ const sbg_driver::msg::SbgEkfQuat MessageWrapper::createSbgEkfQuatMessage(const 
 
   if (m_use_enu_)
   {
-    ekf_quat_message.quaternion.x = ref_log_ekf_quat.quaternion[1];
-    ekf_quat_message.quaternion.y = -ref_log_ekf_quat.quaternion[2];
-    ekf_quat_message.quaternion.z = -ref_log_ekf_quat.quaternion[3];
-    ekf_quat_message.quaternion.w = ref_log_ekf_quat.quaternion[0];
+    tf2::Quaternion q_NWU{ref_log_ekf_quat.quaternion[1],
+                          -ref_log_ekf_quat.quaternion[2],
+                          -ref_log_ekf_quat.quaternion[3],
+                          ref_log_ekf_quat.quaternion[0]};
+    const tf2::Quaternion q_ENU_NWU{0, 0, M_SQRT2 / 2, M_SQRT2 / 2};
+
+    ekf_quat_message.quaternion = tf2::toMsg(q_ENU_NWU * q_NWU);
   }
   else
   {
@@ -864,20 +883,20 @@ const sbg_driver::msg::SbgImuData MessageWrapper::createSbgImuDataMessage(const 
 
   if (m_use_enu_)
   {
-    imu_data_message.accel.x        = ref_log_imu_data.accelerometers[0];
-    imu_data_message.accel.y        = -ref_log_imu_data.accelerometers[1];
+    imu_data_message.accel.x        = ref_log_imu_data.accelerometers[1];
+    imu_data_message.accel.y        = ref_log_imu_data.accelerometers[0];
     imu_data_message.accel.z        = -ref_log_imu_data.accelerometers[2];
 
-    imu_data_message.gyro.x         = ref_log_imu_data.gyroscopes[0];
-    imu_data_message.gyro.y         = -ref_log_imu_data.gyroscopes[1];
+    imu_data_message.gyro.x         = ref_log_imu_data.gyroscopes[1];
+    imu_data_message.gyro.y         = ref_log_imu_data.gyroscopes[0];
     imu_data_message.gyro.z         = -ref_log_imu_data.gyroscopes[2];
 
-    imu_data_message.delta_vel.x    = ref_log_imu_data.deltaVelocity[0];
-    imu_data_message.delta_vel.y    = -ref_log_imu_data.deltaVelocity[1];
+    imu_data_message.delta_vel.x    = ref_log_imu_data.deltaVelocity[1];
+    imu_data_message.delta_vel.y    = ref_log_imu_data.deltaVelocity[0];
     imu_data_message.delta_vel.z    = -ref_log_imu_data.deltaVelocity[2];
 
-    imu_data_message.delta_angle.x  = ref_log_imu_data.deltaAngle[0];
-    imu_data_message.delta_angle.y  = -ref_log_imu_data.deltaAngle[1];
+    imu_data_message.delta_angle.x  = ref_log_imu_data.deltaAngle[1];
+    imu_data_message.delta_angle.y  = ref_log_imu_data.deltaAngle[0];
     imu_data_message.delta_angle.z  = -ref_log_imu_data.deltaAngle[2];
   }
   else
@@ -912,12 +931,12 @@ const sbg_driver::msg::SbgMag MessageWrapper::createSbgMagMessage(const SbgLogMa
 
   if (m_use_enu_)
   {
-    mag_message.mag.x   = ref_log_mag.magnetometers[0];
-    mag_message.mag.y   = -ref_log_mag.magnetometers[1];
+    mag_message.mag.x   = ref_log_mag.magnetometers[1];
+    mag_message.mag.y   = ref_log_mag.magnetometers[0];
     mag_message.mag.z   = -ref_log_mag.magnetometers[2];
 
-    mag_message.accel.x = ref_log_mag.accelerometers[0];
-    mag_message.accel.y = -ref_log_mag.accelerometers[1];
+    mag_message.accel.x = ref_log_mag.accelerometers[1];
+    mag_message.accel.y = ref_log_mag.accelerometers[0];
     mag_message.accel.z = -ref_log_mag.accelerometers[2];
   }
   else
@@ -1058,12 +1077,12 @@ const sbg_driver::msg::SbgImuShort MessageWrapper::createSbgImuShortMessage(cons
 
   if (m_use_enu_)
   {
-    imu_short_message.delta_velocity.x  = ref_short_imu_log.deltaVelocity[0];
-    imu_short_message.delta_velocity.y  = -ref_short_imu_log.deltaVelocity[1];
+    imu_short_message.delta_velocity.x  = ref_short_imu_log.deltaVelocity[1];
+    imu_short_message.delta_velocity.y  = ref_short_imu_log.deltaVelocity[0];
     imu_short_message.delta_velocity.z  = -ref_short_imu_log.deltaVelocity[2];
 
-    imu_short_message.delta_angle.x     = ref_short_imu_log.deltaAngle[0];
-    imu_short_message.delta_angle.y     = -ref_short_imu_log.deltaAngle[1];
+    imu_short_message.delta_angle.x     = ref_short_imu_log.deltaAngle[1];
+    imu_short_message.delta_angle.y     = ref_short_imu_log.deltaAngle[0];
     imu_short_message.delta_angle.z     = -ref_short_imu_log.deltaAngle[2];
   }
   else
