@@ -370,7 +370,7 @@ private:
    * \return                            An ENU formatted Vector3.
    */
    template<class T>
-   static inline geometry_msgs::msg::Vector3 nedToEnu(const T (&nedArray)[3])
+   static inline geometry_msgs::msg::Vector3 convertNedArrayToEnuVector(const T (&nedArray)[3])
    {
        geometry_msgs::msg::Vector3 enuVector;
 
