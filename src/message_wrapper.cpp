@@ -1173,9 +1173,9 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
     }
   }
 
-  LLtoUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, m_utm0_.zone, utm_easting, utm_northing);
-  odo_ros_msg.pose.pose.position.x = utm_northing - m_utm0_.easting;
-  odo_ros_msg.pose.pose.position.y = utm_easting  - m_utm0_.northing;
+  LLtoUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, m_utm0_.zone, utm_northing, utm_easting);
+  odo_ros_msg.pose.pose.position.x = utm_easting  - m_utm0_.easting;
+  odo_ros_msg.pose.pose.position.y = utm_northing - m_utm0_.northing;
   odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - m_utm0_.altitude;
 
   // Compute convergence angle.
