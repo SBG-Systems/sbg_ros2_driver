@@ -18,7 +18,7 @@ uint32 time_stamp
 # ENU convention:
 #   Roll: Rotation around X axis
 #   Pitch: Rotation around Y axis (opposite sign compared to NED)
-#   Yaw: Rotation about the up axis. Zero when the X axis is pointing East. (opposite sign compared to NED)
+#   Yaw: Rotation about the up axis. Zero when the X axis is pointing East.
 geometry_msgs/Vector3 angle
 
 # Angle accuracy (Roll, Pitch, Yaw (heading)) (1 sigma) [rad]
