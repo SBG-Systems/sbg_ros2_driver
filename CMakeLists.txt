@@ -119,8 +119,9 @@ target_link_libraries(sbg_device_mag ${catkin_LIBRARIES} sbgECom)
 ament_target_dependencies(sbg_device ${USED_LIBRARIES}) 
 ament_target_dependencies(sbg_device_mag ${USED_LIBRARIES})
 
-rosidl_target_interfaces(sbg_device ${PROJECT_NAME} "rosidl_typesupport_cpp")
-rosidl_target_interfaces(sbg_device_mag ${PROJECT_NAME} "rosidl_typesupport_cpp")
+rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
+target_link_libraries(sbg_device "${cpp_typesupport_target}")
+target_link_libraries(sbg_device_mag "${cpp_typesupport_target}")
 
 set_property(TARGET sbg_device PROPERTY CXX_STANDARD 14)
 set_property(TARGET sbg_device_mag PROPERTY CXX_STANDARD 14)
