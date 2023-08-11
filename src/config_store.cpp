@@ -196,25 +196,25 @@ void ConfigStore::loadOutputTimeReference(const rclcpp::Node& ref_node_handle, c
 void ConfigStore::loadRtcmParameters(const rclcpp::Node &ref_node_handle)
 {
   std::string     topic_name;
-  std::string     namespace;
+  std::string     rtcm_namespace;
 
   ref_node_handle.get_parameter_or<bool>("rtcm.subscribe",          rtcm_subscribe_,        false);
   ref_node_handle.get_parameter_or<std::string>("rtcm.topic_name",  topic_name,             "rtcm");
-  ref_node_handle.get_parameter_or<std::string>("rtcm.namespace",   namespace,              "ntrip_client");
+  ref_node_handle.get_parameter_or<std::string>("rtcm.namespace",   rtcm_namespace,         "ntrip_client");
 
-  rtcm_full_topic_ = namespace + "/" + topic_name;
+  rtcm_full_topic_ = rtcm_namespace + "/" + topic_name;
 }
 
 void ConfigStore::loadNmeaParameters(const rclcpp::Node &ref_node_handle)
 {
   std::string     topic_name;
-  std::string     namespace;
+  std::string     nmea_namespace;
 
   ref_node_handle.get_parameter_or<bool>("nmea.publish",            nmea_publish_,          false);
   ref_node_handle.get_parameter_or<std::string>("nmea.topic_name",  topic_name,             "nmea");
-  ref_node_handle.get_parameter_or<std::string>("nmea.namespace",   namespace,              "ntrip_client");
+  ref_node_handle.get_parameter_or<std::string>("nmea.namespace",   nmea_namespace,         "ntrip_client");
 
-  nmea_full_topic_ = namespace + "/" + topic_name;
+  nmea_full_topic_ = nmea_namespace + "/" + topic_name;
 }
 
 //---------------------------------------------------------------------//
