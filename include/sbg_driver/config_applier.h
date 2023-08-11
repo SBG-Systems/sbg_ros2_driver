@@ -208,7 +208,7 @@ public:
   /*!
    * Save the configuration to the device.
    */
-  void saveConfiguration(void);
+  void saveConfiguration();
 };
 }
 

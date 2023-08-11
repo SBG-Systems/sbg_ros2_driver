@@ -128,17 +128,17 @@ private:
   /*!
    * Process a ROS Velocity standard message.
    */
-  void processRosVelMessage(void);
+  void processRosVelMessage();
 
   /*!
    * Process a ROS IMU standard message.
    */
-  void processRosImuMessage(void);
+  void processRosImuMessage();
 
   /*!
    * Process a ROS odometry standard message.
    */
-  void processRosOdoMessage(void);
+  void processRosOdoMessage();
 
   /*!
    * Publish a received SBG Magnetic log.
@@ -185,7 +185,7 @@ public:
   /*!
    * Default constructor.
    */
-  MessagePublisher(void);
+  MessagePublisher();
 
   //---------------------------------------------------------------------//
   //- Operations                                                        -//

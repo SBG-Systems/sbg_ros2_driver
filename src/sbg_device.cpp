@@ -65,7 +65,7 @@ m_mag_calibration_done_(false)
   connect();
 }
 
-SbgDevice::~SbgDevice(void)
+SbgDevice::~SbgDevice()
 {
   SbgErrorCode error_code;
 
@@ -117,7 +117,7 @@ void SbgDevice::onLogReceived(SbgEComClass msg_class, SbgEComMsgId msg, const Sb
   m_message_publisher_.publish(msg_class, msg, ref_sbg_data);
 }
 
-void SbgDevice::loadParameters(void)
+void SbgDevice::loadParameters()
 {
   //
   // Get the ROS private nodeHandle, where the parameters are loaded from the launch file.
@@ -128,7 +128,7 @@ void SbgDevice::loadParameters(void)
   m_config_store_.loadFromRosNodeHandle(n_private);
 }
 
-void SbgDevice::connect(void)
+void SbgDevice::connect()
 {
   SbgErrorCode error_code;
   error_code = SBG_NO_ERROR;
@@ -168,7 +168,7 @@ void SbgDevice::connect(void)
   readDeviceInfo();
 }
 
-void SbgDevice::readDeviceInfo(void)
+void SbgDevice::readDeviceInfo()
 {
   SbgEComDeviceInfo device_info;
   SbgErrorCode      error_code;
@@ -200,7 +200,7 @@ std::string SbgDevice::getVersionAsString(uint32 sbg_version_enc) const
   return std::string(version);
 }
 
-void SbgDevice::initPublishers(void)
+void SbgDevice::initPublishers()
 {
   m_message_publisher_.initPublishers(m_ref_node_, m_config_store_);
 
@@ -225,7 +225,7 @@ void SbgDevice::initSubscribers()
     }
 }
 
-void SbgDevice::configure(void)
+void SbgDevice::configure()
 {
   if (m_config_store_.checkConfigWithRos())
   {
@@ -304,7 +304,7 @@ bool SbgDevice::saveMagCalibration(const std::shared_ptr<std_srvs::srv::Trigger:
   return ref_ros_response->success;
 }
 
-bool SbgDevice::startMagCalibration(void)
+bool SbgDevice::startMagCalibration()
 {
   SbgErrorCode              error_code;
   SbgEComMagCalibMode       mag_calib_mode;
@@ -329,7 +329,7 @@ bool SbgDevice::startMagCalibration(void)
   }
 }
 
-bool SbgDevice::endMagCalibration(void)
+bool SbgDevice::endMagCalibration()
 {
   SbgErrorCode error_code;
 
@@ -349,7 +349,7 @@ bool SbgDevice::endMagCalibration(void)
   }
 }
 
-bool SbgDevice::uploadMagCalibrationToDevice(void)
+bool SbgDevice::uploadMagCalibrationToDevice()
 {
   SbgErrorCode error_code;
 
@@ -377,7 +377,7 @@ bool SbgDevice::uploadMagCalibrationToDevice(void)
   }
 }
 
-void SbgDevice::displayMagCalibrationStatusResult(void) const
+void SbgDevice::displayMagCalibrationStatusResult() const
 {
   RCLCPP_INFO(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Quality of the calibration %s", g_mag_calib_quality_[m_magCalibResults.quality].c_str());
   RCLCPP_INFO(m_ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Calibration results confidence %s", g_mag_calib_confidence_[m_magCalibResults.confidence].c_str());
@@ -429,7 +429,7 @@ void SbgDevice::displayMagCalibrationStatusResult(void) const
   }
 }
 
-void SbgDevice::exportMagCalibrationResults(void) const
+void SbgDevice::exportMagCalibrationResults() const
 {
   SbgEComMagCalibMode       mag_calib_mode;
   SbgEComMagCalibBandwidth  mag_calib_bandwidth;
@@ -486,7 +486,7 @@ void SbgDevice::writeRtcmMessageToDevice(const rtcm_msgs::msg::Message::SharedPt
 //- Parameters                                                        -//
 //---------------------------------------------------------------------//
 
-uint32_t SbgDevice::getUpdateFrequency(void) const
+uint32_t SbgDevice::getUpdateFrequency() const
 {
   return m_rate_frequency_;
 }
@@ -495,7 +495,7 @@ uint32_t SbgDevice::getUpdateFrequency(void) const
 //- Public  methods                                                   -//
 //---------------------------------------------------------------------//
 
-void SbgDevice::initDeviceForReceivingData(void)
+void SbgDevice::initDeviceForReceivingData()
 {
   SbgErrorCode error_code;
   initPublishers();
@@ -511,7 +511,7 @@ void SbgDevice::initDeviceForReceivingData(void)
   initSubscribers();
 }
 
-void SbgDevice::initDeviceForMagCalibration(void)
+void SbgDevice::initDeviceForMagCalibration()
 {
   m_calib_service_      = m_ref_node_.create_service<std_srvs::srv::Trigger>("sbg/mag_calibration", std::bind(&SbgDevice::processMagCalibration, this, std::placeholders::_1, std::placeholders::_2));
   m_calib_save_service_ = m_ref_node_.create_service<std_srvs::srv::Trigger>("sbg/mag_calibration_save", std::bind(&SbgDevice::saveMagCalibration, this, std::placeholders::_1, std::placeholders::_2));
@@ -519,7 +519,7 @@ void SbgDevice::initDeviceForMagCalibration(void)
   RCLCPP_INFO(m_ref_node_.get_logger(), "SBG DRIVER [Init] - SBG device is initialized for magnetometers calibration.");
 }
 
-void SbgDevice::periodicHandle(void)
+void SbgDevice::periodicHandle()
 {
   sbgEComHandle(&m_com_handle_);
 }

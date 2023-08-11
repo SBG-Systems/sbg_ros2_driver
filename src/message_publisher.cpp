@@ -9,7 +9,7 @@ using sbg::MessagePublisher;
 //- Constructor                                                       -//
 //---------------------------------------------------------------------//
 
-MessagePublisher::MessagePublisher(void):
+MessagePublisher::MessagePublisher():
 m_max_messages_(10)
 {
 }
@@ -315,7 +315,7 @@ void MessagePublisher::publishIMUData(const SbgBinaryLogData &ref_sbg_log)
   processRosOdoMessage();
 }
 
-void MessagePublisher::processRosVelMessage(void)
+void MessagePublisher::processRosVelMessage()
 {
   if (m_velocity_pub_)
   {
@@ -330,7 +330,7 @@ void MessagePublisher::processRosVelMessage(void)
   }
 }
 
-void MessagePublisher::processRosImuMessage(void)
+void MessagePublisher::processRosImuMessage()
 {
   if (m_imu_pub_)
   {
@@ -341,7 +341,7 @@ void MessagePublisher::processRosImuMessage(void)
   }
 }
 
-void MessagePublisher::processRosOdoMessage(void)
+void MessagePublisher::processRosOdoMessage()
 {
   if (m_odometry_pub_)
   {

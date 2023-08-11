@@ -19,7 +19,7 @@ using sbg::MessageWrapper;
 //- Constructor                                                       -//
 //---------------------------------------------------------------------//
 
-MessageWrapper::MessageWrapper(void):
+MessageWrapper::MessageWrapper():
 Node("tf_broadcaster")
 {
   m_first_valid_utc_ = false;

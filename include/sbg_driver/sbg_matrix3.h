@@ -68,7 +68,7 @@ public:
   /*!
    * Empty constructor.
    */
-  SbgMatrix3(void)
+  SbgMatrix3()
   {
     m_data[0] = static_cast<T>(0.0);
     m_data[1] = static_cast<T>(0.0);
@@ -155,7 +155,7 @@ public:
    *
    * \return                                Raw vector data.
    */
-  const T *data(void) const
+  const T *data() const
   {
     return static_cast<const T*>(m_data.data());
   };
@@ -169,7 +169,7 @@ public:
     return SbgVector3<T>(x, y, z);
   }
 
-  void transpose(void)
+  void transpose()
   {
     T swap = m_data[1];
     m_data[1] = m_data[3];
