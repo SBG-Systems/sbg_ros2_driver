@@ -439,7 +439,7 @@ void ConfigApplier::applyConfiguration(const ConfigStore& ref_config_store)
   }
 }
 
-void ConfigApplier::saveConfiguration(void)
+void ConfigApplier::saveConfiguration()
 {
   SbgErrorCode error_code;
 

@@ -272,7 +272,7 @@ public:
   /*!
    * Default constructor.
    */
-  ConfigStore(void);
+  ConfigStore();
 
   //---------------------------------------------------------------------//
   //- Parameters                                                        -//
@@ -283,182 +283,182 @@ public:
    *
    * \return                      True if the ROS driver has to configure the device.
    */
-  bool checkConfigWithRos(void) const;
+  bool checkConfigWithRos() const;
 
   /*!
    * Check if the interface configuration is a serial interface.
    *
    * \return                      True if the interface is serial, False otherwise.
    */
-  bool isInterfaceSerial(void) const;
+  bool isInterfaceSerial() const;
 
   /*!
    * Get the UART port name.
    *
    * \return                      UART serial port name.
    */
-  const std::string &getUartPortName(void) const;
+  const std::string &getUartPortName() const;
 
   /*!
    * Get the UART baudrate communication.
    *
    * \return                      UART serial baudrate.
    */
-  uint32_t getBaudRate(void) const;
+  uint32_t getBaudRate() const;
 
   /*!
    * Get the output port of the device.
    *
    * \return                      SBG device output port.
    */
-  SbgEComOutputPort getOutputPort(void) const;
+  SbgEComOutputPort getOutputPort() const;
 
   /*!
    * Check if the interface configuration is a UDP interface.
    *
    * \return                      True if the interface is UDP, False otherwise.
    */
-  bool isInterfaceUdp(void) const;
+  bool isInterfaceUdp() const;
 
   /*!
    * Get the Ip address of the interface.
    *
    * \return                      Ip address.
    */
-  sbgIpAddress getIpAddress(void) const;
+  sbgIpAddress getIpAddress() const;
 
   /*!
    * Get the output port.
    *
    * \return                      Output port.
    */
-  uint32_t getOutputPortAddress(void) const;
+  uint32_t getOutputPortAddress() const;
 
   /*!
    * Get the input port.
    *
    * \return                      Input port.
    */
-  uint32_t getInputPortAddress(void) const;
+  uint32_t getInputPortAddress() const;
 
   /*!
    * Get the initial conditions configuration.
    *
    * \return                                Initial conditions configuration.
    */
-  const SbgEComInitConditionConf &getInitialConditions(void) const;
+  const SbgEComInitConditionConf &getInitialConditions() const;
 
   /*!
    * Get the motion profile configuration.
    *
    * \return                                Motion profile configuration.
    */
-  const SbgEComModelInfo &getMotionProfile(void) const;
+  const SbgEComModelInfo &getMotionProfile() const;
 
   /*!
    * Get the sensor alignement configuration.
    *
    * \return                                Sensor alignement configuration.
    */
-  const SbgEComSensorAlignmentInfo &getSensorAlignement(void) const;
+  const SbgEComSensorAlignmentInfo &getSensorAlignement() const;
 
   /*!
    * Get the sensor level arms.
    *
    * \return                                Sensor level arms vector (in meters).
    */
-  const SbgVector3<float> &getSensorLevelArms(void) const;
+  const SbgVector3<float> &getSensorLevelArms() const;
 
   /*!
    * Get the aiding assignement configuration.
    *
    * \return                                Aiding assignement configuration.
    */
-  const SbgEComAidingAssignConf &getAidingAssignement(void) const;
+  const SbgEComAidingAssignConf &getAidingAssignement() const;
 
   /*!
    * Get the magnetometer model configuration.
    *
    * \return                                Magnetometer model configuration.
    */
-  const SbgEComModelInfo &getMagnetometerModel(void) const;
+  const SbgEComModelInfo &getMagnetometerModel() const;
 
   /*!
    * Get the magnetometer rejection configuration.
    *
    * \return                                Magnetometer rejection configuration.
    */
-  const SbgEComMagRejectionConf &getMagnetometerRejection(void) const;
+  const SbgEComMagRejectionConf &getMagnetometerRejection() const;
 
   /*!
    * Get the magnetometer calibration mode.
    *
    * \return                                Magnetometer calibration mode.
    */
-  const SbgEComMagCalibMode &getMagnetometerCalibMode(void) const;
+  const SbgEComMagCalibMode &getMagnetometerCalibMode() const;
 
   /*!
    * Get the magnetometer calibration bandwidth.
    *
    * \return                                Magnetometer calibration bandwidth.
    */
-  const SbgEComMagCalibBandwidth &getMagnetometerCalibBandwidth(void) const;
+  const SbgEComMagCalibBandwidth &getMagnetometerCalibBandwidth() const;
 
   /*!
    * Get the Gnss model configuration.
    *
    * \return                                Gnss model configuration.
    */
-  const SbgEComModelInfo &getGnssModel(void) const;
+  const SbgEComModelInfo &getGnssModel() const;
 
   /*!
    * Get the Gnss installation configuration.
    *
    * \return                                Gnss installation configuration.
    */
-  const SbgEComGnssInstallation &getGnssInstallation(void) const;
+  const SbgEComGnssInstallation &getGnssInstallation() const;
 
   /*!
    * Get the Gnss rejection configuration.
    *
    * \return                                Gnss rejection configuration.
    */
-  const SbgEComGnssRejectionConf &getGnssRejection(void) const;
+  const SbgEComGnssRejectionConf &getGnssRejection() const;
 
   /*!
    * Get the odometer configuration.
    *
    * \return                                Odometer configuration.
    */
-  const SbgEComOdoConf &getOdometerConf(void) const;
+  const SbgEComOdoConf &getOdometerConf() const;
 
   /*!
    * Get the odometer level arms.
    *
    * \return                                Odometer level arms vector (in meters).
    */
-  const SbgVector3<float> &getOdometerLevelArms(void) const;
+  const SbgVector3<float> &getOdometerLevelArms() const;
 
   /*!
    * Get the odometer rejection.
    *
    * \return                                Odometer rejection configuration.
    */
-  const SbgEComOdoRejectionConf &getOdometerRejection(void) const;
+  const SbgEComOdoRejectionConf &getOdometerRejection() const;
 
   /*!
    * Get all the output modes.
    *
    * \return                      Output mode for this config store.
    */
-  const std::vector<SbgLogOutput> &getOutputModes(void) const;
+  const std::vector<SbgLogOutput> &getOutputModes() const;
 
   /*!
    * Check if the ROS standard outputs are defined.
    *
    * \return                      True if standard ROS messages output are defined.
    */
-  bool checkRosStandardMessages(void) const;
+  bool checkRosStandardMessages() const;
 
   /*!
    * Get the reading frequency defined in settings.
@@ -466,42 +466,42 @@ public:
    *
    * \return                      Rate frequency parameter (in Hz).
    */
-  uint32_t getReadingRateFrequency(void) const;
+  uint32_t getReadingRateFrequency() const;
 
   /*!
    * Get the frame ID.
    *
    * \return                      Frame ID.
    */
-  const std::string &getFrameId(void) const;
+  const std::string &getFrameId() const;
 
   /*!
    * Get use ENU.
    *
    * \return					 True if the frame convention to use is ENU.
    */
-  bool getUseEnu(void) const;
+  bool getUseEnu() const;
 
   /*!
    * Get odom enable.
    *
    * \return					 True if the odometry is enabled.
    */
-  bool getOdomEnable(void) const;
+  bool getOdomEnable() const;
 
   /*!
    * Get odom publish_tf.
    *
    * \return					 If true publish odometry transforms.
    */
-  bool getOdomPublishTf(void) const;
+  bool getOdomPublishTf() const;
 
   /*!
    * Get the odometry frame ID.
    *
    * \return                      Odometry frame ID.
    */
-  const std::string &getOdomFrameId(void) const;
+  const std::string &getOdomFrameId() const;
 
 
   /*!
@@ -509,7 +509,7 @@ public:
    *
    * \return                      Odometry base frame ID.
    */
-  const std::string &getOdomBaseFrameId(void) const;
+  const std::string &getOdomBaseFrameId() const;
 
 
   /*!
@@ -517,28 +517,28 @@ public:
    *
    * \return                      Odometry init frame ID.
    */
-  const std::string &getOdomInitFrameId(void) const;
+  const std::string &getOdomInitFrameId() const;
 
   /*!
    * Get the time reference.
    *
    * \return                      Time reference.
    */
-  TimeReference getTimeReference(void) const;
+  TimeReference getTimeReference() const;
 
   /*!
    * Get RTCM enable.
    *
    * \return                      True if RTCM is enabled.
    */
-  bool shouldListenRtcm(void) const;
+  bool shouldListenRtcm() const;
 
   /*!
    * Get RTCM full topic.
    *
    * \return                      String with RTCM namespace + topic.
    */
-  const std::string &getRtcmFullTopic(void) const;
+  const std::string &getRtcmFullTopic() const;
 
   /*!
    * Get NMEA enable.
@@ -552,7 +552,7 @@ public:
    *
    * \return                      String with NMEA namespace + topic.
    */
-  const std::string &getNmeaFullTopic(void) const;
+  const std::string &getNmeaFullTopic() const;
 
     //---------------------------------------------------------------------//
   //- Operations                                                        -//

@@ -356,7 +356,7 @@ public:
   /*!
    * Default constructor.
    */
-  MessageWrapper(void);
+  MessageWrapper();
 
   //---------------------------------------------------------------------//
   //- Parameters                                                        -//
