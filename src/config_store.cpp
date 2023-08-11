@@ -15,8 +15,8 @@ m_serial_communication_(false),
 m_upd_communication_(false),
 m_configure_through_ros_(false),
 m_ros_standard_output_(false),
-m_listen_rtcm_(false),
-m_publish_nmea_(false)
+rtcm_subscribe_(false),
+nmea_publish_(false)
 {
 
 }
@@ -195,18 +195,26 @@ void ConfigStore::loadOutputTimeReference(const rclcpp::Node& ref_node_handle, c
 
 void ConfigStore::loadRtcmParameters(const rclcpp::Node &ref_node_handle)
 {
-    ref_node_handle.get_parameter_or<bool>("rtcm.listen_rtcm", m_listen_rtcm_, false);
-    ref_node_handle.get_parameter_or<std::string>("rtcm.topic_name", m_rtcm_topic_name_, "rtcm");
-    ref_node_handle.get_parameter_or<std::string>("rtcm.namespace", m_rtcm_topic_namespace_, "ntrip_client");
-    m_rtcm_full_topic_ = m_rtcm_topic_namespace_ + "/" + m_rtcm_topic_name_;
+  std::string     topic_name;
+  std::string     namespace;
+
+  ref_node_handle.get_parameter_or<bool>("rtcm.subscribe",          rtcm_subscribe_,        false);
+  ref_node_handle.get_parameter_or<std::string>("rtcm.topic_name",  topic_name,             "rtcm");
+  ref_node_handle.get_parameter_or<std::string>("rtcm.namespace",   namespace,              "ntrip_client");
+
+  rtcm_full_topic_ = namespace + "/" + topic_name;
 }
 
 void ConfigStore::loadNmeaParameters(const rclcpp::Node &ref_node_handle)
 {
-    ref_node_handle.get_parameter_or<bool>("nmea.publish_nmea", m_publish_nmea_, false);
-    ref_node_handle.get_parameter_or<std::string>("nmea.topic_name", m_nmea_topic_name_, "nmea");
-    ref_node_handle.get_parameter_or<std::string>("nmea.namespace", m_nmea_topic_namespace_, "ntrip_client");
-    m_nmea_full_topic_ = m_nmea_topic_namespace_ + "/" + m_nmea_topic_name_;
+  std::string     topic_name;
+  std::string     namespace;
+
+  ref_node_handle.get_parameter_or<bool>("nmea.publish",            nmea_publish_,          false);
+  ref_node_handle.get_parameter_or<std::string>("nmea.topic_name",  topic_name,             "nmea");
+  ref_node_handle.get_parameter_or<std::string>("nmea.namespace",   namespace,              "ntrip_client");
+
+  nmea_full_topic_ = namespace + "/" + topic_name;
 }
 
 //---------------------------------------------------------------------//
@@ -388,24 +396,24 @@ const std::string &ConfigStore::getOdomInitFrameId() const
   return m_odom_init_frame_id_;
 }
 
-bool ConfigStore::shouldListenRtcm() const
+bool ConfigStore::shouldSubscribeToRtcm() const
 {
-    return m_listen_rtcm_;
+  return rtcm_subscribe_;
 }
 
 const std::string &ConfigStore::getRtcmFullTopic() const
 {
-    return m_rtcm_full_topic_;
+  return rtcm_full_topic_;
 }
 
 bool ConfigStore::shouldPublishNmea() const
 {
-    return m_publish_nmea_;
+  return nmea_publish_;
 }
 
 const std::string &ConfigStore::getNmeaFullTopic() const
 {
-    return m_nmea_full_topic_;
+  return nmea_full_topic_;
 }
 
 //---------------------------------------------------------------------//

@@ -209,20 +209,14 @@ void SbgDevice::initPublishers()
 
 void SbgDevice::initSubscribers()
 {
-    if (!m_config_store_.shouldListenRtcm())
-    {
-        return;
-    }
-
+  if (m_config_store_.shouldSubscribeToRtcm())
+  {
     auto rtcm_cb = [&](const rtcm_msgs::msg::Message::SharedPtr msg) -> void {
         this->writeRtcmMessageToDevice(msg);
     };
-
-    if (m_config_store_.shouldListenRtcm())
-    {
-        rtcm_sub_ = m_ref_node_.create_subscription<rtcm_msgs::msg::Message>(
-                m_config_store_.getRtcmFullTopic(), 10, rtcm_cb);
-    }
+    
+    rtcm_sub_ = m_ref_node_.create_subscription<rtcm_msgs::msg::Message>(m_config_store_.getRtcmFullTopic(), 10, rtcm_cb);
+  }
 }
 
 void SbgDevice::configure()
@@ -471,15 +465,15 @@ void SbgDevice::exportMagCalibrationResults() const
 
 void SbgDevice::writeRtcmMessageToDevice(const rtcm_msgs::msg::Message::SharedPtr msg)
 {
-    auto rtcm_data = msg->message;
-    auto error_code = sbgInterfaceWrite(&m_sbg_interface_, rtcm_data.data(), rtcm_data.size());
-    if (error_code != SBG_NO_ERROR)
-    {
-        char error_str[256];
+  auto rtcm_data = msg->message;
+  auto error_code = sbgInterfaceWrite(&m_sbg_interface_, rtcm_data.data(), rtcm_data.size());
+  if (error_code != SBG_NO_ERROR)
+  {
+    char error_str[256];
 
-        sbgEComErrorToString(error_code, error_str);
-        SBG_LOG_ERROR(SBG_ERROR, "Failed to sent RTCM data to device: %s", error_str);
-    }
+    sbgEComErrorToString(error_code, error_str);
+    SBG_LOG_ERROR(SBG_ERROR, "Failed to sent RTCM data to device: %s", error_str);
+  }
 }
 
 //---------------------------------------------------------------------//

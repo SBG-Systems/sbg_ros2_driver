@@ -121,15 +121,11 @@ private:
   std::string                 m_odom_base_frame_id_;
   std::string                 m_odom_init_frame_id_;
 
-  bool                        m_listen_rtcm_;
-  std::string                 m_rtcm_topic_name_;
-  std::string                 m_rtcm_topic_namespace_;
-  std::string                 m_rtcm_full_topic_;
+  bool                        rtcm_subscribe_;
+  std::string                 rtcm_full_topic_;
 
-  bool                        m_publish_nmea_;
-  std::string                 m_nmea_topic_name_;
-  std::string                 m_nmea_topic_namespace_;
-  std::string                 m_nmea_full_topic_;
+  bool                        nmea_publish_;
+  std::string                 nmea_full_topic_;
 
   //---------------------------------------------------------------------//
   //- Private  methods                                                  -//
@@ -527,11 +523,11 @@ public:
   TimeReference getTimeReference() const;
 
   /*!
-   * Get RTCM enable.
+   * Returns if the node should subscribe to RTCM publisher
    *
-   * \return                      True if RTCM is enabled.
+   * \return                      True to subscribe to RTCM messages.
    */
-  bool shouldListenRtcm() const;
+  bool shouldSubscribeToRtcm() const;
 
   /*!
    * Get RTCM full topic.

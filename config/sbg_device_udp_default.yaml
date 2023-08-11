@@ -294,8 +294,8 @@
       log_imu_short: 0
 
     rtcm:
-      # Should ros driver listen to RTCM topic
-      listen_rtcm: false
+      # Should ros driver subscribe to RTCM topic
+      subscribe: false
       # Topic on which RTCM is published
       topic_name: rtcm
       # Namespace where topic is published
@@ -303,7 +303,7 @@
 
     nmea:
       # Should ros driver publish NMEA string
-      publish_nmea: false
+      publish: false
       # Topic on which to publish nmea data
       topic_name: nmea
       # Namespace where to publish topic
