@@ -467,6 +467,7 @@ void SbgDevice::writeRtcmMessageToDevice(const rtcm_msgs::msg::Message::SharedPt
 {
   auto rtcm_data = msg->message;
   auto error_code = sbgInterfaceWrite(&m_sbg_interface_, rtcm_data.data(), rtcm_data.size());
+  
   if (error_code != SBG_NO_ERROR)
   {
     char error_str[256];

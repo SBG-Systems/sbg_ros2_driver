@@ -512,29 +512,42 @@ void MessageWrapper::LLtoUTM(double Lat, double Long, int zoneNumber, double &UT
 
 sbg::SbgNmeaGpsQuality MessageWrapper::convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbgGpsType)
 {
-    switch (sbgGpsType)
-    {
-        case SBG_ECOM_POS_SINGLE:
-        case SBG_ECOM_POS_UNKNOWN_TYPE:
-        case SBG_ECOM_POS_FIXED:
-            return SBG_NMEA_GPS_QUALITY_SINGLE;
-        case SBG_ECOM_POS_PSRDIFF:
-        case SBG_ECOM_POS_SBAS:
-        case SBG_ECOM_POS_OMNISTAR:
-            return SBG_NMEA_GPS_QUALITY_DGPS;
-        case SBG_ECOM_POS_PPP_FLOAT:
-        case SBG_ECOM_POS_PPP_INT:
-            return SBG_NMEA_GPS_QUALITY_PPS;
-        case SBG_ECOM_POS_RTK_INT:
-            return SBG_NMEA_GPS_QUALITY_RTK;
-        case SBG_ECOM_POS_RTK_FLOAT:
-            return SBG_NMEA_GPS_QUALITY_RTK_FLOAT;
-        case SBG_ECOM_POS_NO_SOLUTION:
-        default:
-            return SBG_NMEA_GPS_QUALITY_INVALID;
-    }
-}
+  sbg::SbgNmeaGpsQuality  nmeaQuality = SBG_NMEA_GPS_QUALITY_INVALID;
 
+  switch (sbgGpsType)
+  {
+  case SBG_ECOM_POS_NO_SOLUTION:
+    nmeaQuality = SBG_NMEA_GPS_QUALITY_INVALID;
+    break;
+  
+  case SBG_ECOM_POS_UNKNOWN_TYPE:
+  case SBG_ECOM_POS_SINGLE:
+  case SBG_ECOM_POS_FIXED:
+    nmeaQuality = SBG_NMEA_GPS_QUALITY_SINGLE;
+    break;
+  
+  case SBG_ECOM_POS_PSRDIFF:
+  case SBG_ECOM_POS_SBAS:
+  case SBG_ECOM_POS_OMNISTAR:
+    nmeaQuality = SBG_NMEA_GPS_QUALITY_DGPS;
+    break;
+  
+  case SBG_ECOM_POS_PPP_FLOAT:
+  case SBG_ECOM_POS_PPP_INT:
+    nmeaQuality = SBG_NMEA_GPS_QUALITY_PPS;
+    break;
+  
+  case SBG_ECOM_POS_RTK_INT:
+    nmeaQuality = SBG_NMEA_GPS_QUALITY_RTK;
+    break;
+  
+  case SBG_ECOM_POS_RTK_FLOAT:
+    nmeaQuality = SBG_NMEA_GPS_QUALITY_RTK_FLOAT;
+    break;
+  }
+
+  return nmeaQuality;
+}
 
 //---------------------------------------------------------------------//
 //- Parameters                                                        -//
@@ -1341,7 +1354,7 @@ const nmea_msgs::msg::Sentence MessageWrapper::createSbgGpsPosMessageGGA(const S
 {
     nmea_msgs::msg::Sentence gps_pos_nmea_msg;
 
-    // Gps time of week To UTC
+    // GPS time of week to UTC
     uint32_t nb_hours = ref_log_gps_pos.timeOfWeek / (3600 * 1000);
     uint32_t nb_minutes = ref_log_gps_pos.timeOfWeek / (60 * 1000);
     uint32_t current_hour = nb_hours % 24;
@@ -1355,7 +1368,7 @@ const nmea_msgs::msg::Sentence MessageWrapper::createSbgGpsPosMessageGGA(const S
     float latitude = ref_log_gps_pos.latitude;
     if (latitude >= 90.0f)
     {
-        latitude = 90.0;
+        latitude = 90.0f;
     }
     if (latitude <= -90.0f)
     {
@@ -1399,42 +1412,42 @@ const nmea_msgs::msg::Sentence MessageWrapper::createSbgGpsPosMessageGGA(const S
     }
 
     // DOP computation
-    double h_dop = std::hypot(ref_log_gps_pos.latitudeAccuracy, ref_log_gps_pos.longitudeAccuracy);
-    if (h_dop >= 10.0)
+    float h_dop = std::hypot(ref_log_gps_pos.latitudeAccuracy, ref_log_gps_pos.longitudeAccuracy);
+    if (h_dop > 9.9f)
     {
-        h_dop = 9.9;
+        h_dop = 9.9f;
     }
 
-    double diff_age = (ref_log_gps_pos.differentialAge / 100.0f);
-    if (diff_age >= 10.0)
+    float diff_age = (ref_log_gps_pos.differentialAge / 100.0f);
+    if (diff_age > 9.9f)
     {
-        diff_age = 9.9;
+        diff_age = 9.9f;
     }
 
     uint8_t svUsed = ref_log_gps_pos.numSvUsed;
-    if (svUsed > 100)
+    if (svUsed > 99)
     {
         svUsed = 99;
     }
 
-    double altitude = ref_log_gps_pos.altitude;
-    if (altitude <= -100000.0)
+    float altitude = ref_log_gps_pos.altitude;
+    if (altitude < -99999.9f)
     {
-        altitude = -99999.9;
+        altitude = -99999.9f;
     }
-    if (altitude >= 1000000.0)
+    if (altitude > 99999.9f)
     {
-        altitude = 999999.9;
+        altitude = 99999.9f;
     }
 
-    double undulation = ref_log_gps_pos.undulation;
-    if (undulation <= -100000.0)
+    int32_t undulation = static_cast<int32_t>(ref_log_gps_pos.undulation);
+    if (undulation < -99999)
     {
-        undulation = -99999.9;
+        undulation = -99999;
     }
-    if (undulation >= 1000000.0)
+    if (undulation > 99999)
     {
-        undulation = 999999.9;
+        undulation = 99999;
     }
 
     uint16_t baseStationId = ref_log_gps_pos.baseStationId;
@@ -1462,17 +1475,17 @@ const nmea_msgs::msg::Sentence MessageWrapper::createSbgGpsPosMessageGGA(const S
                         svUsed,
                         h_dop,
                         altitude,
-                        static_cast<uint32_t>(undulation),
+                        undulation,
                         diff_age,
                         baseStationId
         );
 
     // Checksum computation
     uint8_t checksum = 0;
-    for(int32_t i = 1; i < len; i++)
+    for (int32_t i = 1; i < len; i++)
     {
         checksum ^= nmea_sentence_buff[i];
-    }
+	}
     snprintf(&nmea_sentence_buff[len], nmea_sentence_buffer_size - len, "*%02X\r\n", checksum);
 
     // Populating ROS message
