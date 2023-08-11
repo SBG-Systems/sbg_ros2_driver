@@ -499,15 +499,13 @@ public:
    */
   const std::string &getOdomFrameId() const;
 
-
   /*!
    * Get the odometry base frame ID.
    *
    * \return                      Odometry base frame ID.
    */
   const std::string &getOdomBaseFrameId() const;
-
-
+  
   /*!
    * Get the odometry init frame ID.
    *
@@ -550,7 +548,7 @@ public:
    */
   const std::string &getNmeaFullTopic() const;
 
-    //---------------------------------------------------------------------//
+  //---------------------------------------------------------------------//
   //- Operations                                                        -//
   //---------------------------------------------------------------------//
 
