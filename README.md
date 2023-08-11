@@ -68,17 +68,17 @@ Every configuration file is defined according to the same structure.
 This config file is the default one for UART connection with the device.  
 It does not configure the device through the ROS node, so it has to be previously configured (manually or with the ROS node).  
 It defines a few outputs for the device:
-	* `/sbg/imu_data`, `/sbg/ekf_quat` at 25Hz
-	* ROS standard outputs `/imu/data`, `/imu/velocity`, `/imu/temp` at 25Hz
-	* `/sbg/status`, `/sbg/utc_time` and `/imu/utc_ref` at 1Hz.
+  * `/sbg/imu_data`, `/sbg/ekf_quat` at 25Hz
+  * ROS standard outputs `/imu/data`, `/imu/velocity`, `/imu/temp` at 25Hz
+  * `/sbg/status`, `/sbg/utc_time` and `/imu/utc_ref` at 1Hz.
 
 * **sbg_device_udp_default.yaml**
 This config file is the default one for an Udp connection with the device.  
 It does not configure the device through the ROS node, so it has to be previously configured (manually or with the ROS node).  
 It defines a few outputs for the device:
-	* `/sbg/imu_data`, `/sbg/ekf_quat` at 25Hz
-	* ROS standard outputs `/imu/data`, `/imu/velocity`, `/imu/temp` at 25Hz
-	* `/sbg/status`, `/sbg/utc_time` and `/imu/utc_ref` at 1Hz.
+  * `/sbg/imu_data`, `/sbg/ekf_quat` at 25Hz
+  * ROS standard outputs `/imu/data`, `/imu/velocity`, `/imu/temp` at 25Hz
+  * `/sbg/status`, `/sbg/utc_time` and `/imu/utc_ref` at 1Hz.
 
 ### Example config files
 * **ellipse_A_default.yaml**
@@ -227,7 +227,7 @@ For each ROS standard, you have to activate the needed SBG outputs.
 ##### NMEA topics
 The driver can publish NMEA GGA messages from the internal GNSS receiver. It can be used with third party [NTRIP client](https://github.com/LORD-MicroStrain/ntrip_client) modules to support VRS networks providers.
 
- Disabled by default, set `publish_nmea` to `true` in .yaml config file to use this feature.
+ Disabled by default, set `nmea.publish` to `true` in .yaml config file to use this feature.
 
 * **`/ntrip_client/nmea`** [nmea_msgs/Sentence](http://docs.ros.org/en/api/nmea_msgs/html/msg/Sentence.html)  
   
@@ -239,7 +239,7 @@ The driver can publish NMEA GGA messages from the internal GNSS receiver. It can
 The `sbg_device` node can subscribe to RTCM topics published by third party ROS2 modules.  
 Incoming RTCM data are forwarded to the INS internal GNSS receiver to enable DGPS/RTK solutions.
 
- Disabled by default, set `rtcm.listen_rtcm` to `true` in .yaml config file to use this feature.
+ Disabled by default, set `rtcm.subscribe` to `true` in .yaml config file to use this feature.
 
 * **`/ntrip_client/rtcm`** [rtcm_msgs/Message](https://github.com/tilk/rtcm_msgs/blob/master/msg/Message.msg)
 
@@ -286,7 +286,7 @@ The driver and the device should be properly setup:
    - For ELLIPSE, simply use the `sbgCenter` and in `Assignment panel`, `RTCM` should be set to `Port A`.
    - For High Performance INS, either use the configuration web interface or the [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/).
  - Install and configure a third party node that broadcast RTCM corrections such as a [NTRIP client](https://github.com/LORD-MicroStrain/ntrip_client)
- - Update the node config `yaml` file to set `rtcm.listen_rtcm` and `nmea.publish_nmea` to `true`
+ - Update the node config `yaml` file to set `rtcm.subscribe` and `nmea.publish` to `true`
  - If you use a different node to broadcast RTCM topics, you might have to update the config `yaml` file to update topics and namespaces.
 
 ### Calibrate the magnetometers
