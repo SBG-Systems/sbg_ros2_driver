@@ -87,26 +87,31 @@ typedef struct _UTM0
 	int				zone;
 } UTM0;
 
-typedef enum _SbgNmeaGpsQuality
-{
-    SBG_NMEA_GPS_QUALITY_INVALID	            = 0,
-    SBG_NMEA_GPS_QUALITY_SINGLE	                = 1,
-    SBG_NMEA_GPS_QUALITY_DGPS	                = 2,
-    SBG_NMEA_GPS_QUALITY_PPS		            = 3,
-    SBG_NMEA_GPS_QUALITY_RTK	            	= 4,
-    SBG_NMEA_GPS_QUALITY_RTK_FLOAT	           	= 5,
-    SBG_NMEA_GPS_QUALITY_FIX_DEAD_RECKONING		= 6,
-    SBG_NMEA_GPS_QUALITY_MANUAL_INPUT	    	= 7,
-    SBG_NMEA_GPS_QUALITY_SIMULATED		        = 8,
-} SbgNmeaGpsQuality;
-
 /*!
  * Class to wrap the SBG logs into ROS messages.
  */
 class MessageWrapper : public rclcpp::Node
 {
-private:
+public:
+  const int32_t                       DEFAULT_UTC_OFFSET  = 18;         /*!< Driver default GPS to UTC offset in seconds. */
 
+  /*!
+  * Standard NMEA GGA quality indicator value.
+  */
+  enum class NmeaGGAQuality: int32_t
+  {
+    INVALID           = 0,
+    SINGLE            = 1,
+    DGPS              = 2,
+    PPS               = 3,
+    RTK_FIXED         = 4,
+    RTK_FLOAT         = 5,
+    DEAD_RECKONING    = 6,
+    STATIC_POSITION   = 7,
+    SIMULATED         = 8,
+  };
+
+private:
   sbg_driver::msg::SbgUtcTime  	      m_last_sbg_utc_;
   bool                                m_first_valid_utc_;
   std::string                         m_frame_id_;
@@ -276,6 +281,16 @@ private:
    * \return                        Converted Epoch time (in s).
    */
   const rclcpp::Time convertUtcTimeToUnix(const sbg_driver::msg::SbgUtcTime& ref_sbg_utc_msg) const;
+  
+  /*!
+   * Returns the GPS to UTC leap second offset: GPS_Time = UTC_Tme + utcOffset
+   *
+   * WARNING: The leap second is computed from the latest received SbgUtcTime message if any.
+   *          If no SbgUtcTime message has been received, a default driver current value is used.
+   * 
+   * \return                        Offset in seconds to apply to UTC time to get GPS time.
+   */
+  int32_t getUtcOffset() const;
 
   /*!
    * Create a SBG-ROS air data status message.
@@ -333,12 +348,12 @@ private:
   void LLtoUTM(double Lat, double Long, int zoneNumber, double &UTMNorthing, double &UTMEasting) const;
 
   /*!
-   * Convert SbgEComGpsPosType enum to SbgNmeaGpsQuality enum
+   * Convert SbgEComGpsPosType enum to NmeaGGAQuality enum
    *
    * \param[in] sbgGpsType              SbgECom GPS type
    * \return                            NMEA GPS type
    */
-  static SbgNmeaGpsQuality convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbgGpsType);
+  static NmeaGGAQuality convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbgGpsType);
 
 public:
 
@@ -668,12 +683,17 @@ public:
   const sensor_msgs::msg::FluidPressure createRosFluidPressureMessage(const sbg_driver::msg::SbgAirData& ref_sbg_air_msg) const;
 
   /*!
-   * Create a SBG-ROS GPS-Position message.
+   * Create a ROS NMEA GGA message especially designed to support NTRIP VRS operations.
+   *
+   * This message is limited to 80 chars and only sent at up to 1 Hz to maximize VRS
+   * providers compatibility.
+   * 
+   * WARNING: Don't use this GGA message for navigation purposes as the accuracy is limited.
    *
    * \param[in] ref_log_gps_pos     SBG GPS Position log.
-   * \return                        GPS Position message in nmea format.
+   * \return                        ROS NMEA GGA message.
    */
-    const nmea_msgs::msg::Sentence createSbgGpsPosMessageGGA(const SbgLogGpsPos& ref_log_gps_pos) const;
+    const nmea_msgs::msg::Sentence createNmeaGGAMessageForNtrip(const SbgLogGpsPos& ref_log_gps_pos) const;
 };
 }
 

@@ -82,7 +82,7 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::NavSatFix, std::allocator<void>>::SharedPtr       m_nav_sat_fix_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry, std::allocator<void>>::SharedPtr           m_odometry_pub_;
 
-  rclcpp::Publisher<nmea_msgs::msg::Sentence, std::allocator<void>>::SharedPtr          sbgGpsPos_gga_pub_;
+  rclcpp::Publisher<nmea_msgs::msg::Sentence, std::allocator<void>>::SharedPtr          nmea_gga_pub_;
 
   MessageWrapper          m_message_wrapper_;
   uint32_t                m_max_messages_;
