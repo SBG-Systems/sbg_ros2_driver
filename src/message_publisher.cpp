@@ -450,9 +450,15 @@ void MessagePublisher::publishGpsPosData(const SbgBinaryLogData &ref_sbg_log, Sb
   {
     m_nav_sat_fix_pub_->publish(m_message_wrapper_.createRosNavSatFixMessage(sbg_gps_pos_message));
   }
-  if (sbgGpsPos_gga_pub_ && sbg_msg_id == SBG_ECOM_LOG_GPS1_POS)
+  if (nmea_gga_pub_ && sbg_msg_id == SBG_ECOM_LOG_GPS1_POS)
   {
-    sbgGpsPos_gga_pub_->publish(m_message_wrapper_.createSbgGpsPosMessageGGA(ref_sbg_log.gpsPosData));
+    const nmea_msgs::msg::Sentence  nmea_gga_msg = m_message_wrapper_.createNmeaGGAMessageForNtrip(ref_sbg_log.gpsPosData);
+
+    // Only publish if a valid NMEA GGA message has been generated
+    if (nmea_gga_msg.sentence.size() > 0)
+    {
+      nmea_gga_pub_->publish(nmea_gga_msg);
+    }
   }
 }
 
@@ -486,7 +492,7 @@ void MessagePublisher::initPublishers(rclcpp::Node& ref_ros_node_handle, const C
 
   if (ref_config_store.shouldPublishNmea())
   {
-    sbgGpsPos_gga_pub_ = ref_ros_node_handle.create_publisher<nmea_msgs::msg::Sentence>(ref_config_store.getNmeaFullTopic(), m_max_messages_);
+    nmea_gga_pub_ = ref_ros_node_handle.create_publisher<nmea_msgs::msg::Sentence>(ref_config_store.getNmeaFullTopic(), m_max_messages_);
   }
 
   if (ref_config_store.checkRosStandardMessages())

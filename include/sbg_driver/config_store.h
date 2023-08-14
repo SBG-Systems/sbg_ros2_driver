@@ -535,7 +535,9 @@ public:
   const std::string &getRtcmFullTopic() const;
 
   /*!
-   * Get NMEA enable.
+   * Returns if a specific NMEA GGA message should be published or not.
+   *
+   * This GGA message is dedicated for NTRIP VRS operations and not for navigation.
    *
    * \return                      True if NMEA is enabled.
    */
