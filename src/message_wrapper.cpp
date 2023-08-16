@@ -10,6 +10,9 @@
 // Project headers
 #include <sbg_vector3.h>
 
+// STL headers
+#include <type_traits>
+
 using sbg::MessageWrapper;
 
 /*!
@@ -541,28 +544,28 @@ sbg::MessageWrapper::NmeaGGAQuality MessageWrapper::convertSbgGpsTypeToNmeaGpsTy
   case SBG_ECOM_POS_NO_SOLUTION:
     nmeaQuality = NmeaGGAQuality::INVALID;
     break;
-  
+
   case SBG_ECOM_POS_UNKNOWN_TYPE:
   case SBG_ECOM_POS_SINGLE:
   case SBG_ECOM_POS_FIXED:
     nmeaQuality = NmeaGGAQuality::SINGLE;
     break;
-  
+
   case SBG_ECOM_POS_PSRDIFF:
   case SBG_ECOM_POS_SBAS:
   case SBG_ECOM_POS_OMNISTAR:
     nmeaQuality = NmeaGGAQuality::DGPS;
     break;
-  
+
   case SBG_ECOM_POS_PPP_FLOAT:
   case SBG_ECOM_POS_PPP_INT:
     nmeaQuality = NmeaGGAQuality::PPS;
     break;
-  
+
   case SBG_ECOM_POS_RTK_INT:
     nmeaQuality = NmeaGGAQuality::RTK_FIXED;
     break;
-  
+
   case SBG_ECOM_POS_RTK_FLOAT:
     nmeaQuality = NmeaGGAQuality::RTK_FLOAT;
     break;
@@ -1399,15 +1402,13 @@ const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(cons
         (utc_ms < 100) && (utc_ms > 900) )
   {
     // Latitude conversion
-    char    lat_dir;
-    float   latitude    = std::clamp(ref_log_gps_pos.latitude, -90.0f, 90.0f);
+    float   latitude    = std::clamp(static_cast<float>(ref_log_gps_pos.latitude), -90.0f, 90.0f);
     float   latitude_abs = std::fabs(latitude);
     int32_t lat_degs    = static_cast<int32_t>(latitude_abs);
     float   lat_mins    = (latitude_abs - static_cast<float>(lat_degs)) * 60.0f;
 
     // Longitude conversion
-    char    lon_dir;
-    float   longitude     = std::clamp(ref_log_gps_pos.longitude, -180.0f, 180.0f);
+    float   longitude     = std::clamp(static_cast<float>(ref_log_gps_pos.longitude), -180.0f, 180.0f);
     float   longitude_abs  = std::fabs(longitude);
     int32_t lon_degs      = static_cast<int32_t>(longitude_abs);
     float   lon_mins      = (longitude_abs - static_cast<float>(lon_degs)) * 60.0f;
@@ -1415,11 +1416,11 @@ const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(cons
     // Compute and clamp each parameter
     float     h_dop           = std::clamp(std::hypot(ref_log_gps_pos.latitudeAccuracy, ref_log_gps_pos.longitudeAccuracy), 0.0f, 9.9f);
     float     diff_age        = std::clamp(ref_log_gps_pos.differentialAge / 100.0f, 0.0f, 9.9f);
-    uint8_t   sv_used         = std::clamp(ref_log_gps_pos.numSvUsed, 0, 99);
-    float     altitude        = std::clamp(ref_log_gps_pos.altitude, -99999.9f, 99999.9f);
+    uint8_t   sv_used         = std::clamp(ref_log_gps_pos.numSvUsed, static_cast<uint8_t>(0), static_cast<uint8_t>(99));
+    float     altitude        = std::clamp(static_cast<float>(ref_log_gps_pos.altitude), -99999.9f, 99999.9f);
     int32_t   undulation      = std::clamp(static_cast<int32_t>(ref_log_gps_pos.undulation), -99999, 99999);
-    uint16_t  base_station_id = std::clamp(ref_log_gps_pos.baseStationId, 0, 9999);
-    
+    uint16_t  base_station_id = std::clamp(ref_log_gps_pos.baseStationId, static_cast<uint16_t>(0), static_cast<uint16_t>(9999));
+
     // Write the NMEA sentence - 80 chars max
     constexpr uint32_t nmea_sentence_buffer_size = 128;
     char nmea_sentence_buff[nmea_sentence_buffer_size]{};
@@ -1435,7 +1436,7 @@ const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(cons
                         lon_degs,
                         lon_mins,
                         (longitude < 0.0f?'W':'E'),
-                        convertSbgGpsTypeToNmeaGpsType(sbgEComLogGpsPosGetType(ref_log_gps_pos.status)),
+                        static_cast<int32_t>(convertSbgGpsTypeToNmeaGpsType(sbgEComLogGpsPosGetType(ref_log_gps_pos.status))),
                         sv_used,
                         h_dop,
                         altitude,
