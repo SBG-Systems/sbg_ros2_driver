@@ -1399,7 +1399,7 @@ const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(cons
   // Only output a GGA message at 1 Hz (plain second) and for valid positions
   if (  (sbgEComLogGpsPosGetStatus(ref_log_gps_pos.status) == SBG_ECOM_POS_SOL_COMPUTED) &&
         (sbgEComLogGpsPosGetType(ref_log_gps_pos.status) != SBG_ECOM_POS_NO_SOLUTION) &&
-        (utc_ms < 100) && (utc_ms > 900) )
+        (utc_ms < 100 || utc_ms > 900) )
   {
     // Latitude conversion
     float   latitude    = std::clamp(static_cast<float>(ref_log_gps_pos.latitude), -90.0f, 90.0f);
