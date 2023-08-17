@@ -82,6 +82,8 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::NavSatFix, std::allocator<void>>::SharedPtr       m_nav_sat_fix_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry, std::allocator<void>>::SharedPtr           m_odometry_pub_;
 
+  rclcpp::Publisher<nmea_msgs::msg::Sentence, std::allocator<void>>::SharedPtr          nmea_gga_pub_;
+
   MessageWrapper          m_message_wrapper_;
   uint32_t                m_max_messages_;
   std::string             m_frame_id_;
@@ -126,17 +128,17 @@ private:
   /*!
    * Process a ROS Velocity standard message.
    */
-  void processRosVelMessage(void);
+  void processRosVelMessage();
 
   /*!
    * Process a ROS IMU standard message.
    */
-  void processRosImuMessage(void);
+  void processRosImuMessage();
 
   /*!
    * Process a ROS odometry standard message.
    */
-  void processRosOdoMessage(void);
+  void processRosOdoMessage();
 
   /*!
    * Publish a received SBG Magnetic log.
@@ -170,8 +172,9 @@ private:
    * Publish a received SBG GpsPos log.
    *
    * \param[in] ref_sbg_log             SBG log.
+   * \param[in] sbg_msg_id              Id of the SBG message.
    */
-  void publishGpsPosData(const SbgBinaryLogData &ref_sbg_log);
+  void publishGpsPosData(const SbgBinaryLogData &ref_sbg_log, SbgEComMsgId sbg_msg_id);
 
 public:
 
@@ -182,7 +185,7 @@ public:
   /*!
    * Default constructor.
    */
-  MessagePublisher(void);
+  MessagePublisher();
 
   //---------------------------------------------------------------------//
   //- Operations                                                        -//

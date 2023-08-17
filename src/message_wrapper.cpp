@@ -3,12 +3,15 @@
 
 // ROS headers
 #include <tf2/LinearMath/Quaternion.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 
 // Project headers
 #include <sbg_vector3.h>
+
+// STL headers
+#include <type_traits>
 
 using sbg::MessageWrapper;
 
@@ -19,7 +22,7 @@ using sbg::MessageWrapper;
 //- Constructor                                                       -//
 //---------------------------------------------------------------------//
 
-MessageWrapper::MessageWrapper(void):
+MessageWrapper::MessageWrapper():
 Node("tf_broadcaster")
 {
   m_first_valid_utc_ = false;
@@ -331,7 +334,7 @@ const rclcpp::Time MessageWrapper::convertUtcTimeToUnix(const sbg_driver::msg::S
   uint64_t  nanoseconds;
 
   //
-  // Convert the UTC time to Epoch(Unix) time, which is the elasped seconds since 1 Jan 1970.
+  // Convert the UTC time to Epoch(Unix) time, which is the elapsed seconds since 1 Jan 1970.
   //
   days        = 0;
   nanoseconds = 0;
@@ -357,6 +360,28 @@ const rclcpp::Time MessageWrapper::convertUtcTimeToUnix(const sbg_driver::msg::S
   utc_to_epoch = rclcpp::Time(nanoseconds);
 
   return utc_to_epoch;
+}
+
+int32_t MessageWrapper::getUtcOffset() const
+{
+  int32_t       utcOffset;
+
+  if (m_first_valid_utc_)
+  {
+    // Compute the leap second: GPS = UTC + utcOffset
+    utcOffset = (m_last_sbg_utc_.gps_tow/1000)%60 - m_last_sbg_utc_.sec;
+
+    if (utcOffset < 0)
+    {
+      utcOffset = 60 + utcOffset;
+    }
+  }
+  else
+  {
+    utcOffset = DEFAULT_UTC_OFFSET;
+  }
+
+  return utcOffset;
 }
 
 const sbg_driver::msg::SbgAirDataStatus MessageWrapper::createAirDataStatusMessage(const SbgLogAirData& ref_sbg_air_data) const
@@ -508,6 +533,45 @@ void MessageWrapper::LLtoUTM(double Lat, double Long, int zoneNumber, double &UT
   {
     UTMNorthing += 10000000.0; //10000000 meter offset for southern hemisphere
   }
+}
+
+sbg::MessageWrapper::NmeaGGAQuality MessageWrapper::convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbgGpsType)
+{
+  sbg::MessageWrapper::NmeaGGAQuality  nmeaQuality = NmeaGGAQuality::INVALID;
+
+  switch (sbgGpsType)
+  {
+  case SBG_ECOM_POS_NO_SOLUTION:
+    nmeaQuality = NmeaGGAQuality::INVALID;
+    break;
+
+  case SBG_ECOM_POS_UNKNOWN_TYPE:
+  case SBG_ECOM_POS_SINGLE:
+  case SBG_ECOM_POS_FIXED:
+    nmeaQuality = NmeaGGAQuality::SINGLE;
+    break;
+
+  case SBG_ECOM_POS_PSRDIFF:
+  case SBG_ECOM_POS_SBAS:
+  case SBG_ECOM_POS_OMNISTAR:
+    nmeaQuality = NmeaGGAQuality::DGPS;
+    break;
+
+  case SBG_ECOM_POS_PPP_FLOAT:
+  case SBG_ECOM_POS_PPP_INT:
+    nmeaQuality = NmeaGGAQuality::PPS;
+    break;
+
+  case SBG_ECOM_POS_RTK_INT:
+    nmeaQuality = NmeaGGAQuality::RTK_FIXED;
+    break;
+
+  case SBG_ECOM_POS_RTK_FLOAT:
+    nmeaQuality = NmeaGGAQuality::RTK_FLOAT;
+    break;
+  }
+
+  return nmeaQuality;
 }
 
 //---------------------------------------------------------------------//
@@ -1309,4 +1373,90 @@ const sensor_msgs::msg::FluidPressure MessageWrapper::createRosFluidPressureMess
   fluid_pressure_message.variance       = 0.0;
 
   return fluid_pressure_message;
+}
+
+const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(const SbgLogGpsPos &ref_log_gps_pos) const
+{
+  nmea_msgs::msg::Sentence  nmea_gga_msg;
+  uint32_t                  gps_tow_ms;
+  uint32_t                  utc_hour;
+  uint32_t                  utc_minute;
+  uint32_t                  utc_second;
+  uint32_t                  utc_ms;
+
+  // Offset GPS Time of Week by a full day to easily handle zero roll over while applying the leap second
+  gps_tow_ms = ref_log_gps_pos.timeOfWeek + (24ul * 3600ul * 1000ul);
+
+  // Apply the GPS to UTC leap second offset
+  gps_tow_ms = gps_tow_ms - getUtcOffset() * 1000ul;
+
+  // Extract UTC hours/mins/seconds values
+  utc_hour      = (gps_tow_ms / (3600 * 1000)) % 24;
+  utc_minute    = (gps_tow_ms / (60 * 1000)) % 60;
+  utc_second    = (gps_tow_ms / 1000) % 60;
+  utc_ms        = (gps_tow_ms % 1000);
+
+  // Only output a GGA message at 1 Hz (plain second) and for valid positions
+  if (  (sbgEComLogGpsPosGetStatus(ref_log_gps_pos.status) == SBG_ECOM_POS_SOL_COMPUTED) &&
+        (sbgEComLogGpsPosGetType(ref_log_gps_pos.status) != SBG_ECOM_POS_NO_SOLUTION) &&
+        (utc_ms < 100 || utc_ms > 900) )
+  {
+    // Latitude conversion
+    float   latitude    = std::clamp(static_cast<float>(ref_log_gps_pos.latitude), -90.0f, 90.0f);
+    float   latitude_abs = std::fabs(latitude);
+    int32_t lat_degs    = static_cast<int32_t>(latitude_abs);
+    float   lat_mins    = (latitude_abs - static_cast<float>(lat_degs)) * 60.0f;
+
+    // Longitude conversion
+    float   longitude     = std::clamp(static_cast<float>(ref_log_gps_pos.longitude), -180.0f, 180.0f);
+    float   longitude_abs  = std::fabs(longitude);
+    int32_t lon_degs      = static_cast<int32_t>(longitude_abs);
+    float   lon_mins      = (longitude_abs - static_cast<float>(lon_degs)) * 60.0f;
+
+    // Compute and clamp each parameter
+    float     h_dop           = std::clamp(std::hypot(ref_log_gps_pos.latitudeAccuracy, ref_log_gps_pos.longitudeAccuracy), 0.0f, 9.9f);
+    float     diff_age        = std::clamp(ref_log_gps_pos.differentialAge / 100.0f, 0.0f, 9.9f);
+    uint8_t   sv_used         = std::clamp(ref_log_gps_pos.numSvUsed, static_cast<uint8_t>(0), static_cast<uint8_t>(99));
+    float     altitude        = std::clamp(static_cast<float>(ref_log_gps_pos.altitude), -99999.9f, 99999.9f);
+    int32_t   undulation      = std::clamp(static_cast<int32_t>(ref_log_gps_pos.undulation), -99999, 99999);
+    uint16_t  base_station_id = std::clamp(ref_log_gps_pos.baseStationId, static_cast<uint16_t>(0), static_cast<uint16_t>(9999));
+
+    // Write the NMEA sentence - 80 chars max
+    constexpr uint32_t nmea_sentence_buffer_size = 128;
+    char nmea_sentence_buff[nmea_sentence_buffer_size]{};
+    auto len = snprintf(nmea_sentence_buff, nmea_sentence_buffer_size,
+                        "$GPGGA,%02d%02d%02d.%02d,%02d%02.4f,%c,%03d%02.4f,%c,%d,%d,%.1f,%.1f,M,%d,M,%.1f,%04d",
+                        utc_hour,
+                        utc_minute,
+                        utc_second,
+                        utc_ms/10,
+                        lat_degs,
+                        lat_mins,
+                        (latitude < 0.0f?'S':'N'),
+                        lon_degs,
+                        lon_mins,
+                        (longitude < 0.0f?'W':'E'),
+                        static_cast<int32_t>(convertSbgGpsTypeToNmeaGpsType(sbgEComLogGpsPosGetType(ref_log_gps_pos.status))),
+                        sv_used,
+                        h_dop,
+                        altitude,
+                        undulation,
+                        diff_age,
+                        base_station_id
+    );
+
+    // Compute and append the NMEA checksum
+    uint8_t checksum = 0;
+    for (int32_t i = 1; i < len; i++)
+    {
+      checksum ^= nmea_sentence_buff[i];
+    }
+    snprintf(&nmea_sentence_buff[len], nmea_sentence_buffer_size - len, "*%02X\r\n", checksum);
+
+    // Fill the NMEA ROS message
+    nmea_gga_msg.header   = createRosHeader(ref_log_gps_pos.timeStamp);
+    nmea_gga_msg.sentence = nmea_sentence_buff;
+  }
+
+  return nmea_gga_msg;
 }

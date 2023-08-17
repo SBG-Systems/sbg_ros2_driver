@@ -56,6 +56,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <nav_msgs/msg/odometry.hpp>
+#include <nmea_msgs/msg/sentence.hpp>
 
 // SbgRos message headers
 #include "sbg_driver/msg/sbg_status.hpp"
@@ -91,8 +92,26 @@ typedef struct _UTM0
  */
 class MessageWrapper : public rclcpp::Node
 {
-private:
+public:
+  const int32_t                       DEFAULT_UTC_OFFSET  = 18;         /*!< Driver default GPS to UTC offset in seconds. */
 
+  /*!
+  * Standard NMEA GGA quality indicator value.
+  */
+  enum class NmeaGGAQuality: int32_t
+  {
+    INVALID           = 0,
+    SINGLE            = 1,
+    DGPS              = 2,
+    PPS               = 3,
+    RTK_FIXED         = 4,
+    RTK_FLOAT         = 5,
+    DEAD_RECKONING    = 6,
+    STATIC_POSITION   = 7,
+    SIMULATED         = 8,
+  };
+
+private:
   sbg_driver::msg::SbgUtcTime  	      m_last_sbg_utc_;
   bool                                m_first_valid_utc_;
   std::string                         m_frame_id_;
@@ -262,6 +281,16 @@ private:
    * \return                        Converted Epoch time (in s).
    */
   const rclcpp::Time convertUtcTimeToUnix(const sbg_driver::msg::SbgUtcTime& ref_sbg_utc_msg) const;
+  
+  /*!
+   * Returns the GPS to UTC leap second offset: GPS_Time = UTC_Tme + utcOffset
+   *
+   * WARNING: The leap second is computed from the latest received SbgUtcTime message if any.
+   *          If no SbgUtcTime message has been received, a default driver current value is used.
+   * 
+   * \return                        Offset in seconds to apply to UTC time to get GPS time.
+   */
+  int32_t getUtcOffset() const;
 
   /*!
    * Create a SBG-ROS air data status message.
@@ -288,26 +317,26 @@ private:
    * \param[in] ref_pose                Pose.
    * \param[out] ref_transform_stamped  Stamped transformation.
    */
-   void fillTransform(const std::string &ref_parent_frame_id, const std::string &ref_child_frame_id, const geometry_msgs::msg::Pose &ref_pose, geometry_msgs::msg::TransformStamped &ref_transform_stamped);
+  void fillTransform(const std::string &ref_parent_frame_id, const std::string &ref_child_frame_id, const geometry_msgs::msg::Pose &ref_pose, geometry_msgs::msg::TransformStamped &ref_transform_stamped);
 
-   /*!
+  /*!
    * Get UTM letter designator for the given latitude.
    *
    * \param[in] Lat                     Latitude, in degrees.
    * \return                            UTM letter designator.
    */
-   char UTMLetterDesignator(double Lat);
+  char UTMLetterDesignator(double Lat);
 
-   /*!
+  /*!
    * Set UTM initial position.
    *
    * \param[in] Lat                     Latitude, in degrees.
    * \param[in] Long                    Longitude, in degrees.
    * \param[in] altitude                Altitude, in meters.
    */
-   void initUTM(double Lat, double Long, double altitude);
+  void initUTM(double Lat, double Long, double altitude);
 
-   /*!
+  /*!
    * Convert latitude and longitude to a position relative to UTM initial position.
    *
    * \param[in] Lat                     Latitude, in degrees.
@@ -316,7 +345,15 @@ private:
    * \param[out] UTMNorthing            UTM northing, in meters.
    * \param[out] UTMEasting             UTM easting, in meters.
    */
-   void LLtoUTM(double Lat, double Long, int zoneNumber, double &UTMNorthing, double &UTMEasting) const;
+  void LLtoUTM(double Lat, double Long, int zoneNumber, double &UTMNorthing, double &UTMEasting) const;
+
+  /*!
+   * Convert SbgEComGpsPosType enum to NmeaGGAQuality enum
+   *
+   * \param[in] sbgGpsType              SbgECom GPS type
+   * \return                            NMEA GPS type
+   */
+  static NmeaGGAQuality convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbgGpsType);
 
 public:
 
@@ -334,7 +371,7 @@ public:
   /*!
    * Default constructor.
    */
-  MessageWrapper(void);
+  MessageWrapper();
 
   //---------------------------------------------------------------------//
   //- Parameters                                                        -//
@@ -643,7 +680,20 @@ public:
    * \param[in] ref_sbg_air_msg     SBG-ROS AirData message.
    * \return                        ROS standard fluid pressure message.
    */
-  const sensor_msgs::msg::FluidPressure createRosFluidPressureMessage(const sbg_driver::msg::SbgAirData& ref_sbg_air_msg) const; 
+  const sensor_msgs::msg::FluidPressure createRosFluidPressureMessage(const sbg_driver::msg::SbgAirData& ref_sbg_air_msg) const;
+
+  /*!
+   * Create a ROS NMEA GGA message especially designed to support NTRIP VRS operations.
+   *
+   * This message is limited to 80 chars and only sent at up to 1 Hz to maximize VRS
+   * providers compatibility.
+   * 
+   * WARNING: Don't use this GGA message for navigation purposes as the accuracy is limited.
+   *
+   * \param[in] ref_log_gps_pos     SBG GPS Position log.
+   * \return                        ROS NMEA GGA message.
+   */
+    const nmea_msgs::msg::Sentence createNmeaGGAMessageForNtrip(const SbgLogGpsPos& ref_log_gps_pos) const;
 };
 }
 

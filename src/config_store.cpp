@@ -10,11 +10,13 @@ using sbg::ConfigStore;
 //- Constructor                                                       -//
 //---------------------------------------------------------------------//
 
-ConfigStore::ConfigStore(void):
+ConfigStore::ConfigStore():
 m_serial_communication_(false),
 m_upd_communication_(false),
 m_configure_through_ros_(false),
-m_ros_standard_output_(false)
+m_ros_standard_output_(false),
+rtcm_subscribe_(false),
+nmea_publish_(false)
 {
 
 }
@@ -191,183 +193,227 @@ void ConfigStore::loadOutputTimeReference(const rclcpp::Node& ref_node_handle, c
   }
 }
 
+void ConfigStore::loadRtcmParameters(const rclcpp::Node &ref_node_handle)
+{
+  std::string     topic_name;
+  std::string     rtcm_namespace;
+
+  ref_node_handle.get_parameter_or<bool>("rtcm.subscribe",          rtcm_subscribe_,        false);
+  ref_node_handle.get_parameter_or<std::string>("rtcm.topic_name",  topic_name,             "rtcm");
+  ref_node_handle.get_parameter_or<std::string>("rtcm.namespace",   rtcm_namespace,         "ntrip_client");
+
+  rtcm_full_topic_ = rtcm_namespace + "/" + topic_name;
+}
+
+void ConfigStore::loadNmeaParameters(const rclcpp::Node &ref_node_handle)
+{
+  std::string     topic_name;
+  std::string     nmea_namespace;
+
+  ref_node_handle.get_parameter_or<bool>("nmea.publish",            nmea_publish_,          false);
+  ref_node_handle.get_parameter_or<std::string>("nmea.topic_name",  topic_name,             "nmea");
+  ref_node_handle.get_parameter_or<std::string>("nmea.namespace",   nmea_namespace,         "ntrip_client");
+
+  nmea_full_topic_ = nmea_namespace + "/" + topic_name;
+}
+
 //---------------------------------------------------------------------//
 //- Parameters                                                        -//
 //---------------------------------------------------------------------//
 
-bool ConfigStore::checkConfigWithRos(void) const
+bool ConfigStore::checkConfigWithRos() const
 {
   return m_configure_through_ros_;
 }
 
-bool ConfigStore::isInterfaceSerial(void) const
+bool ConfigStore::isInterfaceSerial() const
 {
   return m_serial_communication_;
 }
 
-const std::string &ConfigStore::getUartPortName(void) const
+const std::string &ConfigStore::getUartPortName() const
 {
   return m_uart_port_name_;
 }
 
-uint32_t ConfigStore::getBaudRate(void) const
+uint32_t ConfigStore::getBaudRate() const
 {
   return m_uart_baud_rate_;
 }
 
-SbgEComOutputPort ConfigStore::getOutputPort(void) const
+SbgEComOutputPort ConfigStore::getOutputPort() const
 {
   return m_output_port_;
 }
 
-bool ConfigStore::isInterfaceUdp(void) const
+bool ConfigStore::isInterfaceUdp() const
 {
   return m_upd_communication_;
 }
 
-sbgIpAddress ConfigStore::getIpAddress(void) const
+sbgIpAddress ConfigStore::getIpAddress() const
 {
   return m_sbg_ip_address_;
 }
 
-uint32_t ConfigStore::getOutputPortAddress(void) const
+uint32_t ConfigStore::getOutputPortAddress() const
 {
   return m_out_port_address_;
 }
 
-uint32_t ConfigStore::getInputPortAddress(void) const
+uint32_t ConfigStore::getInputPortAddress() const
 {
   return m_in_port_address_;
 }
 
-const SbgEComInitConditionConf &ConfigStore::getInitialConditions(void) const
+const SbgEComInitConditionConf &ConfigStore::getInitialConditions() const
 {
   return m_init_condition_conf_;
 }
 
-const SbgEComModelInfo &ConfigStore::getMotionProfile(void) const
+const SbgEComModelInfo &ConfigStore::getMotionProfile() const
 {
   return m_motion_profile_model_info_;
 }
 
-const SbgEComSensorAlignmentInfo &ConfigStore::getSensorAlignement(void) const
+const SbgEComSensorAlignmentInfo &ConfigStore::getSensorAlignement() const
 {
   return m_sensor_alignement_info_;
 }
 
-const sbg::SbgVector3<float> &ConfigStore::getSensorLevelArms(void) const
+const sbg::SbgVector3<float> &ConfigStore::getSensorLevelArms() const
 {
   return m_sensor_lever_arm_;
 }
 
-const SbgEComAidingAssignConf &ConfigStore::getAidingAssignement(void) const
+const SbgEComAidingAssignConf &ConfigStore::getAidingAssignement() const
 {
   return m_aiding_assignement_conf_;
 }
 
-const SbgEComModelInfo &ConfigStore::getMagnetometerModel(void) const
+const SbgEComModelInfo &ConfigStore::getMagnetometerModel() const
 {
   return m_mag_model_info_;
 }
 
-const SbgEComMagRejectionConf &ConfigStore::getMagnetometerRejection(void) const
+const SbgEComMagRejectionConf &ConfigStore::getMagnetometerRejection() const
 {
   return m_mag_rejection_conf_;
 }
 
-const SbgEComMagCalibMode &ConfigStore::getMagnetometerCalibMode(void) const
+const SbgEComMagCalibMode &ConfigStore::getMagnetometerCalibMode() const
 {
   return m_mag_calib_mode_;
 }
 
-const SbgEComMagCalibBandwidth &ConfigStore::getMagnetometerCalibBandwidth(void) const
+const SbgEComMagCalibBandwidth &ConfigStore::getMagnetometerCalibBandwidth() const
 {
   return m_mag_calib_bandwidth_;
 }
 
-const SbgEComModelInfo &ConfigStore::getGnssModel(void) const
+const SbgEComModelInfo &ConfigStore::getGnssModel() const
 {
   return m_gnss_model_info_;
 }
 
-const SbgEComGnssInstallation &ConfigStore::getGnssInstallation(void) const
+const SbgEComGnssInstallation &ConfigStore::getGnssInstallation() const
 {
   return m_gnss_installation_;
 }
 
-const SbgEComGnssRejectionConf &ConfigStore::getGnssRejection(void) const
+const SbgEComGnssRejectionConf &ConfigStore::getGnssRejection() const
 {
   return m_gnss_rejection_conf_;
 }
 
-const SbgEComOdoConf &ConfigStore::getOdometerConf(void) const
+const SbgEComOdoConf &ConfigStore::getOdometerConf() const
 {
   return m_odometer_conf_;
 }
 
-const sbg::SbgVector3<float> &ConfigStore::getOdometerLevelArms(void) const
+const sbg::SbgVector3<float> &ConfigStore::getOdometerLevelArms() const
 {
   return m_odometer_level_arm_;
 }
 
-const SbgEComOdoRejectionConf &ConfigStore::getOdometerRejection(void) const
+const SbgEComOdoRejectionConf &ConfigStore::getOdometerRejection() const
 {
   return m_odometer_rejection_conf_;
 }
 
-const std::vector<ConfigStore::SbgLogOutput> &ConfigStore::getOutputModes(void) const
+const std::vector<ConfigStore::SbgLogOutput> &ConfigStore::getOutputModes() const
 {
   return m_output_modes_;
 }
 
-bool ConfigStore::checkRosStandardMessages(void) const
+bool ConfigStore::checkRosStandardMessages() const
 {
   return m_ros_standard_output_;
 }
 
-uint32_t ConfigStore::getReadingRateFrequency(void) const
+uint32_t ConfigStore::getReadingRateFrequency() const
 {
   return m_rate_frequency_;
 }
 
-const std::string &ConfigStore::getFrameId(void) const
+const std::string &ConfigStore::getFrameId() const
 {
   return m_frame_id_;
 }
 
-bool ConfigStore::getUseEnu(void) const
+bool ConfigStore::getUseEnu() const
 {
   return m_use_enu_;
 }
 
-sbg::TimeReference ConfigStore::getTimeReference(void) const
+sbg::TimeReference ConfigStore::getTimeReference() const
 {
   return m_time_reference_;
 }
 
-bool ConfigStore::getOdomEnable(void) const
+bool ConfigStore::getOdomEnable() const
 {
   return m_odom_enable_;
 }
 
-bool ConfigStore::getOdomPublishTf(void) const
+bool ConfigStore::getOdomPublishTf() const
 {
   return m_odom_publish_tf_;
 }
 
-const std::string &ConfigStore::getOdomFrameId(void) const
+const std::string &ConfigStore::getOdomFrameId() const
 {
   return m_odom_frame_id_;
 }
 
-const std::string &ConfigStore::getOdomBaseFrameId(void) const
+const std::string &ConfigStore::getOdomBaseFrameId() const
 {
   return m_odom_base_frame_id_;
 }
 
-const std::string &ConfigStore::getOdomInitFrameId(void) const
+const std::string &ConfigStore::getOdomInitFrameId() const
 {
   return m_odom_init_frame_id_;
+}
+
+bool ConfigStore::shouldSubscribeToRtcm() const
+{
+  return rtcm_subscribe_;
+}
+
+const std::string &ConfigStore::getRtcmFullTopic() const
+{
+  return rtcm_full_topic_;
+}
+
+bool ConfigStore::shouldPublishNmea() const
+{
+  return nmea_publish_;
+}
+
+const std::string &ConfigStore::getNmeaFullTopic() const
+{
+  return nmea_full_topic_;
 }
 
 //---------------------------------------------------------------------//
@@ -386,6 +432,8 @@ void ConfigStore::loadFromRosNodeHandle(const rclcpp::Node& ref_node_handle)
   loadGnssParameters(ref_node_handle);
   loadOdometerParameters(ref_node_handle);
   loadOutputFrameParameters(ref_node_handle);
+  loadRtcmParameters(ref_node_handle);
+  loadNmeaParameters(ref_node_handle);
 
   loadOutputTimeReference(ref_node_handle, "output/time_reference");
 

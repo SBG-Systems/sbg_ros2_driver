@@ -292,3 +292,19 @@
       log_air_data: 0
       # Short IMU data
       log_imu_short: 0
+
+    rtcm:
+      # Should ros driver subscribe to RTCM topic
+      subscribe: false
+      # Topic on which RTCM is published
+      topic_name: rtcm
+      # Namespace where topic is published
+      namespace: ntrip_client
+
+    nmea:
+      # Should ros driver publish NMEA string
+      publish: false
+      # Topic on which to publish nmea data
+      topic_name: nmea
+      # Namespace where to publish topic
+      namespace: ntrip_client
