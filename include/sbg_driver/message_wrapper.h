@@ -130,28 +130,20 @@ private:
   //---------------------------------------------------------------------//
 
   /*!
-   * Wrap an angle to 2 PI.
+   * Wrap an angle between [ -Pi ; Pi ] rad.
    *
    * \param[in] angle_rad			Angle in rad.
    * \return						Wrapped angle.
    */
-  float wrapAngle2Pi(float angle_rad) const;
+  static float wrapAnglePi(float angle_rad);
 
   /*!
-   * Wrap an angle to PI.
-   *
-   * \param[in] angle_rad			Angle in rad.
-   * \return						Wrapped angle.
-   */
-  float wrapAnglePi(float angle_rad) const;
-
-  /*!
-   * Wrap an angle to 360 degres.
+   * Wrap an angle between [ 0 ; 360 ] degree.
    *
    * \param[in] angle_deg			Angle in degree.
    * \return						Wrapped angle.
    */
-  float wrapAngle360(float angle_deg) const;
+  static float wrapAngle360(float angle_deg);
 
   /*!
    * Compute UTM zone meridian.
@@ -159,7 +151,7 @@ private:
    * \param[in] zone_number			UTM Zone number.
    * \return						Meridian angle, in degrees.
    */
-  double computeMeridian(int zone_number) const;
+  static double computeMeridian(int zone_number);
 
   /*!
    * Create a ROS message header.
