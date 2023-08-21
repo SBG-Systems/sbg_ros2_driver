@@ -38,53 +38,39 @@ Node("tf_broadcaster")
 //- Internal methods                                                  -//
 //---------------------------------------------------------------------//
 
-float MessageWrapper::wrapAngle2Pi(float angle_rad) const
+float MessageWrapper::wrapAnglePi(float angle_rad)
 {
-  if ((angle_rad < -SBG_PI_F * 2.0f) || (angle_rad > SBG_PI_F * 2.0f))
+  if (angle_rad > SBG_PI_F)
   {
-    angle_rad = fmodf(angle_rad, SBG_PI_F * 2.0f);
+    return (SBG_PI_F * 2.0f - fmodf(angle_rad, SBG_PI_F * 2.0f));
   }
 
-  if (angle_rad < 0.0f)
+  if (angle_rad < -SBG_PI_F)
   {
-    angle_rad = SBG_PI_F * 2.0f + angle_rad;
+    return (SBG_PI_F * 2.0f + fmodf(angle_rad, SBG_PI_F * 2.0f));
   }
 
   return angle_rad;
 }
 
-float MessageWrapper::wrapAnglePi(float angle_rad) const
+float MessageWrapper::wrapAngle360(float angle_deg)
 {
-    angle_rad = fmodf(angle_rad, SBG_PI_F * 2.0f);
-    if (angle_rad > SBG_PI_F)
-    {
-        angle_rad = SBG_PI_F * 2.0f - angle_rad;
-    }
+  float wrapped_angle_deg = angle_deg;
 
-    if (angle_rad < -SBG_PI_F)
-    {
-        angle_rad = SBG_PI_F * 2.0f + angle_rad;
-    }
-
-    return angle_rad;
-}
-
-float MessageWrapper::wrapAngle360(float angle_deg) const
-{
-  if ( (angle_deg < -360.0f) || (angle_deg > 360.0f) )
+  if ( (wrapped_angle_deg < -360.0f) || (wrapped_angle_deg > 360.0f) )
   {
-    angle_deg = fmodf(angle_deg, 360.0f);
+    wrapped_angle_deg = fmodf(wrapped_angle_deg, 360.0f);
   }
 
-  if (angle_deg < 0.0f)
+  if (wrapped_angle_deg < 0.0f)
   {
-    angle_deg = 360.0f + angle_deg;
+    wrapped_angle_deg = 360.0f + wrapped_angle_deg;
   }
 
-  return angle_deg;
+  return wrapped_angle_deg;
 }
 
-double MessageWrapper::computeMeridian(int zone_number) const
+double MessageWrapper::computeMeridian(int zone_number)
 {
   return (zone_number == 0) ? 0.0 : (zone_number - 1) * 6.0 - 177.0;
 }
@@ -650,7 +636,7 @@ const sbg_driver::msg::SbgEkfEuler MessageWrapper::createSbgEkfEulerMessage(cons
   {
     ekf_euler_message.angle.x  = ref_log_ekf_euler.euler[0];
     ekf_euler_message.angle.y  = -ref_log_ekf_euler.euler[1];
-    ekf_euler_message.angle.z  = wrapAnglePi((SBG_PI_F / 2.0f) - ref_log_ekf_euler.euler[2]);
+    ekf_euler_message.angle.z  = -wrapAnglePi(-(SBG_PI_F / 2.0f) + ref_log_ekf_euler.euler[2]);
   }
   else
   {
