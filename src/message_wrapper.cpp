@@ -725,13 +725,13 @@ const sbg_driver::msg::SbgEkfQuat MessageWrapper::createSbgEkfQuatMessage(const 
 
   if (m_use_enu_)
   {
-    tf2::Quaternion q_NWU{ref_log_ekf_quat.quaternion[1],
+    tf2::Quaternion q_nwu{ref_log_ekf_quat.quaternion[1],
                           -ref_log_ekf_quat.quaternion[2],
                           -ref_log_ekf_quat.quaternion[3],
                           ref_log_ekf_quat.quaternion[0]};
-    const tf2::Quaternion q_ENU_NWU{0, 0, M_SQRT2 / 2, M_SQRT2 / 2};
+    const tf2::Quaternion q_enu_to_nwu{0, 0, M_SQRT2 / 2, M_SQRT2 / 2};
 
-    ekf_quat_message.quaternion = tf2::toMsg(q_ENU_NWU * q_NWU);
+    ekf_quat_message.quaternion = tf2::toMsg(q_enu_to_nwu * q_nwu);
   }
   else
   {
