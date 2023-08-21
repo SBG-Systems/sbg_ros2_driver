@@ -380,7 +380,16 @@ frame_id: "imu_link_ned"
 #### Frame convention
 The frame convention can be set to NED or ENU
 * The NED convention is SBG Systems native convention so no transformation is applied.
-* The ENU convention requires the following transformation (x = Y, y = X, z = -Z).
+* The ENU convention follows ROS standard [REP-103](https://www.ros.org/reps/rep-0103.html#coordinate-frame-conventions):
+  * Axis Orientation:
+    * In relation to a body the standard is:
+      * x forward
+      * y left
+      * z up
+    * Cartesian representation:
+      * X east
+      * Y north
+      * Z up
 ```
 # Frame convention:
 use_enu: true
