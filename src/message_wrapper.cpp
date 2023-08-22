@@ -1164,18 +1164,9 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
     {
       // Publish UTM initial transformation.
       geometry_msgs::msg::Pose pose;
-      if (m_use_enu_)
-      {
-        pose.position.x = m_utm0_.easting;
-        pose.position.y = m_utm0_.northing;
-        pose.position.z = m_utm0_.altitude;
-      }
-      else
-      {
-        pose.position.x = m_utm0_.northing;
-        pose.position.y = m_utm0_.easting;
-        pose.position.z = m_utm0_.altitude;
-      }
+      pose.position.x = m_utm0_.easting;
+      pose.position.y = m_utm0_.northing;
+      pose.position.z = m_utm0_.altitude;
 
       fillTransform(m_odom_init_frame_id_, m_odom_frame_id_, pose, transform);
       m_static_tf_broadcaster_->sendTransform(transform);
@@ -1183,18 +1174,9 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   }
 
   LLtoUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, m_utm0_.zone, utm_northing, utm_easting);
-  if (m_use_enu_)
-  {
-      odo_ros_msg.pose.pose.position.x = utm_easting  - m_utm0_.easting;
-      odo_ros_msg.pose.pose.position.y = utm_northing - m_utm0_.northing;
-      odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - m_utm0_.altitude;
-  }
-  else
-  {
-      odo_ros_msg.pose.pose.position.x = utm_northing - m_utm0_.northing;
-      odo_ros_msg.pose.pose.position.y = utm_easting  - m_utm0_.easting;
-      odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - m_utm0_.altitude;
-  }
+  odo_ros_msg.pose.pose.position.x = utm_easting  - m_utm0_.easting;
+  odo_ros_msg.pose.pose.position.y = utm_northing - m_utm0_.northing;
+  odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - m_utm0_.altitude;
 
   // Compute convergence angle.
   double longitudeRad      = sbgDegToRadD(ref_ekf_nav_msg.longitude);
