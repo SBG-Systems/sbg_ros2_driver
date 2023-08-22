@@ -32,6 +32,7 @@ Node("tf_broadcaster")
   m_utm0_.northing = 0.0;
   m_utm0_.altitude = 0.0;
   m_utm0_.zone = 0;
+  tf2::Matrix3x3(0, 1, 0, 1, 0, 0, 0, 0, -1).getRotation(q_ned_to_enu_);
 }
 
 //---------------------------------------------------------------------//
@@ -715,10 +716,7 @@ const sbg_driver::msg::SbgEkfQuat MessageWrapper::createSbgEkfQuatMessage(const 
                         ref_log_ekf_quat.quaternion[0]};
   if (m_use_enu_)
   {
-    tf2::Quaternion q_ned_to_enu;
-    q_ned_to_enu.setRPY(sbgDegToRadF(180.0f), 0.0f, sbgDegToRadF(90.0f));
-
-    ekf_quat_message.quaternion = tf2::toMsg(q_ned_to_enu * q_ned);
+    ekf_quat_message.quaternion = tf2::toMsg(q_ned_to_enu_ * q_ned);
   }
   else
   {
