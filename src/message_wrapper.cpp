@@ -709,22 +709,20 @@ const sbg_driver::msg::SbgEkfQuat MessageWrapper::createSbgEkfQuatMessage(const 
   ekf_quat_message.accuracy.y   = ref_log_ekf_quat.eulerStdDev[1];
   ekf_quat_message.accuracy.z   = ref_log_ekf_quat.eulerStdDev[2];
 
+  tf2::Quaternion q_ned{ref_log_ekf_quat.quaternion[1],
+                        ref_log_ekf_quat.quaternion[2],
+                        ref_log_ekf_quat.quaternion[3],
+                        ref_log_ekf_quat.quaternion[0]};
   if (m_use_enu_)
   {
-    tf2::Quaternion q_nwu{ref_log_ekf_quat.quaternion[1],
-                          -ref_log_ekf_quat.quaternion[2],
-                          -ref_log_ekf_quat.quaternion[3],
-                          ref_log_ekf_quat.quaternion[0]};
-    const tf2::Quaternion q_enu_to_nwu{0, 0, M_SQRT2 / 2, M_SQRT2 / 2};
+    tf2::Quaternion q_ned_to_enu;
+    q_ned_to_enu.setRPY(sbgDegToRadF(180.0f), 0.0f, sbgDegToRadF(90.0f));
 
-    ekf_quat_message.quaternion = tf2::toMsg(q_enu_to_nwu * q_nwu);
+    ekf_quat_message.quaternion = tf2::toMsg(q_ned_to_enu * q_ned);
   }
   else
   {
-    ekf_quat_message.quaternion.x = ref_log_ekf_quat.quaternion[1];
-    ekf_quat_message.quaternion.y = ref_log_ekf_quat.quaternion[2];
-    ekf_quat_message.quaternion.z = ref_log_ekf_quat.quaternion[3];
-    ekf_quat_message.quaternion.w = ref_log_ekf_quat.quaternion[0];
+    ekf_quat_message.quaternion = tf2::toMsg(q_ned);
   }
 
   return ekf_quat_message;
