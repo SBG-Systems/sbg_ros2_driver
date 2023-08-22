@@ -125,6 +125,8 @@ private:
   std::string                         m_odom_base_frame_id_;
   std::string                         m_odom_init_frame_id_;
 
+  tf2::Quaternion                     q_ned_to_enu_;
+
   //---------------------------------------------------------------------//
   //- Internal methods                                                  -//
   //---------------------------------------------------------------------//
