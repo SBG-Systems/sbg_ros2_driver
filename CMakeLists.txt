@@ -87,16 +87,10 @@ ament_export_dependencies(rosidl_default_runtime)
 add_subdirectory(external/sbgECom)
 
 include_directories(
-  #${catkin_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/include/sbg_driver/
   ${PROJECT_SOURCE_DIR}/external/sbgECom/common
   ${PROJECT_SOURCE_DIR}/external/sbgECom/src
 )
-
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(sbg ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Define common resources.
 set (SBG_COMMON_RESOURCES
@@ -125,8 +119,8 @@ target_compile_options(sbg_device_mag PRIVATE -Wall -Wextra)
 endif()
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(sbg_device ${catkin_LIBRARIES} sbgECom)
-target_link_libraries(sbg_device_mag ${catkin_LIBRARIES} sbgECom)
+target_link_libraries(sbg_device sbgECom)
+target_link_libraries(sbg_device_mag sbgECom)
 
 ament_target_dependencies(sbg_device ${USED_LIBRARIES}) 
 ament_target_dependencies(sbg_device_mag ${USED_LIBRARIES})
@@ -141,9 +135,6 @@ set_property(TARGET sbg_device_mag PROPERTY CXX_STANDARD 14)
 ## Install ##
 #############
 
-# all install targets should use catkin DESTINATION variables
-# See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
-
 ## Mark executables and/or libraries for installation
 install(TARGETS sbg_device sbg_device_mag
    DESTINATION lib/${PROJECT_NAME}
@@ -151,7 +142,7 @@ install(TARGETS sbg_device sbg_device_mag
 
 ## Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include/${PROJECT_NAME}  #${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
   PATTERN ".git" EXCLUDE
@@ -168,7 +159,7 @@ install(DIRECTORY config/
 
 
 ###################################
-## catkin specific configuration ##
+## ament specific configuration  ##
 ###################################
 
 ament_export_dependencies(
