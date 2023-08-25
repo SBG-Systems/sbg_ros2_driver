@@ -40,7 +40,7 @@ private:
   //- Private variables                                                 -//
   //---------------------------------------------------------------------//
 
-  std::array<T, 3> m_data;
+  std::array<T, 3> data_;
 
 public:
 
@@ -53,9 +53,9 @@ public:
    */
   SbgVector3()
   {
-    m_data[0] = static_cast<T>(0.0);
-    m_data[1] = static_cast<T>(0.0);
-    m_data[2] = static_cast<T>(0.0);
+    data_[0] = static_cast<T>(0.0);
+    data_[1] = static_cast<T>(0.0);
+    data_[2] = static_cast<T>(0.0);
   }
 
   /*!
@@ -67,9 +67,9 @@ public:
    */
   SbgVector3(T x_value, T y_value, T z_value)
   {
-    m_data[0] = x_value;
-    m_data[1] = y_value;
-    m_data[2] = z_value;
+    data_[0] = x_value;
+    data_[1] = y_value;
+    data_[2] = z_value;
   };
 
   /*!
@@ -82,9 +82,9 @@ public:
   {
     assert(array_size == 3);
 
-    m_data[0] = p_raw_data[0];
-    m_data[1] = p_raw_data[1];
-    m_data[2] = p_raw_data[2];
+    data_[0] = p_raw_data[0];
+    data_[1] = p_raw_data[1];
+    data_[2] = p_raw_data[2];
   };
 
   //---------------------------------------------------------------------//
@@ -103,9 +103,9 @@ public:
    */
   bool operator==(const SbgVector3<T> &ref_vector)
   {
-    return ((areEquals(m_data[0], ref_vector.m_data[0]))
-          && (areEquals(m_data[1], ref_vector.m_data[1]))
-          && (areEquals(m_data[2], ref_vector.m_data[2])));
+    return ((areEquals(data_[0], ref_vector.data_[0]))
+          && (areEquals(data_[1], ref_vector.data_[1]))
+          && (areEquals(data_[2], ref_vector.data_[2])));
   };
 
   /*!
@@ -128,7 +128,7 @@ public:
   {
       assert(index < 3);
 
-      return m_data[index];
+      return data_[index];
   }
 
   /*!
@@ -138,7 +138,7 @@ public:
    */
   const T *data() const
   {  
-    return static_cast<const T*>(m_data.data());
+    return static_cast<const T*>(data_.data());
   };
 };
 

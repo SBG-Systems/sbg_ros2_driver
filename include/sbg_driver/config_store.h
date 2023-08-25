@@ -73,53 +73,53 @@ public:
 
 private:
 
-  std::string                 m_uart_port_name_;
-  SbgEComOutputPort           m_output_port_;
-  uint32_t                    m_uart_baud_rate_;
-  bool                        m_serial_communication_;
+  std::string                 uart_port_name_;
+  SbgEComOutputPort           output_port_;
+  uint32_t                    uart_baud_rate_;
+  bool                        serial_communication_;
 
-  sbgIpAddress                m_sbg_ip_address_;
-  uint32_t                    m_out_port_address_;
-  uint32_t                    m_in_port_address_;
-  bool                        m_upd_communication_;
+  sbgIpAddress                sbg_ip_address_;
+  uint32_t                    out_port_address_;
+  uint32_t                    in_port_address_;
+  bool                        upd_communication_;
 
-  bool                        m_configure_through_ros_;
+  bool                        configure_through_ros_;
 
-  SbgEComInitConditionConf    m_init_condition_conf_;
-  SbgEComModelInfo            m_motion_profile_model_info_;
+  SbgEComInitConditionConf    init_condition_conf_;
+  SbgEComModelInfo            motion_profile_model_info_;
 
-  SbgEComSensorAlignmentInfo  m_sensor_alignement_info_;
-  SbgVector3<float>           m_sensor_lever_arm_;
+  SbgEComSensorAlignmentInfo  sensor_alignement_info_;
+  SbgVector3<float>           sensor_lever_arm_;
 
-  SbgEComAidingAssignConf     m_aiding_assignement_conf_;
+  SbgEComAidingAssignConf     aiding_assignement_conf_;
 
-  SbgEComModelInfo            m_mag_model_info_;
-  SbgEComMagRejectionConf     m_mag_rejection_conf_;
-  SbgEComMagCalibMode         m_mag_calib_mode_;
-  SbgEComMagCalibBandwidth    m_mag_calib_bandwidth_;
+  SbgEComModelInfo            mag_model_info_;
+  SbgEComMagRejectionConf     mag_rejection_conf_;
+  SbgEComMagCalibMode         mag_calib_mode_;
+  SbgEComMagCalibBandwidth    mag_calib_bandwidth_;
 
-  SbgEComModelInfo            m_gnss_model_info_;
-  SbgEComGnssInstallation     m_gnss_installation_;
-  SbgEComGnssRejectionConf    m_gnss_rejection_conf_;
+  SbgEComModelInfo            gnss_model_info_;
+  SbgEComGnssInstallation     gnss_installation_;
+  SbgEComGnssRejectionConf    gnss_rejection_conf_;
 
-  SbgEComOdoConf              m_odometer_conf_;
-  SbgVector3<float>           m_odometer_level_arm_;
-  SbgEComOdoRejectionConf     m_odometer_rejection_conf_;
+  SbgEComOdoConf              odometer_conf_;
+  SbgVector3<float>           odometer_level_arm_;
+  SbgEComOdoRejectionConf     odometer_rejection_conf_;
 
-  std::vector<SbgLogOutput>   m_output_modes_;
-  bool                        m_ros_standard_output_;
+  std::vector<SbgLogOutput>   output_modes_;
+  bool                        ros_standard_output_;
 
-  TimeReference               m_time_reference_;
+  TimeReference               time_reference_;
 
-  uint32_t                    m_rate_frequency_;
-  std::string                 m_frame_id_;
-  bool						  m_use_enu_;
+  uint32_t                    rate_frequency_;
+  std::string                 frame_id_;
+  bool						  use_enu_;
 
-  bool						  m_odom_enable_;
-  bool						  m_odom_publish_tf_;
-  std::string                 m_odom_frame_id_;
-  std::string                 m_odom_base_frame_id_;
-  std::string                 m_odom_init_frame_id_;
+  bool						  odom_enable_;
+  bool						  odom_publish_tf_;
+  std::string                 odom_frame_id_;
+  std::string                 odom_base_frame_id_;
+  std::string                 odom_init_frame_id_;
 
   bool                        rtcm_subscribe_;
   std::string                 rtcm_full_topic_;
