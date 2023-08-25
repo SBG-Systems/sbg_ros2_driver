@@ -112,18 +112,18 @@ public:
   };
 
 private:
-  sbg_driver::msg::SbgUtcTime  	      m_last_sbg_utc_;
-  bool                                m_first_valid_utc_;
-  std::string                         m_frame_id_;
-  bool                                m_use_enu_;
-  TimeReference                       m_time_reference_;
-  UTM0					              m_utm0_;
+  sbg_driver::msg::SbgUtcTime  	      last_sbg_utc_;
+  bool                                first_valid_utc_;
+  std::string                         frame_id_;
+  bool                                use_enu_;
+  TimeReference                       time_reference_;
+  UTM0					              utm0_;
 
-  bool                                m_odom_enable_;
-  bool                                m_odom_publish_tf_;
-  std::string                         m_odom_frame_id_;
-  std::string                         m_odom_base_frame_id_;
-  std::string                         m_odom_init_frame_id_;
+  bool                                odom_enable_;
+  bool                                odom_publish_tf_;
+  std::string                         odom_frame_id_;
+  std::string                         odom_base_frame_id_;
+  std::string                         odom_init_frame_id_;
 
   //---------------------------------------------------------------------//
   //- Internal methods                                                  -//
@@ -322,38 +322,38 @@ private:
   /*!
    * Get UTM letter designator for the given latitude.
    *
-   * \param[in] Lat                     Latitude, in degrees.
+   * \param[in] latitude                Latitude, in degrees.
    * \return                            UTM letter designator.
    */
-  char UTMLetterDesignator(double Lat);
+  char UTMLetterDesignator(double latitude);
 
   /*!
    * Set UTM initial position.
    *
-   * \param[in] Lat                     Latitude, in degrees.
-   * \param[in] Long                    Longitude, in degrees.
+   * \param[in] latitude                Latitude, in degrees.
+   * \param[in] longitude               Longitude, in degrees.
    * \param[in] altitude                Altitude, in meters.
    */
-  void initUTM(double Lat, double Long, double altitude);
+  void initUTM(double latitude, double longitude, double altitude);
 
   /*!
    * Convert latitude and longitude to a position relative to UTM initial position.
    *
-   * \param[in] Lat                     Latitude, in degrees.
-   * \param[in] Long                    Longitude, in degrees.
-   * \param[in] zoneNumber              UTM zone number.
-   * \param[out] UTMNorthing            UTM northing, in meters.
-   * \param[out] UTMEasting             UTM easting, in meters.
+   * \param[in] latitude                Latitude, in degrees.
+   * \param[in] longitude               Longitude, in degrees.
+   * \param[in] zone_number             UTM zone number.
+   * \param[out] utm_northing           UTM northing, in meters.
+   * \param[out] utm_easting            UTM easting, in meters.
    */
-  void LLtoUTM(double Lat, double Long, int zoneNumber, double &UTMNorthing, double &UTMEasting) const;
+  void LLtoUTM(double latitude, double longitude, int zone_number, double &utm_northing, double &utm_easting) const;
 
   /*!
    * Convert SbgEComGpsPosType enum to NmeaGGAQuality enum
    *
-   * \param[in] sbgGpsType              SbgECom GPS type
+   * \param[in] sbg_gps_type            SbgECom GPS type
    * \return                            NMEA GPS type
    */
-  static NmeaGGAQuality convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbgGpsType);
+  static NmeaGGAQuality convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbg_gps_type);
 
 public:
 
@@ -361,8 +361,8 @@ public:
   //- Transform broadcasters                                            -//
   //---------------------------------------------------------------------//
 
-  std::shared_ptr<tf2_ros::TransformBroadcaster> m_tf_broadcaster_;
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> m_static_tf_broadcaster_;
+  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_tf_broadcaster_;
 
   //---------------------------------------------------------------------//
   //- Constructor                                                       -//

@@ -32,25 +32,25 @@ private:
   static std::map<SbgEComMagCalibQuality, std::string>    g_mag_calib_quality_;
   static std::map<SbgEComMagCalibConfidence, std::string> g_mag_calib_confidence_;
   static std::map<SbgEComMagCalibMode, std::string>       g_mag_calib_mode_;
-  static std::map<SbgEComMagCalibBandwidth, std::string>  g_mag_calib_bandwidth;
+  static std::map<SbgEComMagCalibBandwidth, std::string>  g_mag_calib_bandwidth_;
 
   //---------------------------------------------------------------------//
   //- Private variables                                                 -//
   //---------------------------------------------------------------------//
 
-  SbgEComHandle                                            m_com_handle_;
-  SbgInterface                                             m_sbg_interface_;
-  rclcpp::Node&        	                                   m_ref_node_;
-  MessagePublisher                                         m_message_publisher_;
-  ConfigStore                                              m_config_store_;
+  SbgEComHandle                                            com_handle_;
+  SbgInterface                                             sbg_interface_;
+  rclcpp::Node&        	                                   ref_node_;
+  MessagePublisher                                         message_publisher_;
+  ConfigStore                                              config_store_;
 
-  uint32_t                                                 m_rate_frequency_;
+  uint32_t                                                 rate_frequency_;
 
-  bool                                                     m_mag_calibration_ongoing_;
-  bool                                                     m_mag_calibration_done_;
-  SbgEComMagCalibResults                                   m_magCalibResults;
-  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr       m_calib_service_;
-  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr       m_calib_save_service_;
+  bool                                                     mag_calibration_ongoing_;
+  bool                                                     mag_calibration_done_;
+  SbgEComMagCalibResults                                   mag_calib_results_;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr       calib_service_;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr       calib_save_service_;
 
   rclcpp::Subscription<rtcm_msgs::msg::Message>::SharedPtr rtcm_sub_;
 

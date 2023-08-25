@@ -52,8 +52,8 @@ class ConfigApplier
 {
 private:
 
-  bool            m_reboot_needed_;
-  SbgEComHandle&  m_ref_sbg_com_handle;
+  bool            reboot_needed_;
+  SbgEComHandle&  ref_sbg_com_handle_;
 
   //---------------------------------------------------------------------//
   //- Private  methods                                                  -//

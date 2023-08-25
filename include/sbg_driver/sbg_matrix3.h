@@ -57,7 +57,7 @@ private:
   //- Private variables                                                 -//
   //---------------------------------------------------------------------//
 
-  std::array<T, 9> m_data;
+  std::array<T, 9> data_;
 
 public:
 
@@ -70,15 +70,15 @@ public:
    */
   SbgMatrix3()
   {
-    m_data[0] = static_cast<T>(0.0);
-    m_data[1] = static_cast<T>(0.0);
-    m_data[2] = static_cast<T>(0.0);
-    m_data[3] = static_cast<T>(0.0);
-    m_data[4] = static_cast<T>(0.0);
-    m_data[5] = static_cast<T>(0.0);
-    m_data[6] = static_cast<T>(0.0);
-    m_data[7] = static_cast<T>(0.0);
-    m_data[8] = static_cast<T>(0.0);
+    data_[0] = static_cast<T>(0.0);
+    data_[1] = static_cast<T>(0.0);
+    data_[2] = static_cast<T>(0.0);
+    data_[3] = static_cast<T>(0.0);
+    data_[4] = static_cast<T>(0.0);
+    data_[5] = static_cast<T>(0.0);
+    data_[6] = static_cast<T>(0.0);
+    data_[7] = static_cast<T>(0.0);
+    data_[8] = static_cast<T>(0.0);
   }
 
   /*!
@@ -96,15 +96,15 @@ public:
    */
   SbgMatrix3(T value00, T value01, T value02, T value10, T value11, T value12, T value20, T value21, T value22)
   {
-    m_data[0] = value00;
-    m_data[1] = value01;
-    m_data[2] = value02;
-    m_data[3] = value10;
-    m_data[4] = value11;
-    m_data[5] = value12;
-    m_data[6] = value20;
-    m_data[7] = value21;
-    m_data[8] = value22;
+    data_[0] = value00;
+    data_[1] = value01;
+    data_[2] = value02;
+    data_[3] = value10;
+    data_[4] = value11;
+    data_[5] = value12;
+    data_[6] = value20;
+    data_[7] = value21;
+    data_[8] = value22;
   };
 
   /*!
@@ -117,15 +117,15 @@ public:
   {
     assert(array_size == 9);
 
-    m_data[0] = p_raw_data[0];
-    m_data[1] = p_raw_data[1];
-    m_data[2] = p_raw_data[2];
-    m_data[3] = p_raw_data[3];
-    m_data[4] = p_raw_data[4];
-    m_data[5] = p_raw_data[5];
-    m_data[6] = p_raw_data[6];
-    m_data[7] = p_raw_data[7];
-    m_data[8] = p_raw_data[8];
+    data_[0] = p_raw_data[0];
+    data_[1] = p_raw_data[1];
+    data_[2] = p_raw_data[2];
+    data_[3] = p_raw_data[3];
+    data_[4] = p_raw_data[4];
+    data_[5] = p_raw_data[5];
+    data_[6] = p_raw_data[6];
+    data_[7] = p_raw_data[7];
+    data_[8] = p_raw_data[8];
   };
 
   //---------------------------------------------------------------------//
@@ -147,7 +147,7 @@ public:
   {
     assert(i * 3 + j < 9);
 
-    return m_data[i * 3 + j];
+    return data_[i * 3 + j];
   }
 
   /*!
@@ -157,31 +157,31 @@ public:
    */
   const T *data() const
   {
-    return static_cast<const T*>(m_data.data());
+    return static_cast<const T*>(data_.data());
   };
 
   const SbgVector3<T> operator*(const SbgVector3<T>& vect) const
   {
-    T x = m_data[0] * vect(0) + m_data[1] * vect(1) + m_data[2] * vect(2);
-    T y = m_data[3] * vect(0) + m_data[4] * vect(1) + m_data[5] * vect(2);
-    T z = m_data[6] * vect(0) + m_data[7] * vect(1) + m_data[8] * vect(2);
+    T x = data_[0] * vect(0) + data_[1] * vect(1) + data_[2] * vect(2);
+    T y = data_[3] * vect(0) + data_[4] * vect(1) + data_[5] * vect(2);
+    T z = data_[6] * vect(0) + data_[7] * vect(1) + data_[8] * vect(2);
 
     return SbgVector3<T>(x, y, z);
   }
 
   void transpose()
   {
-    T swap = m_data[1];
-    m_data[1] = m_data[3];
-    m_data[3] = swap;
+    T swap = data_[1];
+    data_[1] = data_[3];
+    data_[3] = swap;
 
-    swap = m_data[2];
-    m_data[2] = m_data[6];
-    m_data[6] = swap;
+    swap = data_[2];
+    data_[2] = data_[6];
+    data_[6] = swap;
 
-    swap = m_data[5];
-    m_data[5] = m_data[7];
-    m_data[7] = swap;
+    swap = data_[5];
+    data_[5] = data_[7];
+    data_[7] = swap;
   }
 
   /*!
@@ -201,17 +201,17 @@ public:
     float cy = cosf(euler(2));
     float sy = sinf(euler(2));
 
-    m_data[0] = cp * cy;
-    m_data[3] = cp * sy;
-    m_data[6] = -sp;
+    data_[0] = cp * cy;
+    data_[3] = cp * sy;
+    data_[6] = -sp;
 
-    m_data[1] = (sr * sp * cy) - (cr * sy);
-    m_data[4] = (sr * sp * sy) + (cr * cy);
-    m_data[7] = sr * cp;
+    data_[1] = (sr * sp * cy) - (cr * sy);
+    data_[4] = (sr * sp * sy) + (cr * cy);
+    data_[7] = sr * cp;
 
-    m_data[2] = (cr * sp * cy) + (sy * sr);
-    m_data[5] = (cr * sp * sy) - (sr * cy);
-    m_data[8] = cr * cp;
+    data_[2] = (cr * sp * cy) + (sy * sr);
+    data_[5] = (cr * sp * sy) - (sr * cy);
+    data_[8] = cr * cp;
 
   }
 
@@ -232,17 +232,17 @@ public:
     float xz = x * z;
     float yz = y * z;
 
-    m_data[0] = (2 * powf(w, 2)) + (2 * powf(x, 2)) - 1;
-    m_data[3] = (2 * xy) + (2 * wz);
-    m_data[6] = (2 * xz) - (2 * wy);
+    data_[0] = (2 * powf(w, 2)) + (2 * powf(x, 2)) - 1;
+    data_[3] = (2 * xy) + (2 * wz);
+    data_[6] = (2 * xz) - (2 * wy);
 
-    m_data[1] = (2 * xy) - (2 * wz);
-    m_data[4] = (2 * powf(w, 2)) + (2 * powf(y, 2)) - 1;
-    m_data[7] = (2 * yz) + (2 * wx);
+    data_[1] = (2 * xy) - (2 * wz);
+    data_[4] = (2 * powf(w, 2)) + (2 * powf(y, 2)) - 1;
+    data_[7] = (2 * yz) + (2 * wx);
 
-    m_data[2] = (2 * wy) + (2 * xz);
-    m_data[5] = (2 * yz) - (2 * wx);
-    m_data[8] = (2 * powf(w, 2)) + (2 * powf(z, 2)) - 1;
+    data_[2] = (2 * wy) + (2 * xz);
+    data_[5] = (2 * yz) - (2 * wx);
+    data_[8] = (2 * powf(w, 2)) + (2 * powf(z, 2)) - 1;
   }
 
 };
