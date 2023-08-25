@@ -41,6 +41,7 @@
 // Sbg header
 #include <sbg_matrix3.h>
 #include <config_store.h>
+#include <sbg_utm.h>
 
 // ROS headers
 #include <rclcpp/rclcpp.hpp>
@@ -79,13 +80,6 @@
 
 namespace sbg
 {
-typedef struct _UTM0
-{
-	double			easting;
-	double			northing;
-	double			altitude;
-	int				zone;
-} UTM0;
 
 /*!
  * Class to wrap the SBG logs into ROS messages.
@@ -117,7 +111,6 @@ private:
   std::string                         frame_id_;
   bool                                use_enu_;
   TimeReference                       time_reference_;
-  UTM0					              utm0_;
 
   bool                                odom_enable_;
   bool                                odom_publish_tf_;
@@ -125,6 +118,7 @@ private:
   std::string                         odom_base_frame_id_;
   std::string                         odom_init_frame_id_;
 
+  sbg::utm                            utm_{};
   //---------------------------------------------------------------------//
   //- Internal methods                                                  -//
   //---------------------------------------------------------------------//
@@ -318,34 +312,6 @@ private:
    * \param[out] ref_transform_stamped  Stamped transformation.
    */
   void fillTransform(const std::string &ref_parent_frame_id, const std::string &ref_child_frame_id, const geometry_msgs::msg::Pose &ref_pose, geometry_msgs::msg::TransformStamped &ref_transform_stamped);
-
-  /*!
-   * Get UTM letter designator for the given latitude.
-   *
-   * \param[in] latitude                Latitude, in degrees.
-   * \return                            UTM letter designator.
-   */
-  char UTMLetterDesignator(double latitude);
-
-  /*!
-   * Set UTM initial position.
-   *
-   * \param[in] latitude                Latitude, in degrees.
-   * \param[in] longitude               Longitude, in degrees.
-   * \param[in] altitude                Altitude, in meters.
-   */
-  void initUTM(double latitude, double longitude, double altitude);
-
-  /*!
-   * Convert latitude and longitude to a position relative to UTM initial position.
-   *
-   * \param[in] latitude                Latitude, in degrees.
-   * \param[in] longitude               Longitude, in degrees.
-   * \param[in] zone_number             UTM zone number.
-   * \param[out] utm_northing           UTM northing, in meters.
-   * \param[out] utm_easting            UTM easting, in meters.
-   */
-  void LLtoUTM(double latitude, double longitude, int zone_number, double &utm_northing, double &utm_easting) const;
 
   /*!
    * Convert SbgEComGpsPosType enum to NmeaGGAQuality enum

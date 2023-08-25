@@ -99,6 +99,8 @@ set (SBG_COMMON_RESOURCES
   src/message_wrapper.cpp
   src/config_store.cpp
   src/sbg_device.cpp
+  src/sbg_utm.cpp
+  src/sbg_ros_helpers.cpp
 )
 
 ## Declare a C++ executable
