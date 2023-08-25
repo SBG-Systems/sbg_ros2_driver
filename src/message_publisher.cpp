@@ -207,8 +207,14 @@ void MessagePublisher::initPublisher(rclcpp::Node& ref_ros_node_handle, SbgEComM
   }
 }
 
-void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_handle, bool odom_enable)
+void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_handle, bool odom_enable, bool enu_enable)
 {
+  if (!enu_enable)
+  {
+    RCLCPP_WARN(ref_ros_node_handle.get_logger(), "SBG_DRIVER - [Publisher] Driver is configured in NED frame convention, ROS standard message are disabled.");
+    return;
+  }
+
   if (m_sbgImuData_pub_ && m_sbgEkfQuat_pub_)
   {
     m_imu_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::Imu>("imu/data", m_max_messages_);
@@ -497,7 +503,7 @@ void MessagePublisher::initPublishers(rclcpp::Node& ref_ros_node_handle, const C
 
   if (ref_config_store.checkRosStandardMessages())
   {
-    defineRosStandardPublishers(ref_ros_node_handle, ref_config_store.getOdomEnable());
+    defineRosStandardPublishers(ref_ros_node_handle, ref_config_store.getOdomEnable(), ref_config_store.getUseEnu());
   }
 }
 
