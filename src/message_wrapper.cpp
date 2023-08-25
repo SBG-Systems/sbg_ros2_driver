@@ -38,37 +38,39 @@ Node("tf_broadcaster")
 //- Internal methods                                                  -//
 //---------------------------------------------------------------------//
 
-float MessageWrapper::wrapAngle2Pi(float angle_rad) const
+float MessageWrapper::wrapAnglePi(float angle_rad)
 {
-  if ((angle_rad < -SBG_PI_F * 2.0f) || (angle_rad > SBG_PI_F * 2.0f))
+  if (angle_rad > SBG_PI_F)
   {
-    angle_rad = fmodf(angle_rad, SBG_PI_F * 2.0f);
+    return (SBG_PI_F * 2.0f - fmodf(angle_rad, SBG_PI_F * 2.0f));
   }
 
-  if (angle_rad < 0.0f)
+  if (angle_rad < -SBG_PI_F)
   {
-    angle_rad = SBG_PI_F * 2.0f + angle_rad;
+    return (SBG_PI_F * 2.0f + fmodf(angle_rad, SBG_PI_F * 2.0f));
   }
 
   return angle_rad;
 }
 
-float MessageWrapper::wrapAngle360(float angle_deg) const
+float MessageWrapper::wrapAngle360(float angle_deg)
 {
-  if ( (angle_deg < -360.0f) || (angle_deg > 360.0f) )
+  float wrapped_angle_deg = angle_deg;
+
+  if ( (wrapped_angle_deg < -360.0f) || (wrapped_angle_deg > 360.0f) )
   {
-    angle_deg = fmodf(angle_deg, 360.0f);
+    wrapped_angle_deg = fmodf(wrapped_angle_deg, 360.0f);
   }
 
-  if (angle_deg < 0.0f)
+  if (wrapped_angle_deg < 0.0f)
   {
-    angle_deg = 360.0f + angle_deg;
+    wrapped_angle_deg = 360.0f + wrapped_angle_deg;
   }
 
-  return angle_deg;
+  return wrapped_angle_deg;
 }
 
-double MessageWrapper::computeMeridian(int zone_number) const
+double MessageWrapper::computeMeridian(int zone_number)
 {
   return (zone_number == 0) ? 0.0 : (zone_number - 1) * 6.0 - 177.0;
 }
@@ -634,7 +636,7 @@ const sbg_driver::msg::SbgEkfEuler MessageWrapper::createSbgEkfEulerMessage(cons
   {
     ekf_euler_message.angle.x  = ref_log_ekf_euler.euler[0];
     ekf_euler_message.angle.y  = -ref_log_ekf_euler.euler[1];
-    ekf_euler_message.angle.z  = wrapAngle2Pi((SBG_PI_F / 2.0f) - ref_log_ekf_euler.euler[2]);
+    ekf_euler_message.angle.z  = -wrapAnglePi(-(SBG_PI_F / 2.0f) + ref_log_ekf_euler.euler[2]);
   }
   else
   {
@@ -709,17 +711,22 @@ const sbg_driver::msg::SbgEkfQuat MessageWrapper::createSbgEkfQuatMessage(const 
 
   if (m_use_enu_)
   {
-    ekf_quat_message.quaternion.x = ref_log_ekf_quat.quaternion[1];
-    ekf_quat_message.quaternion.y = -ref_log_ekf_quat.quaternion[2];
-    ekf_quat_message.quaternion.z = -ref_log_ekf_quat.quaternion[3];
-    ekf_quat_message.quaternion.w = ref_log_ekf_quat.quaternion[0];
+    static const tf2::Quaternion q_enu_to_nwu{0, 0, M_SQRT2 / 2, M_SQRT2 / 2};
+    tf2::Quaternion q_nwu{ref_log_ekf_quat.quaternion[1],
+                          -ref_log_ekf_quat.quaternion[2],
+                          -ref_log_ekf_quat.quaternion[3],
+                          ref_log_ekf_quat.quaternion[0]};
+
+    ekf_quat_message.quaternion = tf2::toMsg(q_enu_to_nwu * q_nwu);
   }
   else
   {
-    ekf_quat_message.quaternion.x = ref_log_ekf_quat.quaternion[1];
-    ekf_quat_message.quaternion.y = ref_log_ekf_quat.quaternion[2];
-    ekf_quat_message.quaternion.z = ref_log_ekf_quat.quaternion[3];
-    ekf_quat_message.quaternion.w = ref_log_ekf_quat.quaternion[0];
+    tf2::Quaternion q_ned{ref_log_ekf_quat.quaternion[1],
+                          ref_log_ekf_quat.quaternion[2],
+                          ref_log_ekf_quat.quaternion[3],
+                          ref_log_ekf_quat.quaternion[0]};
+
+    ekf_quat_message.quaternion = tf2::toMsg(q_ned);
   }
 
   return ekf_quat_message;
@@ -1086,7 +1093,7 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
 
   imu_ros_message.header = createRosHeader(ref_sbg_imu_msg.time_stamp);
 
-  imu_ros_message.orientation                       = ref_sbg_quat_msg.quaternion;
+  imu_ros_message.orientation               = ref_sbg_quat_msg.quaternion;
   imu_ros_message.angular_velocity          = ref_sbg_imu_msg.delta_angle;
   imu_ros_message.linear_acceleration       = ref_sbg_imu_msg.delta_vel;
 
@@ -1108,8 +1115,6 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
 
 void MessageWrapper::fillTransform(const std::string &ref_parent_frame_id, const std::string &ref_child_frame_id, const geometry_msgs::msg::Pose &ref_pose, geometry_msgs::msg::TransformStamped &refTransformStamped)
 {
-  tf2::Quaternion q;
-
   refTransformStamped.header.stamp = rclcpp::Clock().now();
   refTransformStamped.header.frame_id = ref_parent_frame_id;
   refTransformStamped.child_frame_id = ref_child_frame_id;
@@ -1166,14 +1171,15 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
       pose.position.x = m_utm0_.easting;
       pose.position.y = m_utm0_.northing;
       pose.position.z = m_utm0_.altitude;
+
       fillTransform(m_odom_init_frame_id_, m_odom_frame_id_, pose, transform);
       m_static_tf_broadcaster_->sendTransform(transform);
     }
   }
 
-  LLtoUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, m_utm0_.zone, utm_easting, utm_northing);
-  odo_ros_msg.pose.pose.position.x = utm_northing - m_utm0_.easting;
-  odo_ros_msg.pose.pose.position.y = utm_easting  - m_utm0_.northing;
+  LLtoUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, m_utm0_.zone, utm_northing, utm_easting);
+  odo_ros_msg.pose.pose.position.x = utm_easting  - m_utm0_.easting;
+  odo_ros_msg.pose.pose.position.y = utm_northing - m_utm0_.northing;
   odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - m_utm0_.altitude;
 
   // Compute convergence angle.

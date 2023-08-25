@@ -116,7 +116,7 @@ private:
    * \param[in] ref_ros_node_handle     Ros Node to advertise the publisher.
    * \param[in] odom_enable             If true, enable odometry messages.
    */
-  void defineRosStandardPublishers(rclcpp::Node& ref_ros_node_handle, bool odom_enable);
+  void defineRosStandardPublishers(rclcpp::Node& ref_ros_node_handle, bool odom_enable, bool enu_enable);
 
   /*!
    * Publish a received SBG IMU log.
