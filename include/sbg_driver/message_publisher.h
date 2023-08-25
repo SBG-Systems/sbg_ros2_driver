@@ -3,7 +3,7 @@
 *	\author       SBG Systems
 *	\date         13/03/2020
 *
-*	\brief        Manage publishment of messages from logs.
+*	\brief        Manage publishing of messages from logs.
 *
 *	\section CodeCopyright Copyright Notice
 *	MIT License
