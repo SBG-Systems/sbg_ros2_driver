@@ -224,6 +224,9 @@ For each ROS standard, you have to activate the needed SBG outputs.
   Requires `/sbg/imu_data` and `/sbg/ekv_nav` and either `/sbg/ekf_euler` or `/sbg/ekf_quat`.
   Disabled by default, set `odometry.enable` in configuration file.
 
+> [!NOTE]
+> Please update the driver configuration to enable standard ROS messages publication. Also, the driver only publish standard ROS messages if the driver is setup to use ENU frame convention.
+
 ##### NMEA topics
 The driver can publish NMEA GGA messages from the internal GNSS receiver. It can be used with third party [NTRIP client](https://github.com/LORD-MicroStrain/ntrip_client) modules to support VRS networks providers.
 
@@ -369,31 +372,54 @@ Configuration example to use an absolute and accurate time reference to UNIX epo
 time_reference: "ins_unix"
 ```
 
-### Change frame parameters
-#### Frame ID
+## Frame parameters & conventions
+### Frame ID
 The frame_id of the header can be set with this parameter:
 ```
-# Frame convention
+# Frame name
 frame_id: "imu_link_ned"
 ```
 
-#### Frame convention
-The frame convention can be set to NED or ENU
-* The NED convention is SBG Systems native convention so no transformation is applied.
-* The ENU convention follows ROS standard [REP-103](https://www.ros.org/reps/rep-0103.html#coordinate-frame-conventions):
-  * Axis Orientation:
-    * In relation to a body the standard is:
-      * x forward
-      * y left
-      * z up
-    * Cartesian representation:
-      * X east
-      * Y north
-      * Z up
+### Frame convention
+The frame convention can be set to NED or ENU:
+* The NED convention is SBG Systems native convention so no transformation is applied
+* The ENU convention follows ROS standard [REP-103](https://www.ros.org/reps/rep-0103.html#coordinate-frame-conventions)
+
+Please read the SBG Systems [Support Center article](https://support.sbg-systems.com/sc/kb/latest/underlying-maths-conventions) for more details.
+
+You can select the frame convention to use with the following parameter:
 ```
-# Frame convention:
+# Frame convention
 use_enu: true
 ```
+
+> [!NOTE]
+> The driver only publish standard ROS messages if the driver is setup to use ENU frame convention.
+
+#### Body/Vehicle Frame:
+The X axis should point the vehicle **forward** direction for both NED and ENU frame conventions. 
+The table below summarizes the body/vehicle axis frame definitions for each convention:
+
+| NED Convention | ENU Convention |
+| -------------- | -------------- |
+| X Forward      | X Forward      |
+| Y Right        | Y Left         |
+| Z Downward     | Z Upward       |
+
+#### Navigation Frame:
+
+The navigation frame also referred by ROS as the cartesian representation is defined as follow:
+
+| NED Convention | ENU Convention |
+| -------------- | -------------- |
+| X North        | X East         |
+| Y East         | Y North        |
+| Z Down         | Z Up           |
+
+#### Heading Example:
+
+Based on the definitions above, when using a NED frame, if the vehicle X axis is pointing North, the INS should return a zero heading. 
+When using a ENU frame, the INS should return a zero heading when the vehicle X axis is pointing East.
 
 ## Troubleshooting
 
