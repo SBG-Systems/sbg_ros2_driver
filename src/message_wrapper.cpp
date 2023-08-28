@@ -848,8 +848,6 @@ void MessageWrapper::fillTransform(const std::string &ref_parent_frame_id, const
   refTransformStamped.transform.rotation.y = ref_pose.orientation.y;
   refTransformStamped.transform.rotation.z = ref_pose.orientation.z;
   refTransformStamped.transform.rotation.w = ref_pose.orientation.w;
-
-  tf_broadcaster_->sendTransform(refTransformStamped);
 }
 
 const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driver::msg::SbgImuData &ref_sbg_imu_msg, const sbg_driver::msg::SbgEkfNav &ref_ekf_nav_msg, const sbg_driver::msg::SbgEkfQuat &ref_ekf_quat_msg, const sbg_driver::msg::SbgEkfEuler &ref_ekf_euler_msg)
@@ -900,6 +898,7 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
       pose.position.z = utm_.getAltitude();
 
       fillTransform(odom_init_frame_id_, odom_frame_id_, pose, transform);
+      tf_broadcaster_->sendTransform(transform);
       static_tf_broadcaster_->sendTransform(transform);
     }
   }
