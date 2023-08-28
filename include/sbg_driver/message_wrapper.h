@@ -100,6 +100,12 @@ private:
   std::string                         odom_init_frame_id_;
 
   sbg::utm                            utm_{};
+
+  static constexpr double             equatorial_radius_ = 6378137.0;
+  static constexpr double             polar_radius_ = 6356752.314245;
+  double                              point_stamped_compute_cte_{};
+  double                              eccentricity_{};
+
   //---------------------------------------------------------------------//
   //- Internal methods                                                  -//
   //---------------------------------------------------------------------//
