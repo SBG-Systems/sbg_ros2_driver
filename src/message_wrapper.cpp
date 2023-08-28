@@ -1031,7 +1031,7 @@ const geometry_msgs::msg::PointStamped MessageWrapper::createRosPointStampedMess
 
   point_stamped_message.point.x = (prime_vertical_radius + ref_sbg_ekf_msg.altitude) * cos(latitude) * cos(longitude);
   point_stamped_message.point.y = (prime_vertical_radius + ref_sbg_ekf_msg.altitude) * cos(latitude) * sin(longitude);
-  point_stamped_message.point.z = ((point_stamped_compute_cte_ * prime_vertical_radius) + ref_sbg_ekf_msg.altitude) * sin(latitude);
+  point_stamped_message.point.z = fma(point_stamped_compute_cte_, prime_vertical_radius, ref_sbg_ekf_msg.altitude) * sin(latitude);
 
   return point_stamped_message;
 }
