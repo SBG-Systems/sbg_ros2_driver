@@ -28,11 +28,11 @@ void sbg::helpers::LLtoUTM(double latitude, double longitude, int zone_number, d
 
   // UTM Parameters
   constexpr double UTM_K0 = 0.9996;            // scale factor
-  constexpr double UTM_E2 = (WGS84_E*WGS84_E); // e^2
+  constexpr double UTM_E2 = (WGS84_E * WGS84_E); // e^2
 
-  double a = WGS84_A;
-  double eccSquared = UTM_E2;
-  double k0 = UTM_K0;
+  constexpr double a = WGS84_A;
+  constexpr double eccSquared = UTM_E2;
+  constexpr double k0 = UTM_K0;
 
   double LongOrigin;
   double eccPrimeSquared;
@@ -42,7 +42,7 @@ void sbg::helpers::LLtoUTM(double latitude, double longitude, int zone_number, d
   double LongTemp = (longitude + 180) - int((longitude + 180) / 360) * 360 - 180;
 
   double LatRad = latitude * RADIANS_PER_DEGREE;
-  double LongRad = LongTemp*RADIANS_PER_DEGREE;
+  double LongRad = LongTemp * RADIANS_PER_DEGREE;
   double LongOriginRad;
 
   // +3 puts origin in middle of zone
