@@ -883,11 +883,11 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   tf2::convert(ref_orientation, odo_ros_msg.pose.pose.orientation);
 
   // Convert latitude and longitude to UTM coordinates.
-  if (utm_.getZone() == 0)
+  if (utm_.getZoneNumber() == 0)
   {
     utm_.init(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, ref_ekf_nav_msg.altitude);
     RCLCPP_INFO(rclcpp::get_logger("Message wrapper"), "initialized from lat:%f long:%f UTM zone %d%c: easting:%fm (%dkm) northing:%fm (%dkm)"
-    , ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, utm_.getZone(), sbg::helpers::UTMLetterDesignator(ref_ekf_nav_msg.latitude)
+    , ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, utm_.getZoneNumber(), sbg::helpers::UTMLetterDesignator(ref_ekf_nav_msg.latitude)
     , utm_.getEasting(), (int)(utm_.getEasting())/1000
     , utm_.getNorthing(), (int)(utm_.getNorthing())/1000
     );
@@ -906,7 +906,7 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
     }
   }
 
-  sbg::helpers::LLtoUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, utm_.getZone(), utm_northing, utm_easting);
+  sbg::helpers::LLtoUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, utm_.getZoneNumber(), utm_northing, utm_easting);
   odo_ros_msg.pose.pose.position.x = utm_easting  - utm_.getEasting();
   odo_ros_msg.pose.pose.position.y = utm_northing - utm_.getNorthing();
   odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - utm_.getAltitude();
@@ -914,7 +914,7 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   // Compute convergence angle.
   double longitudeRad      = sbgDegToRadD(ref_ekf_nav_msg.longitude);
   double latitudeRad       = sbgDegToRadD(ref_ekf_nav_msg.latitude);
-  double central_meridian  = sbgDegToRadD(sbg::helpers::computeMeridian(utm_.getZone()));
+  double central_meridian  = sbgDegToRadD(sbg::helpers::computeMeridian(utm_.getZoneNumber()));
   double convergence_angle = atan(tan(longitudeRad - central_meridian) * sin(latitudeRad));
 
   // Convert position standard deviations to UTM frame.
