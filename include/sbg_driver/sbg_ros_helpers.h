@@ -34,8 +34,30 @@
 #ifndef SBG_ROS_ROS_HELPERS_H
 #define SBG_ROS_ROS_HELPERS_H
 
+// SbgECom headers
+#include <sbgEComLib.h>
+
+// STL headers
+#include <cstdint>
+
 namespace sbg::helpers
 {
+  /*!
+   * Standard NMEA GGA quality indicator value.
+   */
+  enum class NmeaGGAQuality: int32_t
+  {
+      INVALID           = 0,
+      SINGLE            = 1,
+      DGPS              = 2,
+      PPS               = 3,
+      RTK_FIXED         = 4,
+      RTK_FLOAT         = 5,
+      DEAD_RECKONING    = 6,
+      STATIC_POSITION   = 7,
+      SIMULATED         = 8,
+  };
+
   /*!
    * Convert latitude and longitude to a position relative to UTM initial position.
    *
@@ -54,6 +76,76 @@ namespace sbg::helpers
    * \return                            UTM letter designator.
    */
   char UTMLetterDesignator(double latitude);
+
+  /*!
+   * Wrap an angle between [ -Pi ; Pi ] rad.
+   *
+   * \param[in] angle_rad			Angle in rad.
+   * \return						Wrapped angle.
+   */
+  float wrapAnglePi(float angle_rad);
+
+  /*!
+   * Wrap an angle between [ 0 ; 360 ] degree.
+   *
+   * \param[in] angle_deg			Angle in degree.
+   * \return						Wrapped angle.
+   */
+  float wrapAngle360(float angle_deg);
+
+  /*!
+   * Compute UTM zone meridian.
+   *
+   * \param[in] zone_number			UTM Zone number.
+   * \return						Meridian angle, in degrees.
+   */
+  double computeMeridian(int zone_number);
+
+  /*!
+   * Get the number of days in the year.
+   *
+   * \param[in] year                Year to get the number of days.
+   * \return                        Number of days in the year.
+   */
+  uint32_t getNumberOfDaysInYear(uint16_t year);
+
+  /*!
+   * Get the number of days of the month index.
+   *
+   * \param[in] year                Year.
+   * \param[in] month_index         Month index [1..12].
+   * \return                        Number of days in the month.
+   */
+  uint32_t getNumberOfDaysInMonth(uint16_t year, uint8_t month_index);
+
+  /*!
+   * Check if the given year is a leap year.
+   *
+   * \param[in] year                Year to check.
+   * \return                        True if the year is a leap year.
+   */
+  bool isLeapYear(uint16_t year);
+
+  /*!
+   * Returns the GPS to UTC leap second offset: GPS_Time = UTC_Tme + utcOffset
+   *
+   * WARNING: The leap second is computed from the latest received SbgUtcTime message if any.
+   *          If no SbgUtcTime message has been received, a default driver current value is used.
+   *
+   * \param[in] first_valid_utc     First valid utc.
+   * \param[in] gps_tow             Current GPS time of the week.
+   * \param[in] sec                 Current second.
+   * \return                        Offset in seconds to apply to UTC time to get GPS time.
+   */
+  int32_t getUtcOffset(bool first_valid_utc, uint32_t gps_tow, uint8_t sec);
+
+  /*!
+   * Convert SbgEComGpsPosType enum to NmeaGGAQuality enum
+   *
+   * \param[in] sbg_gps_type            SbgECom GPS type
+   * \return                            NMEA GPS type
+   */
+  NmeaGGAQuality convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbg_gps_type);
 }
 
 #endif // #ifndef SBG_ROS_ROS_HELPERS_H

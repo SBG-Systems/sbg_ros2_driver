@@ -35,43 +35,6 @@ Node("tf_broadcaster")
 //- Internal methods                                                  -//
 //---------------------------------------------------------------------//
 
-float MessageWrapper::wrapAnglePi(float angle_rad)
-{
-  if (angle_rad > SBG_PI_F)
-  {
-    return (SBG_PI_F * 2.0f - fmodf(angle_rad, SBG_PI_F * 2.0f));
-  }
-
-  if (angle_rad < -SBG_PI_F)
-  {
-    return (SBG_PI_F * 2.0f + fmodf(angle_rad, SBG_PI_F * 2.0f));
-  }
-
-  return angle_rad;
-}
-
-float MessageWrapper::wrapAngle360(float angle_deg)
-{
-  float wrapped_angle_deg = angle_deg;
-
-  if ( (wrapped_angle_deg < -360.0f) || (wrapped_angle_deg > 360.0f) )
-  {
-    wrapped_angle_deg = fmodf(wrapped_angle_deg, 360.0f);
-  }
-
-  if (wrapped_angle_deg < 0.0f)
-  {
-    wrapped_angle_deg = 360.0f + wrapped_angle_deg;
-  }
-
-  return wrapped_angle_deg;
-}
-
-double MessageWrapper::computeMeridian(int zone_number)
-{
-  return (zone_number == 0) ? 0.0 : (zone_number - 1) * 6.0 - 177.0;
-}
-
 const std_msgs::msg::Header MessageWrapper::createRosHeader(uint32_t device_timestamp) const
 {
   std_msgs::msg::Header header;
@@ -104,6 +67,41 @@ const rclcpp::Time MessageWrapper::convertInsTimeToUnix(uint32_t device_timestam
   device_timestamp_diff = device_timestamp - last_sbg_utc_.time_stamp;
 
   nanoseconds = utc_to_epoch.nanoseconds() + static_cast<uint64_t>(device_timestamp_diff) * 1000;
+
+  utc_to_epoch = rclcpp::Time(nanoseconds);
+
+  return utc_to_epoch;
+}
+
+const rclcpp::Time MessageWrapper::convertUtcTimeToUnix(const sbg_driver::msg::SbgUtcTime& ref_sbg_utc_msg) const
+{
+  rclcpp::Time utc_to_epoch;
+  uint32_t  days;
+  uint64_t  nanoseconds;
+
+  //
+  // Convert the UTC time to Epoch(Unix) time, which is the elapsed seconds since 1 Jan 1970.
+  //
+  days        = 0;
+  nanoseconds = 0;
+
+  for (uint16_t yearIndex = 1970; yearIndex < ref_sbg_utc_msg.year; yearIndex++)
+  {
+    days += sbg::helpers::getNumberOfDaysInYear(yearIndex);
+  }
+
+  for (uint8_t monthIndex = 1; monthIndex < ref_sbg_utc_msg.month; monthIndex++)
+  {
+    days += sbg::helpers::getNumberOfDaysInMonth(ref_sbg_utc_msg.year, monthIndex);
+  }
+
+  days += ref_sbg_utc_msg.day - 1;
+
+  nanoseconds = days * 24;
+  nanoseconds = (nanoseconds + ref_sbg_utc_msg.hour) * 60;
+  nanoseconds = (nanoseconds + ref_sbg_utc_msg.min) * 60;
+  nanoseconds = nanoseconds + ref_sbg_utc_msg.sec;
+  nanoseconds = nanoseconds * 1000000000 + ref_sbg_utc_msg.nanosec;
 
   utc_to_epoch = rclcpp::Time(nanoseconds);
 
@@ -286,103 +284,6 @@ const sbg_driver::msg::SbgUtcTimeStatus MessageWrapper::createUtcStatusMessage(c
   return utc_status_message;
 }
 
-uint32_t MessageWrapper::getNumberOfDaysInYear(uint16_t year) const
-{
-  if (isLeapYear(year))
-  {
-    return 366;
-  }
-  else
-  {
-    return 365;
-  }
-}
-
-uint32_t MessageWrapper::getNumberOfDaysInMonth(uint16_t year, uint8_t month_index) const
-{
-  if ((month_index == 4) || (month_index == 6) || (month_index == 9) || (month_index == 11))
-  {
-    return 30;
-  }
-  else if ((month_index == 2))
-  {
-    if (isLeapYear(year))
-    {
-      return 29;
-    }
-    else
-    {
-      return 28;
-    }
-  }
-  else
-  {
-    return 31;
-  }
-}
-
-bool MessageWrapper::isLeapYear(uint16_t year) const
-{
-  return ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0);
-}
-
-const rclcpp::Time MessageWrapper::convertUtcTimeToUnix(const sbg_driver::msg::SbgUtcTime& ref_sbg_utc_msg) const
-{
-  rclcpp::Time utc_to_epoch;
-  uint32_t  days;
-  uint64_t  nanoseconds;
-
-  //
-  // Convert the UTC time to Epoch(Unix) time, which is the elapsed seconds since 1 Jan 1970.
-  //
-  days        = 0;
-  nanoseconds = 0;
-
-  for (uint16_t yearIndex = 1970; yearIndex < ref_sbg_utc_msg.year; yearIndex++)
-  {
-    days += getNumberOfDaysInYear(yearIndex);
-  }
-
-  for (uint8_t monthIndex = 1; monthIndex < ref_sbg_utc_msg.month; monthIndex++)
-  {
-    days += getNumberOfDaysInMonth(ref_sbg_utc_msg.year, monthIndex);
-  }
-
-  days += ref_sbg_utc_msg.day - 1;
-
-  nanoseconds = days * 24;
-  nanoseconds = (nanoseconds + ref_sbg_utc_msg.hour) * 60;
-  nanoseconds = (nanoseconds + ref_sbg_utc_msg.min) * 60;
-  nanoseconds = nanoseconds + ref_sbg_utc_msg.sec;
-  nanoseconds = nanoseconds * 1000000000 + ref_sbg_utc_msg.nanosec;
-
-  utc_to_epoch = rclcpp::Time(nanoseconds);
-
-  return utc_to_epoch;
-}
-
-int32_t MessageWrapper::getUtcOffset() const
-{
-  int32_t       utcOffset;
-
-  if (first_valid_utc_)
-  {
-    // Compute the leap second: GPS = UTC + utcOffset
-    utcOffset = (last_sbg_utc_.gps_tow/1000)%60 - last_sbg_utc_.sec;
-
-    if (utcOffset < 0)
-    {
-      utcOffset = 60 + utcOffset;
-    }
-  }
-  else
-  {
-    utcOffset = DEFAULT_UTC_OFFSET;
-  }
-
-  return utcOffset;
-}
-
 const sbg_driver::msg::SbgAirDataStatus MessageWrapper::createAirDataStatusMessage(const SbgLogAirData& ref_sbg_air_data) const
 {
   sbg_driver::msg::SbgAirDataStatus air_data_status_message;
@@ -395,45 +296,6 @@ const sbg_driver::msg::SbgAirDataStatus MessageWrapper::createAirDataStatusMessa
   air_data_status_message.air_temperature_valid = (ref_sbg_air_data.status & SBG_ECOM_AIR_DATA_TEMPERATURE_VALID) != 0;
 
   return air_data_status_message;
-}
-
-sbg::MessageWrapper::NmeaGGAQuality MessageWrapper::convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbg_gps_type)
-{
-  sbg::MessageWrapper::NmeaGGAQuality  nmeaQuality = NmeaGGAQuality::INVALID;
-
-  switch (sbg_gps_type)
-  {
-  case SBG_ECOM_POS_NO_SOLUTION:
-    nmeaQuality = NmeaGGAQuality::INVALID;
-    break;
-
-  case SBG_ECOM_POS_UNKNOWN_TYPE:
-  case SBG_ECOM_POS_SINGLE:
-  case SBG_ECOM_POS_FIXED:
-    nmeaQuality = NmeaGGAQuality::SINGLE;
-    break;
-
-  case SBG_ECOM_POS_PSRDIFF:
-  case SBG_ECOM_POS_SBAS:
-  case SBG_ECOM_POS_OMNISTAR:
-    nmeaQuality = NmeaGGAQuality::DGPS;
-    break;
-
-  case SBG_ECOM_POS_PPP_FLOAT:
-  case SBG_ECOM_POS_PPP_INT:
-    nmeaQuality = NmeaGGAQuality::PPS;
-    break;
-
-  case SBG_ECOM_POS_RTK_INT:
-    nmeaQuality = NmeaGGAQuality::RTK_FIXED;
-    break;
-
-  case SBG_ECOM_POS_RTK_FLOAT:
-    nmeaQuality = NmeaGGAQuality::RTK_FLOAT;
-    break;
-  }
-
-  return nmeaQuality;
 }
 
 //---------------------------------------------------------------------//
@@ -496,7 +358,7 @@ const sbg_driver::msg::SbgEkfEuler MessageWrapper::createSbgEkfEulerMessage(cons
   {
     ekf_euler_message.angle.x  = ref_log_ekf_euler.euler[0];
     ekf_euler_message.angle.y  = -ref_log_ekf_euler.euler[1];
-    ekf_euler_message.angle.z  = -wrapAnglePi(-(SBG_PI_F / 2.0f) + ref_log_ekf_euler.euler[2]);
+    ekf_euler_message.angle.z  = -sbg::helpers::wrapAnglePi(-(SBG_PI_F / 2.0f) + ref_log_ekf_euler.euler[2]);
   }
   else
   {
@@ -627,7 +489,7 @@ const sbg_driver::msg::SbgGpsHdt MessageWrapper::createSbgGpsHdtMessage(const Sb
 
   if (use_enu_)
   {
-    gps_hdt_message.true_heading = wrapAngle360(90.0f - ref_log_gps_hdt.heading);
+    gps_hdt_message.true_heading = sbg::helpers::wrapAngle360(90.0f - ref_log_gps_hdt.heading);
     gps_hdt_message.pitch        = -ref_log_gps_hdt.pitch;
   }
   else
@@ -702,7 +564,7 @@ const sbg_driver::msg::SbgGpsVel MessageWrapper::createSbgGpsVelMessage(const Sb
     gps_vel_message.velocity_accuracy.y = ref_log_gps_vel.velocityAcc[0];
     gps_vel_message.velocity_accuracy.z = ref_log_gps_vel.velocityAcc[2];
 
-    gps_vel_message.course  = wrapAngle360(90.0f - ref_log_gps_vel.course);
+    gps_vel_message.course  = sbg::helpers::wrapAngle360(90.0f - ref_log_gps_vel.course);
   }
   else
   {
@@ -1050,7 +912,7 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   // Compute convergence angle.
   double longitudeRad      = sbgDegToRadD(ref_ekf_nav_msg.longitude);
   double latitudeRad       = sbgDegToRadD(ref_ekf_nav_msg.latitude);
-  double central_meridian  = sbgDegToRadD(computeMeridian(utm_.getZone()));
+  double central_meridian  = sbgDegToRadD(sbg::helpers::computeMeridian(utm_.getZone()));
   double convergence_angle = atan(tan(longitudeRad - central_meridian) * sin(latitudeRad));
 
   // Convert position standard deviations to UTM frame.
@@ -1259,7 +1121,7 @@ const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(cons
   gps_tow_ms = ref_log_gps_pos.timeOfWeek + (24ul * 3600ul * 1000ul);
 
   // Apply the GPS to UTC leap second offset
-  gps_tow_ms = gps_tow_ms - getUtcOffset() * 1000ul;
+  gps_tow_ms = gps_tow_ms - (sbg::helpers::getUtcOffset(first_valid_utc_, last_sbg_utc_.gps_tow, last_sbg_utc_.sec) * 1000ul);
 
   // Extract UTC hours/mins/seconds values
   utc_hour      = (gps_tow_ms / (3600 * 1000)) % 24;
@@ -1273,16 +1135,16 @@ const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(cons
         (utc_ms < 100 || utc_ms > 900) )
   {
     // Latitude conversion
-    float   latitude    = std::clamp(static_cast<float>(ref_log_gps_pos.latitude), -90.0f, 90.0f);
+    float   latitude     = std::clamp(static_cast<float>(ref_log_gps_pos.latitude), -90.0f, 90.0f);
     float   latitude_abs = std::fabs(latitude);
-    int32_t lat_degs    = static_cast<int32_t>(latitude_abs);
-    float   lat_mins    = (latitude_abs - static_cast<float>(lat_degs)) * 60.0f;
+    int32_t lat_degs     = static_cast<int32_t>(latitude_abs);
+    float   lat_mins     = (latitude_abs - static_cast<float>(lat_degs)) * 60.0f;
 
     // Longitude conversion
-    float   longitude     = std::clamp(static_cast<float>(ref_log_gps_pos.longitude), -180.0f, 180.0f);
+    float   longitude      = std::clamp(static_cast<float>(ref_log_gps_pos.longitude), -180.0f, 180.0f);
     float   longitude_abs  = std::fabs(longitude);
-    int32_t lon_degs      = static_cast<int32_t>(longitude_abs);
-    float   lon_mins      = (longitude_abs - static_cast<float>(lon_degs)) * 60.0f;
+    int32_t lon_degs       = static_cast<int32_t>(longitude_abs);
+    float   lon_mins       = (longitude_abs - static_cast<float>(lon_degs)) * 60.0f;
 
     // Compute and clamp each parameter
     float     h_dop           = std::clamp(std::hypot(ref_log_gps_pos.latitudeAccuracy, ref_log_gps_pos.longitudeAccuracy), 0.0f, 9.9f);
@@ -1307,7 +1169,7 @@ const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(cons
                         lon_degs,
                         lon_mins,
                         (longitude < 0.0f?'W':'E'),
-                        static_cast<int32_t>(convertSbgGpsTypeToNmeaGpsType(sbgEComLogGpsPosGetType(ref_log_gps_pos.status))),
+                        static_cast<int32_t>(sbg::helpers::convertSbgGpsTypeToNmeaGpsType(sbgEComLogGpsPosGetType(ref_log_gps_pos.status))),
                         sv_used,
                         h_dop,
                         altitude,
