@@ -86,25 +86,6 @@ namespace sbg
  */
 class MessageWrapper : public rclcpp::Node
 {
-public:
-  const int32_t                       DEFAULT_UTC_OFFSET  = 18;         /*!< Driver default GPS to UTC offset in seconds. */
-
-  /*!
-  * Standard NMEA GGA quality indicator value.
-  */
-  enum class NmeaGGAQuality: int32_t
-  {
-    INVALID           = 0,
-    SINGLE            = 1,
-    DGPS              = 2,
-    PPS               = 3,
-    RTK_FIXED         = 4,
-    RTK_FLOAT         = 5,
-    DEAD_RECKONING    = 6,
-    STATIC_POSITION   = 7,
-    SIMULATED         = 8,
-  };
-
 private:
   sbg_driver::msg::SbgUtcTime  	      last_sbg_utc_;
   bool                                first_valid_utc_;
@@ -124,30 +105,6 @@ private:
   //---------------------------------------------------------------------//
 
   /*!
-   * Wrap an angle between [ -Pi ; Pi ] rad.
-   *
-   * \param[in] angle_rad			Angle in rad.
-   * \return						Wrapped angle.
-   */
-  static float wrapAnglePi(float angle_rad);
-
-  /*!
-   * Wrap an angle between [ 0 ; 360 ] degree.
-   *
-   * \param[in] angle_deg			Angle in degree.
-   * \return						Wrapped angle.
-   */
-  static float wrapAngle360(float angle_deg);
-
-  /*!
-   * Compute UTM zone meridian.
-   *
-   * \param[in] zone_number			UTM Zone number.
-   * \return						Meridian angle, in degrees.
-   */
-  static double computeMeridian(int zone_number);
-
-  /*!
    * Create a ROS message header.
    * 
    * \param[in] device_timestamp    SBG device timestamp (in microseconds).
@@ -162,6 +119,14 @@ private:
    * \return                        ROS time.
    */
   const rclcpp::Time convertInsTimeToUnix(uint32_t device_timestamp) const;
+
+  /*!
+   * Convert the UTC time to an Unix time.
+   *
+   * \param[in] ref_sbg_utc_msg     UTC message.
+   * \return                        Converted Epoch time (in s).
+   */
+  const rclcpp::Time convertUtcTimeToUnix(const sbg_driver::msg::SbgUtcTime& ref_sbg_utc_msg) const;
 
   /*!
    * Create SBG-ROS Ekf status message.
@@ -244,49 +209,6 @@ private:
   const sbg_driver::msg::SbgUtcTimeStatus createUtcStatusMessage(const SbgLogUtcData& ref_log_utc) const;
 
   /*!
-   * Get the number of days in the year.
-   *
-   * \param[in] year                Year to get the number of days.
-   * \return                        Number of days in the year.
-   */
-  uint32_t getNumberOfDaysInYear(uint16_t year) const;
-
-  /*!
-   * Get the number of days of the month index.
-   * 
-   * \param[in] year                Year.
-   * \param[in] month_index         Month index [1..12].
-   * \return                        Number of days in the month.
-   */
-  uint32_t getNumberOfDaysInMonth(uint16_t year, uint8_t month_index) const;
-
-  /*!
-   * Check if the given year is a leap year.
-   * 
-   * \param[in] year                Year to check.
-   * \return                        True if the year is a leap year.
-   */
-  bool isLeapYear(uint16_t year) const;
-
-  /*!
-   * Convert the UTC time to an Unix time.
-   * 
-   * \param[in] ref_sbg_utc_msg     UTC message.
-   * \return                        Converted Epoch time (in s).
-   */
-  const rclcpp::Time convertUtcTimeToUnix(const sbg_driver::msg::SbgUtcTime& ref_sbg_utc_msg) const;
-  
-  /*!
-   * Returns the GPS to UTC leap second offset: GPS_Time = UTC_Tme + utcOffset
-   *
-   * WARNING: The leap second is computed from the latest received SbgUtcTime message if any.
-   *          If no SbgUtcTime message has been received, a default driver current value is used.
-   * 
-   * \return                        Offset in seconds to apply to UTC time to get GPS time.
-   */
-  int32_t getUtcOffset() const;
-
-  /*!
    * Create a SBG-ROS air data status message.
    * 
    * \param[in] ref_sbg_air_data    SBG AirData log.
@@ -312,14 +234,6 @@ private:
    * \param[out] ref_transform_stamped  Stamped transformation.
    */
   void fillTransform(const std::string &ref_parent_frame_id, const std::string &ref_child_frame_id, const geometry_msgs::msg::Pose &ref_pose, geometry_msgs::msg::TransformStamped &ref_transform_stamped);
-
-  /*!
-   * Convert SbgEComGpsPosType enum to NmeaGGAQuality enum
-   *
-   * \param[in] sbg_gps_type            SbgECom GPS type
-   * \return                            NMEA GPS type
-   */
-  static NmeaGGAQuality convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbg_gps_type);
 
 public:
 
@@ -659,7 +573,7 @@ public:
    * \param[in] ref_log_gps_pos     SBG GPS Position log.
    * \return                        ROS NMEA GGA message.
    */
-    const nmea_msgs::msg::Sentence createNmeaGGAMessageForNtrip(const SbgLogGpsPos& ref_log_gps_pos) const;
+  const nmea_msgs::msg::Sentence createNmeaGGAMessageForNtrip(const SbgLogGpsPos& ref_log_gps_pos) const;
 };
 }
 
