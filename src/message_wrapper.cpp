@@ -29,6 +29,9 @@ Node("tf_broadcaster")
   first_valid_utc_ = false;
   tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
   static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
+
+  point_stamped_compute_cte_ = pow(polar_radius_, 2) / pow(equatorial_radius_, 2);
+  eccentricity_ = 1.0 - point_stamped_compute_cte_;
 }
 
 //---------------------------------------------------------------------//
@@ -1018,24 +1021,17 @@ const geometry_msgs::msg::PointStamped MessageWrapper::createRosPointStampedMess
   // Conversion from Geodetic coordinates to ECEF is based on World Geodetic System 1984 (WGS84).
   // Radius are expressed in meters, and latitude/longitude in radian.
   //
-  double equatorial_radius;
-  double polar_radius;
   double prime_vertical_radius;
-  double eccentricity;
   double latitude;
   double longitude;
 
-  equatorial_radius = 6378137.0;
-  polar_radius      = 6356752.314245;
-  eccentricity      = 1 - pow(polar_radius, 2) / pow(equatorial_radius, 2);
-  latitude          = sbgDegToRadD(ref_sbg_ekf_msg.latitude);
-  longitude         = sbgDegToRadD(ref_sbg_ekf_msg.longitude);
-
-  prime_vertical_radius = equatorial_radius / sqrt(1.0 - pow(eccentricity, 2) * pow(sin(latitude), 2));
+  latitude              = sbgDegToRadD(ref_sbg_ekf_msg.latitude);
+  longitude             = sbgDegToRadD(ref_sbg_ekf_msg.longitude);
+  prime_vertical_radius = equatorial_radius_ / sqrt(1.0 - (pow(eccentricity_, 2) * pow(sin(latitude), 2)));
 
   point_stamped_message.point.x = (prime_vertical_radius + ref_sbg_ekf_msg.altitude) * cos(latitude) * cos(longitude);
   point_stamped_message.point.y = (prime_vertical_radius + ref_sbg_ekf_msg.altitude) * cos(latitude) * sin(longitude);
-  point_stamped_message.point.z = ((pow(polar_radius, 2) / pow(equatorial_radius, 2)) * prime_vertical_radius + ref_sbg_ekf_msg.altitude) * sin(latitude);
+  point_stamped_message.point.z = ((point_stamped_compute_cte_ * prime_vertical_radius) + ref_sbg_ekf_msg.altitude) * sin(latitude);
 
   return point_stamped_message;
 }
