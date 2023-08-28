@@ -822,9 +822,9 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
   imu_ros_message.angular_velocity          = ref_sbg_imu_msg.delta_angle;
   imu_ros_message.linear_acceleration       = ref_sbg_imu_msg.delta_vel;
 
-  imu_ros_message.orientation_covariance[0] = ref_sbg_quat_msg.accuracy.x * ref_sbg_quat_msg.accuracy.x;
-  imu_ros_message.orientation_covariance[4] = ref_sbg_quat_msg.accuracy.y * ref_sbg_quat_msg.accuracy.y;
-  imu_ros_message.orientation_covariance[8] = ref_sbg_quat_msg.accuracy.z * ref_sbg_quat_msg.accuracy.z;
+  imu_ros_message.orientation_covariance[0] = pow(ref_sbg_quat_msg.accuracy.x, 2);
+  imu_ros_message.orientation_covariance[4] = pow(ref_sbg_quat_msg.accuracy.y, 2);
+  imu_ros_message.orientation_covariance[8] = pow(ref_sbg_quat_msg.accuracy.z, 2);
 
   //
   // Angular velocity and linear acceleration covariances are not provided.
@@ -926,9 +926,9 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   odo_ros_msg.pose.covariance[0*6 + 0] = std_x * std_x;
   odo_ros_msg.pose.covariance[1*6 + 1] = std_y * std_y;
   odo_ros_msg.pose.covariance[2*6 + 2] = std_z * std_z;
-  odo_ros_msg.pose.covariance[3*6 + 3] = ref_ekf_euler_msg.accuracy.x * ref_ekf_euler_msg.accuracy.x;
-  odo_ros_msg.pose.covariance[4*6 + 4] = ref_ekf_euler_msg.accuracy.y * ref_ekf_euler_msg.accuracy.y;
-  odo_ros_msg.pose.covariance[5*6 + 5] = ref_ekf_euler_msg.accuracy.z * ref_ekf_euler_msg.accuracy.z;
+  odo_ros_msg.pose.covariance[3*6 + 3] = pow(ref_ekf_euler_msg.accuracy.x, 2);
+  odo_ros_msg.pose.covariance[4*6 + 4] = pow(ref_ekf_euler_msg.accuracy.y, 2);
+  odo_ros_msg.pose.covariance[5*6 + 5] = pow(ref_ekf_euler_msg.accuracy.z, 2);
 
   // The twist message gives the linear and angular velocity relative to the frame defined in child_frame_id
   odo_ros_msg.child_frame_id            = frame_id_;
@@ -938,9 +938,9 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   odo_ros_msg.twist.twist.angular.x     = ref_sbg_imu_msg.gyro.x;
   odo_ros_msg.twist.twist.angular.y     = ref_sbg_imu_msg.gyro.y;
   odo_ros_msg.twist.twist.angular.z     = ref_sbg_imu_msg.gyro.z;
-  odo_ros_msg.twist.covariance[0*6 + 0] = ref_ekf_nav_msg.velocity_accuracy.x * ref_ekf_nav_msg.velocity_accuracy.x;
-  odo_ros_msg.twist.covariance[1*6 + 1] = ref_ekf_nav_msg.velocity_accuracy.y * ref_ekf_nav_msg.velocity_accuracy.y;
-  odo_ros_msg.twist.covariance[2*6 + 2] = ref_ekf_nav_msg.velocity_accuracy.z * ref_ekf_nav_msg.velocity_accuracy.z;
+  odo_ros_msg.twist.covariance[0*6 + 0] = pow(ref_ekf_nav_msg.velocity_accuracy.x, 2);
+  odo_ros_msg.twist.covariance[1*6 + 1] = pow(ref_ekf_nav_msg.velocity_accuracy.y, 2);
+  odo_ros_msg.twist.covariance[2*6 + 2] = pow(ref_ekf_nav_msg.velocity_accuracy.z, 2);
   odo_ros_msg.twist.covariance[3*6 + 3] = 0;
   odo_ros_msg.twist.covariance[4*6 + 4] = 0;
   odo_ros_msg.twist.covariance[5*6 + 5] = 0;
@@ -1083,9 +1083,9 @@ const sensor_msgs::msg::NavSatFix MessageWrapper::createRosNavSatFixMessage(cons
   nav_sat_fix_message.longitude = ref_sbg_gps_msg.longitude;
   nav_sat_fix_message.altitude  = ref_sbg_gps_msg.altitude + ref_sbg_gps_msg.undulation;
 
-  nav_sat_fix_message.position_covariance[0] = ref_sbg_gps_msg.position_accuracy.x * ref_sbg_gps_msg.position_accuracy.x;
-  nav_sat_fix_message.position_covariance[4] = ref_sbg_gps_msg.position_accuracy.y * ref_sbg_gps_msg.position_accuracy.y;
-  nav_sat_fix_message.position_covariance[8] = ref_sbg_gps_msg.position_accuracy.z * ref_sbg_gps_msg.position_accuracy.z;
+  nav_sat_fix_message.position_covariance[0] = pow(ref_sbg_gps_msg.position_accuracy.x, 2);
+  nav_sat_fix_message.position_covariance[4] = pow(ref_sbg_gps_msg.position_accuracy.y, 2);
+  nav_sat_fix_message.position_covariance[8] = pow(ref_sbg_gps_msg.position_accuracy.z, 2);
 
   nav_sat_fix_message.position_covariance_type = nav_sat_fix_message.COVARIANCE_TYPE_DIAGONAL_KNOWN;
 
