@@ -21,13 +21,14 @@ using sbg::SbgDevice;
 // From ros_com/recorder
 std::string timeToStr() //rclcpp::WallTimer<std::function<void()>> ros_t) //TODO: FIXME
 {
-    //(void)ros_t;
-    std::stringstream msg;
-    const boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
-    boost::posix_time::time_facet *const f = new boost::posix_time::time_facet("%Y-%m-%d-%H-%M-%S");
-    msg.imbue(std::locale(msg.getloc(),f));
-    msg << now;
-    return msg.str();
+  //(void)ros_t;
+  std::stringstream msg;
+  const boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
+  boost::posix_time::time_facet *const f = new boost::posix_time::time_facet("%Y-%m-%d-%H-%M-%S");
+  msg.imbue(std::locale(msg.getloc(),f));
+  msg << now;
+
+  return msg.str();
 }
 
 //
