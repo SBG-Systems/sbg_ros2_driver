@@ -22,71 +22,71 @@ std::string MessagePublisher::getOutputTopicName(SbgEComMsgId sbg_message_id) co
 {
   switch (sbg_message_id)
   {
-  case SBG_ECOM_LOG_STATUS:
-    return "sbg/status";
+    case SBG_ECOM_LOG_STATUS:
+      return "sbg/status";
 
-  case SBG_ECOM_LOG_UTC_TIME:
-    return "sbg/utc_time";
+    case SBG_ECOM_LOG_UTC_TIME:
+      return "sbg/utc_time";
 
-  case SBG_ECOM_LOG_IMU_DATA:
-    return "sbg/imu_data";
+    case SBG_ECOM_LOG_IMU_DATA:
+      return "sbg/imu_data";
 
-  case SBG_ECOM_LOG_MAG:
-    return "sbg/mag";
+    case SBG_ECOM_LOG_MAG:
+      return "sbg/mag";
 
-  case SBG_ECOM_LOG_MAG_CALIB:
-    return "sbg/mag_calib";
+    case SBG_ECOM_LOG_MAG_CALIB:
+      return "sbg/mag_calib";
 
-  case SBG_ECOM_LOG_EKF_EULER:
-    return "sbg/ekf_euler";
+    case SBG_ECOM_LOG_EKF_EULER:
+      return "sbg/ekf_euler";
 
-  case SBG_ECOM_LOG_EKF_QUAT:
-    return "sbg/ekf_quat";
+    case SBG_ECOM_LOG_EKF_QUAT:
+      return "sbg/ekf_quat";
 
-  case SBG_ECOM_LOG_EKF_NAV:
-    return "sbg/ekf_nav";
+    case SBG_ECOM_LOG_EKF_NAV:
+      return "sbg/ekf_nav";
 
-  case SBG_ECOM_LOG_SHIP_MOTION:
-    return "sbg/ship_motion";
+    case SBG_ECOM_LOG_SHIP_MOTION:
+      return "sbg/ship_motion";
 
-  case SBG_ECOM_LOG_GPS1_VEL:
-    return "sbg/gps_vel";
+    case SBG_ECOM_LOG_GPS1_VEL:
+      return "sbg/gps_vel";
 
-  case SBG_ECOM_LOG_GPS1_POS:
-    return "sbg/gps_pos";
+    case SBG_ECOM_LOG_GPS1_POS:
+      return "sbg/gps_pos";
 
-  case SBG_ECOM_LOG_GPS1_HDT:
-    return "sbg/gps_hdt";
+    case SBG_ECOM_LOG_GPS1_HDT:
+      return "sbg/gps_hdt";
 
-  case SBG_ECOM_LOG_GPS1_RAW:
-    return "sbg/gps_raw";
+    case SBG_ECOM_LOG_GPS1_RAW:
+      return "sbg/gps_raw";
 
-  case SBG_ECOM_LOG_ODO_VEL:
-    return "sbg/odo_vel";
+    case SBG_ECOM_LOG_ODO_VEL:
+      return "sbg/odo_vel";
 
-  case SBG_ECOM_LOG_EVENT_A:
-    return "sbg/eventA";
+    case SBG_ECOM_LOG_EVENT_A:
+      return "sbg/eventA";
 
-  case SBG_ECOM_LOG_EVENT_B:
-    return "sbg/eventB";
+    case SBG_ECOM_LOG_EVENT_B:
+      return "sbg/eventB";
 
-  case SBG_ECOM_LOG_EVENT_C:
-    return "sbg/eventC";
+    case SBG_ECOM_LOG_EVENT_C:
+      return "sbg/eventC";
 
-  case SBG_ECOM_LOG_EVENT_D:
-    return "sbg/eventD";
+    case SBG_ECOM_LOG_EVENT_D:
+      return "sbg/eventD";
 
-  case SBG_ECOM_LOG_EVENT_E:
-    return "sbg/eventE";
+    case SBG_ECOM_LOG_EVENT_E:
+      return "sbg/eventE";
 
-  case SBG_ECOM_LOG_AIR_DATA:
-    return "sbg/air_data";
+    case SBG_ECOM_LOG_AIR_DATA:
+      return "sbg/air_data";
 
-  case SBG_ECOM_LOG_IMU_SHORT:
-    return "sbg/imu_short";
+    case SBG_ECOM_LOG_IMU_SHORT:
+      return "sbg/imu_short";
 
-  default:
-    return "undefined";
+    default:
+      return "undefined";
   }
 }
 
@@ -517,177 +517,177 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
   {
     switch (sbg_msg_id)
     {
-    case SBG_ECOM_LOG_STATUS:
+      case SBG_ECOM_LOG_STATUS:
 
-      if (sbg_status_pub_)
-      {
-        sbg_status_pub_->publish(message_wrapper_.createSbgStatusMessage(ref_sbg_log.statusData));
-      }
-      break;
+        if (sbg_status_pub_)
+        {
+          sbg_status_pub_->publish(message_wrapper_.createSbgStatusMessage(ref_sbg_log.statusData));
+        }
+        break;
 
-    case SBG_ECOM_LOG_UTC_TIME:
+      case SBG_ECOM_LOG_UTC_TIME:
 
-      publishUtcData(ref_sbg_log);
-      break;
+        publishUtcData(ref_sbg_log);
+        break;
 
-    case SBG_ECOM_LOG_IMU_DATA:
+      case SBG_ECOM_LOG_IMU_DATA:
 
-      publishIMUData(ref_sbg_log);
-      break;
+        publishIMUData(ref_sbg_log);
+        break;
 
-    case SBG_ECOM_LOG_MAG:
+      case SBG_ECOM_LOG_MAG:
 
-      publishMagData(ref_sbg_log);
-      break;
+        publishMagData(ref_sbg_log);
+        break;
 
-    case SBG_ECOM_LOG_MAG_CALIB:
+      case SBG_ECOM_LOG_MAG_CALIB:
 
-      if (sbg_mag_calib_pub_)
-      {
-        sbg_mag_calib_pub_->publish(message_wrapper_.createSbgMagCalibMessage(ref_sbg_log.magCalibData));
-      }
-      break;
+        if (sbg_mag_calib_pub_)
+        {
+          sbg_mag_calib_pub_->publish(message_wrapper_.createSbgMagCalibMessage(ref_sbg_log.magCalibData));
+        }
+        break;
 
-    case SBG_ECOM_LOG_EKF_EULER:
+      case SBG_ECOM_LOG_EKF_EULER:
 
-      if (sbg_ekf_euler_pub_)
-      {
-        sbg_ekf_euler_message_ = message_wrapper_.createSbgEkfEulerMessage(ref_sbg_log.ekfEulerData);
-        sbg_ekf_euler_pub_->publish(sbg_ekf_euler_message_);
-        processRosVelMessage();
+        if (sbg_ekf_euler_pub_)
+        {
+          sbg_ekf_euler_message_ = message_wrapper_.createSbgEkfEulerMessage(ref_sbg_log.ekfEulerData);
+          sbg_ekf_euler_pub_->publish(sbg_ekf_euler_message_);
+          processRosVelMessage();
+          processRosOdoMessage();
+        }
+        break;
+
+      case SBG_ECOM_LOG_EKF_QUAT:
+
+        if (sbg_ekf_quat_pub_)
+        {
+          sbg_ekf_quat_message_ = message_wrapper_.createSbgEkfQuatMessage(ref_sbg_log.ekfQuatData);
+          sbg_ekf_quat_pub_->publish(sbg_ekf_quat_message_);
+          processRosImuMessage();
+          processRosVelMessage();
+        }
+        break;
+
+      case SBG_ECOM_LOG_EKF_NAV:
+
+        publishEkfNavigationData(ref_sbg_log);
         processRosOdoMessage();
-      }
-      break;
+        break;
 
-    case SBG_ECOM_LOG_EKF_QUAT:
+      case SBG_ECOM_LOG_SHIP_MOTION:
 
-      if (sbg_ekf_quat_pub_)
-      {
-        sbg_ekf_quat_message_ = message_wrapper_.createSbgEkfQuatMessage(ref_sbg_log.ekfQuatData);
-        sbg_ekf_quat_pub_->publish(sbg_ekf_quat_message_);
-        processRosImuMessage();
-        processRosVelMessage();
-      }
-      break;
+        if (sbg_ship_motion_pub_)
+        {
+          sbg_ship_motion_pub_->publish(message_wrapper_.createSbgShipMotionMessage(ref_sbg_log.shipMotionData));
+        }
+        break;
 
-    case SBG_ECOM_LOG_EKF_NAV:
+      case SBG_ECOM_LOG_GPS1_VEL:
+      case SBG_ECOM_LOG_GPS2_VEL:
 
-      publishEkfNavigationData(ref_sbg_log);
-      processRosOdoMessage();
-      break;
+        if (sbg_gps_vel_pub_)
+        {
+          sbg_gps_vel_pub_->publish(message_wrapper_.createSbgGpsVelMessage(ref_sbg_log.gpsVelData));
+        }
+        break;
 
-    case SBG_ECOM_LOG_SHIP_MOTION:
+      case SBG_ECOM_LOG_GPS1_POS:
+      case SBG_ECOM_LOG_GPS2_POS:
 
-      if (sbg_ship_motion_pub_)
-      {
-        sbg_ship_motion_pub_->publish(message_wrapper_.createSbgShipMotionMessage(ref_sbg_log.shipMotionData));
-      }
-      break;
+        publishGpsPosData(ref_sbg_log, sbg_msg_id);
+        break;
 
-    case SBG_ECOM_LOG_GPS1_VEL:
-    case SBG_ECOM_LOG_GPS2_VEL:
+      case SBG_ECOM_LOG_GPS1_HDT:
+      case SBG_ECOM_LOG_GPS2_HDT:
 
-      if (sbg_gps_vel_pub_)
-      {
-        sbg_gps_vel_pub_->publish(message_wrapper_.createSbgGpsVelMessage(ref_sbg_log.gpsVelData));
-      }
-      break;
+        if (sbg_gps_hdt_pub_)
+        {
+          sbg_gps_hdt_pub_->publish(message_wrapper_.createSbgGpsHdtMessage(ref_sbg_log.gpsHdtData));
+        }
+        break;
 
-    case SBG_ECOM_LOG_GPS1_POS:
-    case SBG_ECOM_LOG_GPS2_POS:
+      case SBG_ECOM_LOG_GPS1_RAW:
+      case SBG_ECOM_LOG_GPS2_RAW:
 
-      publishGpsPosData(ref_sbg_log, sbg_msg_id);
-      break;
+        if (sbg_gps_raw_pub_)
+        {
+          sbg_gps_raw_pub_->publish(message_wrapper_.createSbgGpsRawMessage(ref_sbg_log.gpsRawData));
+        }
+        break;
 
-    case SBG_ECOM_LOG_GPS1_HDT:
-    case SBG_ECOM_LOG_GPS2_HDT:
+      case SBG_ECOM_LOG_ODO_VEL:
 
-      if (sbg_gps_hdt_pub_)
-      {
-        sbg_gps_hdt_pub_->publish(message_wrapper_.createSbgGpsHdtMessage(ref_sbg_log.gpsHdtData));
-      }
-      break;
+        if (sbg_odo_vel_pub_)
+        {
+          sbg_odo_vel_pub_->publish(message_wrapper_.createSbgOdoVelMessage(ref_sbg_log.odometerData));
+        }
+        break;
 
-    case SBG_ECOM_LOG_GPS1_RAW:
-    case SBG_ECOM_LOG_GPS2_RAW:
+      case SBG_ECOM_LOG_EVENT_A:
 
-      if (sbg_gps_raw_pub_)
-      {
-        sbg_gps_raw_pub_->publish(message_wrapper_.createSbgGpsRawMessage(ref_sbg_log.gpsRawData));
-      }
-      break;
+        if (sbg_event_a_pub_)
+        {
+          sbg_event_a_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
+        }
+        break;
 
-    case SBG_ECOM_LOG_ODO_VEL:
+      case SBG_ECOM_LOG_EVENT_B:
 
-      if (sbg_odo_vel_pub_)
-      {
-        sbg_odo_vel_pub_->publish(message_wrapper_.createSbgOdoVelMessage(ref_sbg_log.odometerData));
-      }
-      break;
+        if (sbg_event_b_pub_)
+        {
+          sbg_event_b_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
+        }
+        break;
 
-    case SBG_ECOM_LOG_EVENT_A:
+      case SBG_ECOM_LOG_EVENT_C:
 
-      if (sbg_event_a_pub_)
-      {
-        sbg_event_a_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
-      }
-      break;
+        if (sbg_event_c_pub_)
+        {
+          sbg_event_c_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
+        }
+        break;
 
-    case SBG_ECOM_LOG_EVENT_B:
+      case SBG_ECOM_LOG_EVENT_D:
 
-      if (sbg_event_b_pub_)
-      {
-        sbg_event_b_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
-      }
-      break;
+        if (sbg_event_d_pub_)
+        {
+          sbg_event_d_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
+        }
+        break;
 
-    case SBG_ECOM_LOG_EVENT_C:
+      case SBG_ECOM_LOG_EVENT_E:
 
-      if (sbg_event_c_pub_)
-      {
-        sbg_event_c_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
-      }
-      break;
+        if (sbg_event_e_pub_)
+        {
+          sbg_event_e_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
+        }
+        break;
 
-    case SBG_ECOM_LOG_EVENT_D:
+      case SBG_ECOM_LOG_IMU_SHORT:
 
-      if (sbg_event_d_pub_)
-      {
-        sbg_event_d_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
-      }
-      break;
+        if (sbg_imu_short_pub_)
+        {
+          sbg_imu_short_pub_->publish(message_wrapper_.createSbgImuShortMessage(ref_sbg_log.imuShort));
+        }
+        break;
 
-    case SBG_ECOM_LOG_EVENT_E:
+      case SBG_ECOM_LOG_AIR_DATA:
 
-      if (sbg_event_e_pub_)
-      {
-        sbg_event_e_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
-      }
-      break;
+        publishFluidPressureData(ref_sbg_log);
+        break;
 
-    case SBG_ECOM_LOG_IMU_SHORT:
-
-      if (sbg_imu_short_pub_)
-      {
-        sbg_imu_short_pub_->publish(message_wrapper_.createSbgImuShortMessage(ref_sbg_log.imuShort));
-      }
-      break;
-
-    case SBG_ECOM_LOG_AIR_DATA:
-
-      publishFluidPressureData(ref_sbg_log);
-      break;
-
-    default:
-      break;
+      default:
+        break;
     }
   }
   else if (sbg_msg_class == SBG_ECOM_CLASS_LOG_ECOM_1)
   {
     switch (sbg_msg_id)
     {
-    default:
-      break;
+      default:
+        break;
     }
   }
 }

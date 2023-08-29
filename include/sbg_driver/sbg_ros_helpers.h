@@ -47,15 +47,15 @@ namespace sbg::helpers
    */
   enum class NmeaGGAQuality: int32_t
   {
-      INVALID           = 0,
-      SINGLE            = 1,
-      DGPS              = 2,
-      PPS               = 3,
-      RTK_FIXED         = 4,
-      RTK_FLOAT         = 5,
-      DEAD_RECKONING    = 6,
-      STATIC_POSITION   = 7,
-      SIMULATED         = 8,
+    INVALID           = 0,
+    SINGLE            = 1,
+    DGPS              = 2,
+    PPS               = 3,
+    RTK_FIXED         = 4,
+    RTK_FLOAT         = 5,
+    DEAD_RECKONING    = 6,
+    STATIC_POSITION   = 7,
+    SIMULATED         = 8,
   };
 
   /*!
