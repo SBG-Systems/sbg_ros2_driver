@@ -128,76 +128,62 @@ void MessagePublisher::initPublisher(rclcpp::Node& ref_ros_node_handle, SbgEComM
         break;
 
       case SBG_ECOM_LOG_EKF_NAV:
-
           sbg_ekf_nav_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfNav>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_SHIP_MOTION:
-
           sbg_ship_motion_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgShipMotion>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_GPS1_VEL:
       case SBG_ECOM_LOG_GPS2_VEL:
-
           sbg_gps_vel_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsVel>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_GPS1_POS:
       case SBG_ECOM_LOG_GPS2_POS:
-
           sbg_gps_pos_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsPos>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_GPS1_HDT:
       case SBG_ECOM_LOG_GPS2_HDT:
-
           sbg_gps_hdt_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsHdt>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_GPS1_RAW:
       case SBG_ECOM_LOG_GPS2_RAW:
-
           sbg_gps_raw_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsRaw>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_ODO_VEL:
-
           sbg_odo_vel_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgOdoVel>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_A:
-
           sbg_event_a_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_B:
-
           sbg_event_b_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_C:
-
           sbg_event_c_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_D:
-
           sbg_event_d_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_E:
-
           sbg_event_e_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_IMU_SHORT:
-
           sbg_imu_short_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgImuShort>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_AIR_DATA:
-
           sbg_air_data_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgAirData>(ref_output_topic, max_messages_);
         break;
 
@@ -226,7 +212,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
 
   if (sbg_imu_data_pub_)
   {
-    temp_pub_     = ref_ros_node_handle.create_publisher<sensor_msgs::msg::Temperature>("imu/temp", max_messages_);
+    temp_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::Temperature>("imu/temp", max_messages_);
   }
   else
   {
@@ -513,7 +499,7 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
   // Publish the message with the corresponding publisher and SBG message ID.
   // For each log, check if the publisher has been initialized.
   //
-  if(sbg_msg_class == SBG_ECOM_CLASS_LOG_ECOM_0)
+  if (sbg_msg_class == SBG_ECOM_CLASS_LOG_ECOM_0)
   {
     switch (sbg_msg_id)
     {
@@ -526,22 +512,18 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
 
       case SBG_ECOM_LOG_UTC_TIME:
-
         publishUtcData(ref_sbg_log);
         break;
 
       case SBG_ECOM_LOG_IMU_DATA:
-
         publishIMUData(ref_sbg_log);
         break;
 
       case SBG_ECOM_LOG_MAG:
-
         publishMagData(ref_sbg_log);
         break;
 
       case SBG_ECOM_LOG_MAG_CALIB:
-
         if (sbg_mag_calib_pub_)
         {
           sbg_mag_calib_pub_->publish(message_wrapper_.createSbgMagCalibMessage(ref_sbg_log.magCalibData));
@@ -549,7 +531,6 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
 
       case SBG_ECOM_LOG_EKF_EULER:
-
         if (sbg_ekf_euler_pub_)
         {
           sbg_ekf_euler_message_ = message_wrapper_.createSbgEkfEulerMessage(ref_sbg_log.ekfEulerData);
@@ -560,7 +541,6 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
 
       case SBG_ECOM_LOG_EKF_QUAT:
-
         if (sbg_ekf_quat_pub_)
         {
           sbg_ekf_quat_message_ = message_wrapper_.createSbgEkfQuatMessage(ref_sbg_log.ekfQuatData);
@@ -571,13 +551,11 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
 
       case SBG_ECOM_LOG_EKF_NAV:
-
         publishEkfNavigationData(ref_sbg_log);
         processRosOdoMessage();
         break;
 
       case SBG_ECOM_LOG_SHIP_MOTION:
-
         if (sbg_ship_motion_pub_)
         {
           sbg_ship_motion_pub_->publish(message_wrapper_.createSbgShipMotionMessage(ref_sbg_log.shipMotionData));
@@ -586,7 +564,6 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
 
       case SBG_ECOM_LOG_GPS1_VEL:
       case SBG_ECOM_LOG_GPS2_VEL:
-
         if (sbg_gps_vel_pub_)
         {
           sbg_gps_vel_pub_->publish(message_wrapper_.createSbgGpsVelMessage(ref_sbg_log.gpsVelData));
@@ -595,13 +572,11 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
 
       case SBG_ECOM_LOG_GPS1_POS:
       case SBG_ECOM_LOG_GPS2_POS:
-
         publishGpsPosData(ref_sbg_log, sbg_msg_id);
         break;
 
       case SBG_ECOM_LOG_GPS1_HDT:
       case SBG_ECOM_LOG_GPS2_HDT:
-
         if (sbg_gps_hdt_pub_)
         {
           sbg_gps_hdt_pub_->publish(message_wrapper_.createSbgGpsHdtMessage(ref_sbg_log.gpsHdtData));
@@ -610,7 +585,6 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
 
       case SBG_ECOM_LOG_GPS1_RAW:
       case SBG_ECOM_LOG_GPS2_RAW:
-
         if (sbg_gps_raw_pub_)
         {
           sbg_gps_raw_pub_->publish(message_wrapper_.createSbgGpsRawMessage(ref_sbg_log.gpsRawData));
@@ -618,7 +592,6 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
 
       case SBG_ECOM_LOG_ODO_VEL:
-
         if (sbg_odo_vel_pub_)
         {
           sbg_odo_vel_pub_->publish(message_wrapper_.createSbgOdoVelMessage(ref_sbg_log.odometerData));
@@ -626,7 +599,6 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
 
       case SBG_ECOM_LOG_EVENT_A:
-
         if (sbg_event_a_pub_)
         {
           sbg_event_a_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
@@ -634,7 +606,6 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
 
       case SBG_ECOM_LOG_EVENT_B:
-
         if (sbg_event_b_pub_)
         {
           sbg_event_b_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
@@ -642,7 +613,6 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
 
       case SBG_ECOM_LOG_EVENT_C:
-
         if (sbg_event_c_pub_)
         {
           sbg_event_c_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
@@ -650,7 +620,6 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
 
       case SBG_ECOM_LOG_EVENT_D:
-
         if (sbg_event_d_pub_)
         {
           sbg_event_d_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
@@ -658,7 +627,6 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
 
       case SBG_ECOM_LOG_EVENT_E:
-
         if (sbg_event_e_pub_)
         {
           sbg_event_e_pub_->publish(message_wrapper_.createSbgEventMessage(ref_sbg_log.eventMarker));
@@ -666,7 +634,6 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
 
       case SBG_ECOM_LOG_IMU_SHORT:
-
         if (sbg_imu_short_pub_)
         {
           sbg_imu_short_pub_->publish(message_wrapper_.createSbgImuShortMessage(ref_sbg_log.imuShort));
@@ -674,7 +641,6 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
 
       case SBG_ECOM_LOG_AIR_DATA:
-
         publishFluidPressureData(ref_sbg_log);
         break;
 

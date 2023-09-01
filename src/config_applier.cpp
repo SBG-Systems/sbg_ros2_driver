@@ -11,8 +11,8 @@ using sbg::ConfigApplier;
 //---------------------------------------------------------------------//
 
 ConfigApplier::ConfigApplier(SbgEComHandle &ref_sbg_com_handle):
-        reboot_needed_(false),
-        ref_sbg_com_handle_(ref_sbg_com_handle)
+reboot_needed_(false),
+ref_sbg_com_handle_(ref_sbg_com_handle)
 {
 
 }

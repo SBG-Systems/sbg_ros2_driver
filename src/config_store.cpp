@@ -11,12 +11,12 @@ using sbg::ConfigStore;
 //---------------------------------------------------------------------//
 
 ConfigStore::ConfigStore():
-        serial_communication_(false),
-        upd_communication_(false),
-        configure_through_ros_(false),
-        ros_standard_output_(false),
-        rtcm_subscribe_(false),
-        nmea_publish_(false)
+serial_communication_(false),
+upd_communication_(false),
+configure_through_ros_(false),
+ros_standard_output_(false),
+rtcm_subscribe_(false),
+nmea_publish_(false)
 {
 
 }
