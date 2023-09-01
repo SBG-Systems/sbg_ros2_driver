@@ -59,25 +59,6 @@ namespace sbg::helpers
   };
 
   /*!
-   * Convert latitude and longitude to a position relative to UTM initial position.
-   *
-   * \param[in] latitude                Latitude, in degrees.
-   * \param[in] longitude               Longitude, in degrees.
-   * \param[in] zone_number             UTM zone number.
-   * \param[out] utm_northing           UTM northing, in meters.
-   * \param[out] utm_easting            UTM easting, in meters.
-   */
-  void LLtoUTM(double latitude, double longitude, int zone_number, double &utm_northing, double &utm_easting);
-
-  /*!
-   * Get UTM letter designator for the given latitude.
-   *
-   * \param[in] latitude                Latitude, in degrees.
-   * \return                            UTM letter designator.
-   */
-  char UTMLetterDesignator(double latitude);
-
-  /*!
    * Wrap an angle between [ -Pi ; Pi ] rad.
    *
    * \param[in] angle_rad               Angle in rad.
@@ -92,14 +73,6 @@ namespace sbg::helpers
    * \return                            Wrapped angle.
    */
   float wrapAngle360(float angle_deg);
-
-  /*!
-   * Compute UTM zone meridian.
-   *
-   * \param[in] zone_number             UTM Zone number.
-   * \return                            Meridian angle, in degrees.
-   */
-  double computeMeridian(int zone_number);
 
   /*!
    * Get the number of days in the year.
