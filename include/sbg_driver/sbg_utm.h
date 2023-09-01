@@ -38,68 +38,18 @@ namespace sbg
 {
 
 /*!
- * Class to wrap UTM computation.
+ * Struct for UTM values
  */
-class SbgUtm final
+struct Utm final
 {
-public:
-  //---------------------------------------------------------------------//
-  //- Constructor                                                       -//
-  //---------------------------------------------------------------------//
-
-  SbgUtm() = default;
-
-  //---------------------------------------------------------------------//
-  //- Parameters                                                        -//
-  //---------------------------------------------------------------------//
-
-  /*!
-   * Get UTM easting.
-   *
-   * \return                            Easting, in degrees.
-   */
-  double getEasting() const;
-
-  /*!
-   * Get UTM northing.
-   *
-   * \return                            Northing, in degrees.
-   */
-  double getNorthing() const;
-
-  /*!
-   * Get UTM altitude.
-   *
-   * \return                            Altitude, in meters.
-   */
-  double getAltitude() const;
-
-  /*!
-   * Get UTM zone.
-   *
-   * \return                            Zone number.
-   */
-  int getZoneNumber() const;
-
-  //---------------------------------------------------------------------//
-  //- Operations                                                        -//
-  //---------------------------------------------------------------------//
-
-  /*!
-   * Set UTM initial position.
-   *
-   * \param[in] latitude                Latitude, in degrees.
-   * \param[in] longitude               Longitude, in degrees.
-   * \param[in] altitude                Altitude, in meters.
-   */
-  void init(double latitude, double longitude, double altitude);
-
-private:
-  double    easting_ = 0.0;
-  double    northing_ = 0.0;
-  double    altitude_ = 0.0;
-  int       zone_ = 0;
+  double    easting_{};
+  double    northing_{};
+  double    meridian_{};
+  int       zone_number_{};
+  char      letter_designator_{};
 };
+
+Utm convertLLtoUTM(double latitude, double longitude);
 
 }
 

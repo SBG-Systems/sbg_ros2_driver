@@ -873,7 +873,6 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
 const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driver::msg::SbgImuData &ref_sbg_imu_msg, const sbg_driver::msg::SbgEkfNav &ref_ekf_nav_msg, const tf2::Quaternion &ref_orientation, const sbg_driver::msg::SbgEkfEuler &ref_ekf_euler_msg)
 {
   nav_msgs::msg::Odometry odo_ros_msg;
-  double utm_northing, utm_easting;
   std::string utm_zone;
   geometry_msgs::msg::TransformStamped transform;
 
@@ -883,38 +882,42 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   tf2::convert(ref_orientation, odo_ros_msg.pose.pose.orientation);
 
   // Convert latitude and longitude to UTM coordinates.
-  if (utm_.getZoneNumber() == 0)
+  if (!has_first_valid_position)
   {
-    utm_.init(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, ref_ekf_nav_msg.altitude);
+    first_valid_altitude_ = ref_ekf_nav_msg.altitude;
+    first_valid_utm_ = sbg::convertLLtoUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude);
+
     RCLCPP_INFO(rclcpp::get_logger("Message wrapper"), "initialized from lat:%f long:%f UTM zone %d%c: easting:%fm (%dkm) northing:%fm (%dkm)"
-    , ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, utm_.getZoneNumber(), sbg::helpers::UTMLetterDesignator(ref_ekf_nav_msg.latitude)
-    , utm_.getEasting(), (int)(utm_.getEasting())/1000
-    , utm_.getNorthing(), (int)(utm_.getNorthing())/1000
+    , ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, first_valid_utm_.zone_number_, first_valid_utm_.letter_designator_
+    , first_valid_utm_.easting_, (int)(first_valid_utm_.easting_)/1000
+    , first_valid_utm_.northing_, (int)(first_valid_utm_.northing_)/1000
     );
 
     if (odom_publish_tf_)
     {
       // Publish UTM initial transformation.
       geometry_msgs::msg::Pose pose;
-      pose.position.x = utm_.getEasting();
-      pose.position.y = utm_.getNorthing();
-      pose.position.z = utm_.getAltitude();
+      pose.position.x = first_valid_utm_.easting_;
+      pose.position.y = first_valid_utm_.northing_;
+      pose.position.z = first_valid_altitude_;
 
       fillTransform(odom_init_frame_id_, odom_frame_id_, pose, transform);
       tf_broadcaster_->sendTransform(transform);
       static_tf_broadcaster_->sendTransform(transform);
     }
+
+    has_first_valid_position = true;
   }
 
-  sbg::helpers::LLtoUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, utm_.getZoneNumber(), utm_northing, utm_easting);
-  odo_ros_msg.pose.pose.position.x = utm_easting  - utm_.getEasting();
-  odo_ros_msg.pose.pose.position.y = utm_northing - utm_.getNorthing();
-  odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - utm_.getAltitude();
+  auto current_utm = sbg::convertLLtoUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude);
+  odo_ros_msg.pose.pose.position.x = current_utm.easting_  - first_valid_utm_.easting_;
+  odo_ros_msg.pose.pose.position.y = current_utm.northing_ - first_valid_utm_.northing_;
+  odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - first_valid_altitude_;
 
   // Compute convergence angle.
   double longitudeRad      = sbgDegToRadD(ref_ekf_nav_msg.longitude);
   double latitudeRad       = sbgDegToRadD(ref_ekf_nav_msg.latitude);
-  double central_meridian  = sbgDegToRadD(sbg::helpers::computeMeridian(utm_.getZoneNumber()));
+  double central_meridian  = sbgDegToRadD(current_utm.meridian_);
   double convergence_angle = atan(tan(longitudeRad - central_meridian) * sin(latitudeRad));
 
   // Convert position standard deviations to UTM frame.

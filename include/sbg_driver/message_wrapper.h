@@ -99,7 +99,9 @@ private:
   std::string                         odom_base_frame_id_;
   std::string                         odom_init_frame_id_;
 
-  sbg::SbgUtm                         utm_{};
+  bool                                has_first_valid_position = false;
+  sbg::Utm                            first_valid_utm_{};
+  double                              first_valid_altitude_{};
 
   static constexpr double             equatorial_radius_ = 6378137.0;
   static constexpr double             polar_radius_ = 6356752.314245;
