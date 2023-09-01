@@ -144,8 +144,8 @@ void SbgDevice::connect()
   }
   else if (config_store_.isInterfaceUdp())
   {
-	char ip[16];
-	sbgNetworkIpToString(config_store_.getIpAddress(), ip, sizeof(ip));
+    char ip[16];
+    sbgNetworkIpToString(config_store_.getIpAddress(), ip, sizeof(ip));
     RCLCPP_INFO(ref_node_.get_logger(), "SBG_DRIVER - UDP interface %s %d->%d", ip, config_store_.getInputPortAddress(), config_store_.getOutputPortAddress());
     error_code = sbgInterfaceUdpCreate(&sbg_interface_, config_store_.getIpAddress(), config_store_.getInputPortAddress(), config_store_.getOutputPortAddress());
   }

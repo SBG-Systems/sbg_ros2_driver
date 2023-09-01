@@ -1,3 +1,40 @@
+/*!
+*  \file         sbg_vector3.h
+*  \author       SBG Systems
+*  \date         13/03/2020
+*
+*  \brief        Handle a X,Y,Z vector.
+*
+*  SBG Systems Ros driver needs some basic matrix operations.
+*  Ros uses Eigen for mathematical computations but to avoid dependency on
+*  Eigen we chose to implement a basic custom matrix class with basic
+*  mathematical operations needed.
+*  This class also defines SbgMatrix3f and SbgMatrix3d for floats and doubles.
+*
+*  \section CodeCopyright Copyright Notice
+*  MIT License
+*
+*  Copyright (c) 2023 SBG Systems
+*
+*  Permission is hereby granted, free of charge, to any person obtaining a copy
+*  of this software and associated documentation files (the "Software"), to deal
+*  in the Software without restriction, including without limitation the rights
+*  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+*  copies of the Software, and to permit persons to whom the Software is
+*  furnished to do so, subject to the following conditions:
+*
+*  The above copyright notice and this permission notice shall be included in all
+*  copies or substantial portions of the Software.
+*
+*  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+*  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+*  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+*  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+*  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+*  SOFTWARE.
+*/
+
 #ifndef SBG_VECTOR_3_H
 #define SBG_VECTOR_3_H
 
@@ -121,8 +158,8 @@ public:
 
   /*!
    * Getter parenthesis operator
-   * \param[in] index					Index of value to retrieve.
-   * \return 							Value at index.
+   * \param[in] index                       Index of value to retrieve.
+   * \return                                Value at index.
    */
   const T operator()(size_t index) const
   {

@@ -43,18 +43,18 @@ void SbgUtm::init(double latitude, double longitude, double altitude)
 
   zoneNumber = int((LongTemp + 180)/6) + 1;
 
-  if( latitude >= 56.0 && latitude < 64.0 && LongTemp >= 3.0 && LongTemp < 12.0 )
+  if ( latitude >= 56.0 && latitude < 64.0 && LongTemp >= 3.0 && LongTemp < 12.0 )
   {
     zoneNumber = 32;
   }
 
   // Special zones for Svalbard
-  if( latitude >= 72.0 && latitude < 84.0 )
+  if ( latitude >= 72.0 && latitude < 84.0 )
   {
-    if(      LongTemp >= 0.0  && LongTemp <  9.0 ) zoneNumber = 31;
-    else if( LongTemp >= 9.0  && LongTemp < 21.0 ) zoneNumber = 33;
-    else if( LongTemp >= 21.0 && LongTemp < 33.0 ) zoneNumber = 35;
-    else if( LongTemp >= 33.0 && LongTemp < 42.0 ) zoneNumber = 37;
+    if (      LongTemp >= 0.0  && LongTemp <  9.0 ) zoneNumber = 31;
+    else if ( LongTemp >= 9.0  && LongTemp < 21.0 ) zoneNumber = 33;
+    else if ( LongTemp >= 21.0 && LongTemp < 33.0 ) zoneNumber = 35;
+    else if ( LongTemp >= 33.0 && LongTemp < 42.0 ) zoneNumber = 37;
   }
 
   zone_ = zoneNumber;

@@ -1,34 +1,34 @@
 /*!
-*	\file         config_store.h
-*	\author       SBG Systems
-*	\date         13/03/2020
+*  \file         config_store.h
+*  \author       SBG Systems
+*  \date         13/03/2020
 *
-*	\brief        Class to handle the device configuration.
+*  \brief        Class to handle the device configuration.
 *
-*   Methods to extract configuration values and load it to the ROS node.
+*  Methods to extract configuration values and load it to the ROS node.
 *
-*	\section CodeCopyright Copyright Notice
-*	MIT License
+*  \section CodeCopyright Copyright Notice
+*  MIT License
 *
-*	Copyright (c) 2020 SBG Systems
+*  Copyright (c) 2023 SBG Systems
 *
-*	Permission is hereby granted, free of charge, to any person obtaining a copy
-*	of this software and associated documentation files (the "Software"), to deal
-*	in the Software without restriction, including without limitation the rights
-*	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-*	copies of the Software, and to permit persons to whom the Software is
-*	furnished to do so, subject to the following conditions:
+*  Permission is hereby granted, free of charge, to any person obtaining a copy
+*  of this software and associated documentation files (the "Software"), to deal
+*  in the Software without restriction, including without limitation the rights
+*  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+*  copies of the Software, and to permit persons to whom the Software is
+*  furnished to do so, subject to the following conditions:
 *
-*	The above copyright notice and this permission notice shall be included in all
-*	copies or substantial portions of the Software.
+*  The above copyright notice and this permission notice shall be included in all
+*  copies or substantial portions of the Software.
 *
-*	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-*	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-*	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-*	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-*	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-*	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-*	SOFTWARE.
+*  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+*  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+*  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+*  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+*  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+*  SOFTWARE.
 */
 
 #ifndef SBG_ROS_CONFIG_STORE_H
@@ -66,9 +66,9 @@ public:
    */
   struct SbgLogOutput
   {
-    SbgEComClass      message_class;
-    SbgEComMsgId      message_id;
-    SbgEComOutputMode output_mode;
+    SbgEComClass              message_class;
+    SbgEComMsgId              message_id;
+    SbgEComOutputMode         output_mode;
   };
 
 private:
@@ -113,10 +113,10 @@ private:
 
   uint32_t                    rate_frequency_;
   std::string                 frame_id_;
-  bool						  use_enu_;
+  bool                        use_enu_;
 
-  bool						  odom_enable_;
-  bool						  odom_publish_tf_;
+  bool                        odom_enable_;
+  bool                        odom_publish_tf_;
   std::string                 odom_frame_id_;
   std::string                 odom_base_frame_id_;
   std::string                 odom_init_frame_id_;
@@ -474,21 +474,21 @@ public:
   /*!
    * Get use ENU.
    *
-   * \return					 True if the frame convention to use is ENU.
+   * \return                      True if the frame convention to use is ENU.
    */
   bool getUseEnu() const;
 
   /*!
    * Get odom enable.
    *
-   * \return					 True if the odometry is enabled.
+   * \return                      True if the odometry is enabled.
    */
   bool getOdomEnable() const;
 
   /*!
    * Get odom publish_tf.
    *
-   * \return					 If true publish odometry transforms.
+   * \return                      If true publish odometry transforms.
    */
   bool getOdomPublishTf() const;
 

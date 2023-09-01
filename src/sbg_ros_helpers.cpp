@@ -68,7 +68,7 @@ void sbg::helpers::LLtoUTM(double latitude, double longitude, int zone_number, d
   utm_northing = (double)(k0 * (M + N * tan(LatRad) * (A * A / 2 + (5 - T + 9 * C + 4 * C * C) * A * A * A * A / 24
           + (61-58*T+T*T+600*C-330*eccPrimeSquared)*A*A*A*A*A*A/720)));
 
-  if(latitude < 0)
+  if (latitude < 0)
   {
     utm_northing += 10000000.0; //10000000 meter offset for southern hemisphere
   }
@@ -97,14 +97,14 @@ char sbg::helpers::UTMLetterDesignator(double latitude)
   else if ((8 > latitude) && (latitude >= 0)) LetterDesignator = 'N';
   else if ((0 > latitude) && (latitude >= -8)) LetterDesignator = 'M';
   else if ((-8 > latitude) && (latitude >= -16)) LetterDesignator = 'L';
-  else if((-16 > latitude) && (latitude >= -24)) LetterDesignator = 'K';
-  else if((-24 > latitude) && (latitude >= -32)) LetterDesignator = 'J';
-  else if((-32 > latitude) && (latitude >= -40)) LetterDesignator = 'H';
-  else if((-40 > latitude) && (latitude >= -48)) LetterDesignator = 'G';
-  else if((-48 > latitude) && (latitude >= -56)) LetterDesignator = 'F';
-  else if((-56 > latitude) && (latitude >= -64)) LetterDesignator = 'E';
-  else if((-64 > latitude) && (latitude >= -72)) LetterDesignator = 'D';
-  else if((-72 > latitude) && (latitude >= -80)) LetterDesignator = 'C';
+  else if ((-16 > latitude) && (latitude >= -24)) LetterDesignator = 'K';
+  else if ((-24 > latitude) && (latitude >= -32)) LetterDesignator = 'J';
+  else if ((-32 > latitude) && (latitude >= -40)) LetterDesignator = 'H';
+  else if ((-40 > latitude) && (latitude >= -48)) LetterDesignator = 'G';
+  else if ((-48 > latitude) && (latitude >= -56)) LetterDesignator = 'F';
+  else if ((-56 > latitude) && (latitude >= -64)) LetterDesignator = 'E';
+  else if ((-64 > latitude) && (latitude >= -72)) LetterDesignator = 'D';
+  else if ((-72 > latitude) && (latitude >= -80)) LetterDesignator = 'C';
         // 'Z' is an error flag, the Latitude is outside the UTM limits
   else LetterDesignator = 'Z';
   return LetterDesignator;

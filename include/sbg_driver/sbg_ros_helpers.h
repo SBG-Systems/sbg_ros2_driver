@@ -1,34 +1,34 @@
 /*!
-*	\file         sbg_ros_helpers.h
-*	\author       SBG Systems
-*	\date         25/08/2023
+*  \file         sbg_ros_helpers.h
+*  \author       SBG Systems
+*  \date         25/08/2023
 *
-*	\brief        Helpers for various tasks.
+*  \brief        Helpers for various tasks.
 *
-*   Helpers for various tasks.
+*  Helpers for various tasks.
 *
-*	\section CodeCopyright Copyright Notice
-*	MIT License
+*  \section CodeCopyright Copyright Notice
+*  MIT License
 *
-*	Copyright (c) 2023 SBG Systems
+*  Copyright (c) 2023 SBG Systems
 *
-*	Permission is hereby granted, free of charge, to any person obtaining a copy
-*	of this software and associated documentation files (the "Software"), to deal
-*	in the Software without restriction, including without limitation the rights
-*	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-*	copies of the Software, and to permit persons to whom the Software is
-*	furnished to do so, subject to the following conditions:
+*  Permission is hereby granted, free of charge, to any person obtaining a copy
+*  of this software and associated documentation files (the "Software"), to deal
+*  in the Software without restriction, including without limitation the rights
+*  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+*  copies of the Software, and to permit persons to whom the Software is
+*  furnished to do so, subject to the following conditions:
 *
-*	The above copyright notice and this permission notice shall be included in all
-*	copies or substantial portions of the Software.
+*  The above copyright notice and this permission notice shall be included in all
+*  copies or substantial portions of the Software.
 *
-*	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-*	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-*	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-*	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-*	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-*	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-*	SOFTWARE.
+*  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+*  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+*  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+*  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+*  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+*  SOFTWARE.
 */
 
 #ifndef SBG_ROS_ROS_HELPERS_H
@@ -80,49 +80,49 @@ namespace sbg::helpers
   /*!
    * Wrap an angle between [ -Pi ; Pi ] rad.
    *
-   * \param[in] angle_rad			Angle in rad.
-   * \return						Wrapped angle.
+   * \param[in] angle_rad               Angle in rad.
+   * \return                            Wrapped angle.
    */
   float wrapAnglePi(float angle_rad);
 
   /*!
    * Wrap an angle between [ 0 ; 360 ] degree.
    *
-   * \param[in] angle_deg			Angle in degree.
-   * \return						Wrapped angle.
+   * \param[in] angle_deg               Angle in degree.
+   * \return                            Wrapped angle.
    */
   float wrapAngle360(float angle_deg);
 
   /*!
    * Compute UTM zone meridian.
    *
-   * \param[in] zone_number			UTM Zone number.
-   * \return						Meridian angle, in degrees.
+   * \param[in] zone_number             UTM Zone number.
+   * \return                            Meridian angle, in degrees.
    */
   double computeMeridian(int zone_number);
 
   /*!
    * Get the number of days in the year.
    *
-   * \param[in] year                Year to get the number of days.
-   * \return                        Number of days in the year.
+   * \param[in] year                    Year to get the number of days.
+   * \return                            Number of days in the year.
    */
   uint32_t getNumberOfDaysInYear(uint16_t year);
 
   /*!
    * Get the number of days of the month index.
    *
-   * \param[in] year                Year.
-   * \param[in] month_index         Month index [1..12].
-   * \return                        Number of days in the month.
+   * \param[in] year                    Year.
+   * \param[in] month_index             Month index [1..12].
+   * \return                            Number of days in the month.
    */
   uint32_t getNumberOfDaysInMonth(uint16_t year, uint8_t month_index);
 
   /*!
    * Check if the given year is a leap year.
    *
-   * \param[in] year                Year to check.
-   * \return                        True if the year is a leap year.
+   * \param[in] year                    Year to check.
+   * \return                            True if the year is a leap year.
    */
   bool isLeapYear(uint16_t year);
 
@@ -132,10 +132,10 @@ namespace sbg::helpers
    * WARNING: The leap second is computed from the latest received SbgUtcTime message if any.
    *          If no SbgUtcTime message has been received, a default driver current value is used.
    *
-   * \param[in] first_valid_utc     First valid utc.
-   * \param[in] gps_tow             Current GPS time of the week.
-   * \param[in] sec                 Current second.
-   * \return                        Offset in seconds to apply to UTC time to get GPS time.
+   * \param[in] first_valid_utc         First valid utc.
+   * \param[in] gps_tow                 Current GPS time of the week.
+   * \param[in] sec                     Current second.
+   * \return                            Offset in seconds to apply to UTC time to get GPS time.
    */
   int32_t getUtcOffset(bool first_valid_utc, uint32_t gps_tow, uint8_t sec);
 
@@ -149,4 +149,3 @@ namespace sbg::helpers
 }
 
 #endif // #ifndef SBG_ROS_ROS_HELPERS_H
-
