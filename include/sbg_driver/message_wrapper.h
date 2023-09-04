@@ -41,7 +41,6 @@
 // Sbg header
 #include <sbg_matrix3.h>
 #include <config_store.h>
-#include <sbg_position.h>
 #include <sbg_utm.h>
 
 // ROS headers
@@ -100,7 +99,10 @@ private:
   std::string                         odom_base_frame_id_;
   std::string                         odom_init_frame_id_;
 
-  sbg::Position                       first_valid_position_{};
+  Utm                                 utm_{};
+  double                              first_valid_easting_{};
+  double                              first_valid_northing_{};
+  double                              first_valid_altitude_{};
 
   static constexpr double             equatorial_radius_ = 6378137.0;
   static constexpr double             polar_radius_ = 6356752.314245;
