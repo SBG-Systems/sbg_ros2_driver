@@ -46,18 +46,90 @@ namespace sbg
 class Utm final
 {
   public:
+
+    //---------------------------------------------------------------------//
+    //- Constructor                                                       -//
+    //---------------------------------------------------------------------//
+
+    /*!
+     * Default constructor.
+     */
     Utm() = default;
+
+    /*!
+     * Constructor.
+     *
+     * \param[in] latitude                  Latitude in degree.
+     * \param[in] longitude                 Longitude in degree.
+     */
     Utm(double latitude, double longitude);
 
-    void init(double latitude, double longitude);
-    void clear();
-    void reset(double latitude, double longitude);
+    //---------------------------------------------------------------------//
+    //- Parameters                                                        -//
+    //---------------------------------------------------------------------//
 
+    /*!
+     * Returns if class is initialized.
+     *
+     * \return        True if class is initialized.
+     */
     bool isInit() const;
+
+    /*!
+     * Returns UTM zone number.
+     *
+     * \return        Zone number.
+     */
     int getZoneNumber() const;
+
+    /*!
+     * Returns UTM meridian.
+     *
+     * \return        Meridian in degree.
+     */
     double getMeridian() const;
+
+    /*!
+     * Returns UTM letter designator.
+     *
+     * \return        Letter designator.
+     */
     char getLetterDesignator() const;
 
+    //---------------------------------------------------------------------//
+    //- Operations                                                        -//
+    //---------------------------------------------------------------------//
+
+    /*!
+     * Initialize UTM zone.
+     *
+     * \param[in] latitude                  Latitude in degree.
+     * \param[in] longitude                 Longitude in degree.
+     */
+    void init(double latitude, double longitude);
+
+    /*!
+     * Clear values and set them to zero / false.
+     */
+    void clear();
+
+    /*!
+     * Clear and initialize UTM zone.
+     *
+     * \param[in] latitude                  Latitude in degree.
+     * \param[in] longitude                 Longitude in degree.
+     */
+    void reset(double latitude, double longitude);
+
+    /*!
+     * Convert latitude, longitude, to easting and northing.
+     * Originally written by Chuck Gantz- chuck.gantz@globalstar.com
+     *
+     * \param[in] latitude                Latitude, in degrees.
+     * \param[in] longitude               Longitude, in degrees.
+     * \return                            Array containing easting then northing.
+     *
+     */
     std::array<double, 2> computeEastingNorthing(double latitude, double longitude) const;
 
   private:
