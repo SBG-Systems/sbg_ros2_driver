@@ -1,21 +1,23 @@
 // File header
 #include "sbg_utm.h"
 
+// SBG headers
+#include <array>
+
 // STL headers
 #include <cmath>
 
 /*!
- * Convert latitude and longitude to a position relative to UTM initial position.
+ * Convert latitude, longitude, zone number to a UTM position.
+ * Originally written by Chuck Gantz- chuck.gantz@globalstar.com
  *
  * \param[in] latitude                Latitude, in degrees.
  * \param[in] longitude               Longitude, in degrees.
  * \param[in] zone_number             UTM zone number.
- * \param[out] utm_northing           UTM northing, in meters.
- * \param[out] utm_easting            UTM easting, in meters.
+ * \return                            Array containing easting then northing.
  *
- * Originally written by Chuck Gantz- chuck.gantz@globalstar.com.
  */
-static void computeEastingNorthing(double latitude, double longitude, int zone_number, double &utm_northing, double &utm_easting)
+static std::array<double, 2> computeEastingNorthing(double latitude, double longitude, int zone_number)
 {
   constexpr double RADIANS_PER_DEGREE = M_PI/180.0;
 
@@ -58,21 +60,24 @@ static void computeEastingNorthing(double latitude, double longitude, int zone_n
          + (15*eccSquared*eccSquared/256 + 45*eccSquared*eccSquared*eccSquared/1024)*sin(4*LatRad)
          - (35*eccSquared*eccSquared*eccSquared/3072)*sin(6*LatRad));
 
-  utm_easting = (double)(k0 * N * (A + (1 - T + C) * A * A * A / 6
-                                   + (5-18*T+T*T+72*C-58*eccPrimeSquared)*A*A*A*A*A/120)
-                         + 500000.0);
+  double utm_easting = (double)(k0 * N * (A + (1 - T + C) * A * A * A / 6
+                       + (5-18*T+T*T+72*C-58*eccPrimeSquared)*A*A*A*A*A/120)
+                       + 500000.0);
 
-  utm_northing = (double)(k0 * (M + N * tan(LatRad) * (A * A / 2 + (5 - T + 9 * C + 4 * C * C) * A * A * A * A / 24
-                                                       + (61-58*T+T*T+600*C-330*eccPrimeSquared)*A*A*A*A*A*A/720)));
+  double utm_northing = (double)(k0 * (M + N * tan(LatRad) * (A * A / 2 + (5 - T + 9 * C + 4 * C * C) * A * A * A * A / 24
+                        + (61-58*T+T*T+600*C-330*eccPrimeSquared)*A*A*A*A*A*A/720)));
 
   if (latitude < 0)
   {
     utm_northing += 10000000.0; //10000000 meter offset for southern hemisphere
   }
+
+  std::array<double, 2> easting_northing{utm_easting, utm_northing};
+  return (easting_northing);
 }
 
 /*!
- * Compute UTM zone meridian.
+ * Compute UTM zone meridian from UTM zone number.
  *
  * \param[in] zone_number             UTM Zone number.
  * \return                            Meridian angle, in degrees.
@@ -84,13 +89,13 @@ static double computeMeridian(int zone_number)
 
 /*!
  * Get UTM letter designator for the given latitude.
+ * Originally written by Chuck Gantz- chuck.gantz@globalstar.com
  *
  * \param[in] latitude                Latitude, in degrees.
  * \return                            UTM letter designator.
  *
- * Written by Chuck Gantz- chuck.gantz@globalstar.com
  */
-static char computeUTMLetterDesignator(double latitude)
+static char computeLetterDesignator(double latitude)
 {
   char LetterDesignator;
 
@@ -120,11 +125,11 @@ static char computeUTMLetterDesignator(double latitude)
 }
 
 /*!
- * Convert latitude and longitude to a position relative to UTM initial position.
+ * Convert latitude and longitude to an UTM zone number.
  *
  * \param[in] latitude                Latitude, in degrees.
  * \param[in] longitude               Longitude, in degrees.
- * \return                            UTM letter designator.
+ * \return                            UTM zone number.
  */
 static int computeZoneNumber(double latitude, double longitude)
 {
@@ -158,8 +163,10 @@ sbg::Utm sbg::convertLLtoUTM(double latitude, double longitude)
 
   converted_ll.zone_number = computeZoneNumber(latitude, longitude);
   converted_ll.meridian = computeMeridian(converted_ll.zone_number);
-  converted_ll.letter_designator = computeUTMLetterDesignator(latitude);
-  computeEastingNorthing(latitude, longitude, converted_ll.zone_number, converted_ll.northing, converted_ll.easting);
+  converted_ll.letter_designator = computeLetterDesignator(latitude);
+  const auto easting_northing = computeEastingNorthing(latitude, longitude, converted_ll.zone_number);
+  converted_ll.easting = easting_northing[0];
+  converted_ll.northing = easting_northing[1];
 
   return (converted_ll);
 }
