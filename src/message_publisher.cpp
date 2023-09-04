@@ -100,91 +100,91 @@ void MessagePublisher::initPublisher(rclcpp::Node& ref_ros_node_handle, SbgEComM
     switch (sbg_msg_id)
     {
       case SBG_ECOM_LOG_STATUS:
-          sbg_status_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgStatus>(ref_output_topic, max_messages_);
+        sbg_status_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgStatus>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_UTC_TIME:
-          sbg_utc_time_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgUtcTime>(ref_output_topic, max_messages_);
+        sbg_utc_time_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgUtcTime>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_IMU_DATA:
-          sbg_imu_data_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgImuData>(ref_output_topic, max_messages_);
+        sbg_imu_data_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgImuData>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_MAG:
-          sbg_mag_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgMag>(ref_output_topic, max_messages_);
+        sbg_mag_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgMag>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_MAG_CALIB:
-          sbg_mag_calib_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgMagCalib>(ref_output_topic, max_messages_);
+        sbg_mag_calib_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgMagCalib>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_EKF_EULER:
-          sbg_ekf_euler_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfEuler>(ref_output_topic, max_messages_);
+        sbg_ekf_euler_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfEuler>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_EKF_QUAT:
-          sbg_ekf_quat_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfQuat>(ref_output_topic, max_messages_);
+        sbg_ekf_quat_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfQuat>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_EKF_NAV:
-          sbg_ekf_nav_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfNav>(ref_output_topic, max_messages_);
+        sbg_ekf_nav_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfNav>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_SHIP_MOTION:
-          sbg_ship_motion_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgShipMotion>(ref_output_topic, max_messages_);
+        sbg_ship_motion_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgShipMotion>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_GPS1_VEL:
       case SBG_ECOM_LOG_GPS2_VEL:
-          sbg_gps_vel_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsVel>(ref_output_topic, max_messages_);
+        sbg_gps_vel_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsVel>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_GPS1_POS:
       case SBG_ECOM_LOG_GPS2_POS:
-          sbg_gps_pos_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsPos>(ref_output_topic, max_messages_);
+        sbg_gps_pos_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsPos>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_GPS1_HDT:
       case SBG_ECOM_LOG_GPS2_HDT:
-          sbg_gps_hdt_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsHdt>(ref_output_topic, max_messages_);
+        sbg_gps_hdt_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsHdt>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_GPS1_RAW:
       case SBG_ECOM_LOG_GPS2_RAW:
-          sbg_gps_raw_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsRaw>(ref_output_topic, max_messages_);
+        sbg_gps_raw_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgGpsRaw>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_ODO_VEL:
-          sbg_odo_vel_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgOdoVel>(ref_output_topic, max_messages_);
+        sbg_odo_vel_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgOdoVel>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_A:
-          sbg_event_a_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
+        sbg_event_a_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_B:
-          sbg_event_b_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
+        sbg_event_b_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_C:
-          sbg_event_c_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
+        sbg_event_c_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_D:
-          sbg_event_d_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
+        sbg_event_d_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_EVENT_E:
-          sbg_event_e_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
+        sbg_event_e_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEvent>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_IMU_SHORT:
-          sbg_imu_short_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgImuShort>(ref_output_topic, max_messages_);
+        sbg_imu_short_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgImuShort>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_AIR_DATA:
-          sbg_air_data_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgAirData>(ref_output_topic, max_messages_);
+        sbg_air_data_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgAirData>(ref_output_topic, max_messages_);
         break;
 
       default:
