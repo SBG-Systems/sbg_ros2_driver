@@ -38,18 +38,73 @@
 
 namespace sbg
 {
+  /*!
+   * Class to describe a position using Utm and altitude.
+   */
   class Position
   {
     public:
+
+      //---------------------------------------------------------------------//
+      //- Constructor                                                       -//
+      //---------------------------------------------------------------------//
+
+      /*!
+       * Default constructor.
+       */
       Position() = default;
+
+      /*!
+       * Constructor.
+       *
+       * \param[in] latitude                  Latitude in degree.
+       * \param[in] longitude                 Longitude in degree.
+       * \param[in] altitude                  Altitude is meter.
+       */
       Position(double latitude, double longitude, double altitude);
 
-      void init(double latitude, double longitude, double altitude);
-      void clear();
+      //---------------------------------------------------------------------//
+      //- Parameters                                                        -//
+      //---------------------------------------------------------------------//
 
+      /*!
+       * Returns if class is initialized.
+       *
+       * \return        True if class is initialized.
+       */
       bool isInit() const;
+
+      /*!
+       * Get UTM parameters
+       *
+       * \return        Utm structure.
+       */
       const Utm &getUtm() const;
+
+      /*!
+       * Get altitude in meter
+       *
+       * \return        Altitude.
+       */
       double getAltitude() const;
+
+      //---------------------------------------------------------------------//
+      //- Operations                                                        -//
+      //---------------------------------------------------------------------//
+
+      /*!
+       * Initialize position.
+       *
+       * \param[in] latitude                  Latitude in degree.
+       * \param[in] longitude                 Longitude in degree.
+       * \param[in] altitude                  Altitude in meter.
+       */
+      void init(double latitude, double longitude, double altitude);
+
+      /*!
+       * Clear values and set them to zero / false.
+       */
+      void clear();
 
     private:
       bool is_init_ = false;
