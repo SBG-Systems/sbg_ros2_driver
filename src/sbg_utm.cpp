@@ -6,10 +6,42 @@
 
 using sbg::Utm;
 
+//---------------------------------------------------------------------//
+//- Constructor                                                       -//
+//---------------------------------------------------------------------//
+
 Utm::Utm(double latitude, double longitude)
 {
   init(latitude, longitude);
 }
+
+//---------------------------------------------------------------------//
+//- Parameters                                                        -//
+//---------------------------------------------------------------------//
+
+bool Utm::isInit() const
+{
+  return is_init_;
+}
+
+int Utm::getZoneNumber() const
+{
+  return zone_number_;
+}
+
+double Utm::getMeridian() const
+{
+  return meridian_;
+}
+
+char Utm::getLetterDesignator() const
+{
+  return letter_designator_;
+}
+
+//---------------------------------------------------------------------//
+//- Operations                                                        -//
+//---------------------------------------------------------------------//
 
 void Utm::init(double latitude, double longitude)
 {
@@ -31,26 +63,6 @@ void Utm::reset(double latitude, double longitude)
 {
   clear();
   init(latitude, longitude);
-}
-
-bool Utm::isInit() const
-{
-  return is_init_;
-}
-
-int Utm::getZoneNumber() const
-{
-  return zone_number_;
-}
-
-double Utm::getMeridian() const
-{
-  return meridian_;
-}
-
-char Utm::getLetterDesignator() const
-{
-  return letter_designator_;
 }
 
 std::array<double, 2> Utm::computeEastingNorthing(double latitude, double longitude) const
