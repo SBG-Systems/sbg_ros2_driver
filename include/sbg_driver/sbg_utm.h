@@ -5,7 +5,7 @@
 *
 *  \brief        Handle creation of utm class.
 *
-*  Methods to create UTM from given data.
+*  Methods to create Utm from given data.
 *
 *  \section CodeCopyright Copyright Notice
 *  MIT License
@@ -38,7 +38,7 @@ namespace sbg
 {
 
 /*!
- * Struct for UTM values
+ * Struct for Utm related data
  */
 struct Utm final
 {
