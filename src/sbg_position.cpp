@@ -2,24 +2,18 @@
 
 using sbg::Position;
 
+//---------------------------------------------------------------------//
+//- Constructor                                                       -//
+//---------------------------------------------------------------------//
+
 Position::Position(double latitude, double longitude, double altitude)
 {
   init(latitude, longitude, altitude);
 }
 
-void Position::init(double latitude, double longitude, double altitude)
-{
-  utm_position_ = convertLLtoUTM(latitude, longitude);
-  altitude_ = altitude;
-  is_init_ = true;
-}
-
-void Position::clear()
-{
-  is_init_ = false;
-  altitude_ = 0.0;
-  utm_position_ = {};
-}
+//---------------------------------------------------------------------//
+//- Parameters                                                        -//
+//---------------------------------------------------------------------//
 
 bool Position::isInit() const
 {
@@ -34,4 +28,22 @@ const sbg::Utm &Position::getUtm() const
 double Position::getAltitude() const
 {
   return altitude_;
+}
+
+//---------------------------------------------------------------------//
+//- Operations                                                        -//
+//---------------------------------------------------------------------//
+
+void Position::init(double latitude, double longitude, double altitude)
+{
+  utm_position_ = convertLLtoUTM(latitude, longitude);
+  altitude_ = altitude;
+  is_init_ = true;
+}
+
+void Position::clear()
+{
+  is_init_ = false;
+  altitude_ = 0.0;
+  utm_position_ = {};
 }
