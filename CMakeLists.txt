@@ -100,7 +100,6 @@ set (SBG_COMMON_RESOURCES
   src/config_store.cpp
   src/sbg_device.cpp
   src/sbg_utm.cpp
-  src/sbg_position.cpp
   src/sbg_ros_helpers.cpp
 )
 

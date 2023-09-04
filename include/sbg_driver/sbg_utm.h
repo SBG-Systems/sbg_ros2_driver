@@ -34,29 +34,64 @@
 #ifndef SBG_ROS_UTM_H
 #define SBG_ROS_UTM_H
 
+// STL headers
+#include <array>
+
 namespace sbg
 {
 
 /*!
- * Struct for Utm related data
+ * Class for Utm related data
  */
-struct Utm final
+class Utm final
 {
-  double    easting{};
-  double    northing{};
-  double    meridian{};
-  int       zone_number{};
-  char      letter_designator{};
-};
+  public:
+    Utm() = default;
+    Utm(double latitude, double longitude);
 
-/*!
- * Convert latitude and longitude to UTM structure.
- *
- * \param[in] latitude                Latitude, in degrees.
- * \param[in] longitude               Longitude, in degrees.
- * \return                            UTM structure.
- */
-Utm convertLLtoUTM(double latitude, double longitude);
+    void init(double latitude, double longitude);
+    void clear();
+    void reset(double latitude, double longitude);
+
+    bool isInit() const;
+    int getZoneNumber() const;
+    double getMeridian() const;
+    char getLetterDesignator() const;
+
+    std::array<double, 2> computeEastingNorthing(double latitude, double longitude) const;
+
+  private:
+
+    /*!
+     * Convert latitude and longitude to an UTM zone number.
+     *
+     * \param[in] latitude                Latitude, in degrees.
+     * \param[in] longitude               Longitude, in degrees.
+     * \return                            UTM zone number.
+     */
+    static int computeZoneNumber(double latitude, double longitude);
+
+    /*!
+     * Get UTM letter designator for the given latitude.
+     * Originally written by Chuck Gantz- chuck.gantz@globalstar.com
+     *
+     * \param[in] latitude                Latitude, in degrees.
+     * \return                            UTM letter designator.
+     */
+    static char computeLetterDesignator(double latitude);
+
+    /*!
+     * Compute UTM zone meridian from UTM zone number.
+     *
+     * \return                            Meridian angle, in degrees.
+     */
+    double computeMeridian() const;
+
+    bool      is_init_ = false;
+    double    meridian_{};
+    int       zone_number_{};
+    char      letter_designator_{};
+};
 
 }
 

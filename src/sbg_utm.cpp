@@ -1,23 +1,59 @@
 // File header
 #include "sbg_utm.h"
 
-// SBG headers
-#include <array>
-
 // STL headers
 #include <cmath>
 
-/*!
- * Convert latitude, longitude, zone number to a UTM position.
- * Originally written by Chuck Gantz- chuck.gantz@globalstar.com
- *
- * \param[in] latitude                Latitude, in degrees.
- * \param[in] longitude               Longitude, in degrees.
- * \param[in] zone_number             UTM zone number.
- * \return                            Array containing easting then northing.
- *
- */
-static std::array<double, 2> computeEastingNorthing(double latitude, double longitude, int zone_number)
+using sbg::Utm;
+
+Utm::Utm(double latitude, double longitude)
+{
+  init(latitude, longitude);
+}
+
+void Utm::init(double latitude, double longitude)
+{
+  zone_number_ = computeZoneNumber(latitude, longitude);
+  letter_designator_ = computeLetterDesignator(latitude);
+  meridian_ = computeMeridian();
+  is_init_ = true;
+}
+
+void Utm::clear()
+{
+  is_init_ = false;
+  meridian_ = {};
+  zone_number_ = {};
+  letter_designator_ = {};
+}
+
+void Utm::reset(double latitude, double longitude)
+{
+  clear();
+  init(latitude, longitude);
+}
+
+bool Utm::isInit() const
+{
+  return is_init_;
+}
+
+int Utm::getZoneNumber() const
+{
+  return zone_number_;
+}
+
+double Utm::getMeridian() const
+{
+  return meridian_;
+}
+
+char Utm::getLetterDesignator() const
+{
+  return letter_designator_;
+}
+
+std::array<double, 2> Utm::computeEastingNorthing(double latitude, double longitude) const
 {
   constexpr double RADIANS_PER_DEGREE = M_PI/180.0;
 
@@ -26,7 +62,7 @@ static std::array<double, 2> computeEastingNorthing(double latitude, double long
   constexpr double WGS84_E = 0.0818191908;     // first eccentricity
 
   // UTM Parameters
-  constexpr double UTM_K0 = 0.9996;            // scale factor
+  constexpr double UTM_K0 = 0.9996;              // scale factor
   constexpr double UTM_E2 = (WGS84_E * WGS84_E); // e^2
 
   constexpr double a = WGS84_A;
@@ -45,7 +81,7 @@ static std::array<double, 2> computeEastingNorthing(double latitude, double long
   double LongOriginRad;
 
   // +3 puts origin in middle of zone
-  LongOrigin = (zone_number - 1) * 6 - 180 + 3;
+  LongOrigin = (zone_number_ - 1) * 6 - 180 + 3;
   LongOriginRad = LongOrigin * RADIANS_PER_DEGREE;
 
   eccPrimeSquared = (eccSquared)/(1-eccSquared);
@@ -61,11 +97,11 @@ static std::array<double, 2> computeEastingNorthing(double latitude, double long
          - (35*eccSquared*eccSquared*eccSquared/3072)*sin(6*LatRad));
 
   double utm_easting = (double)(k0 * N * (A + (1 - T + C) * A * A * A / 6
-                       + (5-18*T+T*T+72*C-58*eccPrimeSquared)*A*A*A*A*A/120)
-                       + 500000.0);
+                                          + (5-18*T+T*T+72*C-58*eccPrimeSquared)*A*A*A*A*A/120)
+                                + 500000.0);
 
   double utm_northing = (double)(k0 * (M + N * tan(LatRad) * (A * A / 2 + (5 - T + 9 * C + 4 * C * C) * A * A * A * A / 24
-                        + (61-58*T+T*T+600*C-330*eccPrimeSquared)*A*A*A*A*A*A/720)));
+                                                              + (61-58*T+T*T+600*C-330*eccPrimeSquared)*A*A*A*A*A*A/720)));
 
   if (latitude < 0)
   {
@@ -76,26 +112,33 @@ static std::array<double, 2> computeEastingNorthing(double latitude, double long
   return (easting_northing);
 }
 
-/*!
- * Compute UTM zone meridian from UTM zone number.
- *
- * \param[in] zone_number             UTM Zone number.
- * \return                            Meridian angle, in degrees.
- */
-static double computeMeridian(int zone_number)
+int Utm::computeZoneNumber(double latitude, double longitude)
 {
-  return (zone_number == 0) ? 0.0 : (zone_number - 1) * 6.0 - 177.0;
+  int zoneNumber;
+
+  // Make sure the longitude is between -180.00 .. 179.9
+  double LongTemp = (longitude + 180) - int((longitude + 180) / 360) * 360 - 180;
+
+  zoneNumber = int((LongTemp + 180)/6) + 1;
+
+  if ( latitude >= 56.0 && latitude < 64.0 && LongTemp >= 3.0 && LongTemp < 12.0 )
+  {
+    zoneNumber = 32;
+  }
+
+  // Special zones for Svalbard
+  if ( latitude >= 72.0 && latitude < 84.0 )
+  {
+    if (      LongTemp >= 0.0  && LongTemp <  9.0 ) zoneNumber = 31;
+    else if ( LongTemp >= 9.0  && LongTemp < 21.0 ) zoneNumber = 33;
+    else if ( LongTemp >= 21.0 && LongTemp < 33.0 ) zoneNumber = 35;
+    else if ( LongTemp >= 33.0 && LongTemp < 42.0 ) zoneNumber = 37;
+  }
+
+  return zoneNumber;
 }
 
-/*!
- * Get UTM letter designator for the given latitude.
- * Originally written by Chuck Gantz- chuck.gantz@globalstar.com
- *
- * \param[in] latitude                Latitude, in degrees.
- * \return                            UTM letter designator.
- *
- */
-static char computeLetterDesignator(double latitude)
+char Utm::computeLetterDesignator(double latitude)
 {
   char LetterDesignator;
 
@@ -124,49 +167,7 @@ static char computeLetterDesignator(double latitude)
   return LetterDesignator;
 }
 
-/*!
- * Convert latitude and longitude to an UTM zone number.
- *
- * \param[in] latitude                Latitude, in degrees.
- * \param[in] longitude               Longitude, in degrees.
- * \return                            UTM zone number.
- */
-static int computeZoneNumber(double latitude, double longitude)
+double Utm::computeMeridian() const
 {
-  int zoneNumber;
-
-  // Make sure the longitude is between -180.00 .. 179.9
-  double LongTemp = (longitude + 180) - int((longitude + 180) / 360) * 360 - 180;
-
-  zoneNumber = int((LongTemp + 180)/6) + 1;
-
-  if ( latitude >= 56.0 && latitude < 64.0 && LongTemp >= 3.0 && LongTemp < 12.0 )
-  {
-    zoneNumber = 32;
-  }
-
-  // Special zones for Svalbard
-  if ( latitude >= 72.0 && latitude < 84.0 )
-  {
-    if (      LongTemp >= 0.0  && LongTemp <  9.0 ) zoneNumber = 31;
-    else if ( LongTemp >= 9.0  && LongTemp < 21.0 ) zoneNumber = 33;
-    else if ( LongTemp >= 21.0 && LongTemp < 33.0 ) zoneNumber = 35;
-    else if ( LongTemp >= 33.0 && LongTemp < 42.0 ) zoneNumber = 37;
-  }
-
-  return zoneNumber;
-}
-
-sbg::Utm sbg::convertLLtoUTM(double latitude, double longitude)
-{
-  sbg::Utm converted_ll;
-
-  converted_ll.zone_number = computeZoneNumber(latitude, longitude);
-  converted_ll.meridian = computeMeridian(converted_ll.zone_number);
-  converted_ll.letter_designator = computeLetterDesignator(latitude);
-  const auto easting_northing = computeEastingNorthing(latitude, longitude, converted_ll.zone_number);
-  converted_ll.easting = easting_northing[0];
-  converted_ll.northing = easting_northing[1];
-
-  return (converted_ll);
+  return (zone_number_ == 0) ? 0.0 : (zone_number_ - 1) * 6.0 - 177.0;
 }
