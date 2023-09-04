@@ -1,3 +1,4 @@
+// File header
 #include "sbg_position.h"
 
 using sbg::Position;

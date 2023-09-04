@@ -49,6 +49,13 @@ struct Utm final
   char      letter_designator{};
 };
 
+/*!
+ * Convert latitude and longitude to UTM structure.
+ *
+ * \param[in] latitude                Latitude, in degrees.
+ * \param[in] longitude               Longitude, in degrees.
+ * \return                            UTM structure.
+ */
 Utm convertLLtoUTM(double latitude, double longitude);
 
 }
