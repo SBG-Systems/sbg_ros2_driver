@@ -45,11 +45,11 @@ void ConfigStore::loadCommunicationParameters(const rclcpp::Node& ref_node_handl
   
   if (ref_node_handle.has_parameter("uartConf.portName"))
   {
-      serial_communication_ = true;
+    serial_communication_ = true;
     ref_node_handle.get_parameter_or<std::string>("uartConf.portName", uart_port_name_, "/dev/ttyUSB0");
 
-      uart_baud_rate_ = getParameter<uint32_t>(ref_node_handle, "uartConf.baudRate", 0);
-      output_port_    = getParameter<SbgEComOutputPort>(ref_node_handle, "uartConf.portID", SBG_ECOM_OUTPUT_PORT_A);
+    uart_baud_rate_ = getParameter<uint32_t>(ref_node_handle, "uartConf.baudRate", 0);
+    output_port_    = getParameter<SbgEComOutputPort>(ref_node_handle, "uartConf.portID", SBG_ECOM_OUTPUT_PORT_A);
   }
   else if (ref_node_handle.has_parameter("ipConf.ipAddress"))
   {
@@ -57,9 +57,9 @@ void ConfigStore::loadCommunicationParameters(const rclcpp::Node& ref_node_handl
     ref_node_handle.get_parameter_or<std::string>("ipConf.ipAddress", ip_address, "0.0.0.0");
 
     upd_communication_  = true;
-      sbg_ip_address_     = sbgNetworkIpFromString(ip_address.c_str());
-      out_port_address_   = getParameter<uint32_t>(ref_node_handle, "ipConf.out_port", 0);
-      in_port_address_    = getParameter<uint32_t>(ref_node_handle, "ipConf.in_port", 0);
+    sbg_ip_address_     = sbgNetworkIpFromString(ip_address.c_str());
+    out_port_address_   = getParameter<uint32_t>(ref_node_handle, "ipConf.out_port", 0);
+    in_port_address_    = getParameter<uint32_t>(ref_node_handle, "ipConf.in_port", 0);
   }
   else
   {
