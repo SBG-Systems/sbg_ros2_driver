@@ -882,42 +882,41 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   tf2::convert(ref_orientation, odo_ros_msg.pose.pose.orientation);
 
   // Convert latitude and longitude to UTM coordinates.
-  if (!has_first_valid_position)
+  if (!first_valid_position_.isInit())
   {
-    first_valid_altitude_ = ref_ekf_nav_msg.altitude;
-    first_valid_utm_ = sbg::convertLLtoUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude);
+    first_valid_position_.init(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, ref_ekf_nav_msg.altitude);
+    const auto &first_valid_position_utm = first_valid_position_.getUtm();
 
     RCLCPP_INFO(rclcpp::get_logger("Message wrapper"), "initialized from lat:%f long:%f UTM zone %d%c: easting:%fm (%dkm) northing:%fm (%dkm)"
-    , ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, first_valid_utm_.zone_number_, first_valid_utm_.letter_designator_
-    , first_valid_utm_.easting_, (int)(first_valid_utm_.easting_)/1000
-    , first_valid_utm_.northing_, (int)(first_valid_utm_.northing_)/1000
+    , ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, first_valid_position_utm.zone_number, first_valid_position_utm.letter_designator
+    , first_valid_position_utm.easting, (int)(first_valid_position_utm.easting) / 1000
+    , first_valid_position_utm.northing, (int)(first_valid_position_utm.northing) / 1000
     );
 
     if (odom_publish_tf_)
     {
       // Publish UTM initial transformation.
       geometry_msgs::msg::Pose pose;
-      pose.position.x = first_valid_utm_.easting_;
-      pose.position.y = first_valid_utm_.northing_;
-      pose.position.z = first_valid_altitude_;
+      pose.position.x = first_valid_position_utm.easting;
+      pose.position.y = first_valid_position_utm.northing;
+      pose.position.z = first_valid_position_.getAltitude();
 
       fillTransform(odom_init_frame_id_, odom_frame_id_, pose, transform);
       tf_broadcaster_->sendTransform(transform);
       static_tf_broadcaster_->sendTransform(transform);
     }
-
-    has_first_valid_position = true;
   }
 
   auto current_utm = sbg::convertLLtoUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude);
-  odo_ros_msg.pose.pose.position.x = current_utm.easting_  - first_valid_utm_.easting_;
-  odo_ros_msg.pose.pose.position.y = current_utm.northing_ - first_valid_utm_.northing_;
-  odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - first_valid_altitude_;
+  const auto &first_valid_position_utm = first_valid_position_.getUtm();
+  odo_ros_msg.pose.pose.position.x = current_utm.easting - first_valid_position_utm.easting;
+  odo_ros_msg.pose.pose.position.y = current_utm.northing - first_valid_position_utm.northing;
+  odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - first_valid_position_.getAltitude();
 
   // Compute convergence angle.
   double longitudeRad      = sbgDegToRadD(ref_ekf_nav_msg.longitude);
   double latitudeRad       = sbgDegToRadD(ref_ekf_nav_msg.latitude);
-  double central_meridian  = sbgDegToRadD(current_utm.meridian_);
+  double central_meridian  = sbgDegToRadD(current_utm.meridian);
   double convergence_angle = atan(tan(longitudeRad - central_meridian) * sin(latitudeRad));
 
   // Convert position standard deviations to UTM frame.

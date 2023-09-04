@@ -156,10 +156,10 @@ sbg::Utm sbg::convertLLtoUTM(double latitude, double longitude)
 {
   sbg::Utm converted_ll;
 
-  converted_ll.zone_number_ = computeZoneNumber(latitude, longitude);
-  converted_ll.meridian_ = computeMeridian(converted_ll.zone_number_);
-  converted_ll.letter_designator_ = computeUTMLetterDesignator(latitude);
-  computeEastingNorthing(latitude, longitude, converted_ll.zone_number_, converted_ll.northing_, converted_ll.easting_);
+  converted_ll.zone_number = computeZoneNumber(latitude, longitude);
+  converted_ll.meridian = computeMeridian(converted_ll.zone_number);
+  converted_ll.letter_designator = computeUTMLetterDesignator(latitude);
+  computeEastingNorthing(latitude, longitude, converted_ll.zone_number, converted_ll.northing, converted_ll.easting);
 
   return (converted_ll);
 }
