@@ -1,11 +1,11 @@
 /*!
-*  \file         sbg_utm.h
+*  \file         sbg_position.h
 *  \author       SBG Systems
-*  \date         25/08/2023
+*  \date         04/09/2023
 *
-*  \brief        Handle creation of utm class.
+*  \brief        Handle creation of position class.
 *
-*  Methods to create UTM from given data.
+*  Methods to create Position from given data.
 *
 *  \section CodeCopyright Copyright Notice
 *  MIT License
@@ -31,26 +31,31 @@
 *  SOFTWARE.
 */
 
-#ifndef SBG_ROS_UTM_H
-#define SBG_ROS_UTM_H
+#ifndef SBG_DRIVER_SBG_POSITION_H
+#define SBG_DRIVER_SBG_POSITION_H
+
+#include <sbg_utm.h>
 
 namespace sbg
 {
+  class Position
+  {
+    public:
+      Position() = default;
+      Position(double latitude, double longitude, double altitude);
 
-/*!
- * Struct for UTM values
- */
-struct Utm final
-{
-  double    easting{};
-  double    northing{};
-  double    meridian{};
-  int       zone_number{};
-  char      letter_designator{};
-};
+      void init(double latitude, double longitude, double altitude);
+      void clear();
 
-Utm convertLLtoUTM(double latitude, double longitude);
+      bool isInit() const;
+      const Utm &getUtm() const;
+      double getAltitude() const;
 
+    private:
+      bool is_init_ = false;
+      Utm utm_position_{};
+      double altitude_{};
+  };
 }
 
-#endif // SBG_ROS_UTM_H
+#endif //SBG_DRIVER_SBG_POSITION_H
