@@ -59,6 +59,9 @@ void Utm::clear()
   letter_designator_ = {};
 }
 
+/*
+ * Originally written by Chuck Gantz - chuck.gantz@globalstar.com
+ */
 std::array<double, 2> Utm::computeEastingNorthing(double latitude, double longitude) const
 {
   constexpr double RADIANS_PER_DEGREE = M_PI / 180.0;
@@ -153,6 +156,9 @@ int Utm::computeZoneNumber(double latitude, double longitude)
   return zone_number;
 }
 
+/*
+ * Originally written by Chuck Gantz - chuck.gantz@globalstar.com
+ */
 char Utm::computeLetterDesignator(double latitude)
 {
   char letter_designator;
