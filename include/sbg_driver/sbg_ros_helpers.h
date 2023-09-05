@@ -37,6 +37,9 @@
 // SbgECom headers
 #include <sbgEComLib.h>
 
+// Sbg headers
+#include <sbg_vector3.h>
+
 // STL headers
 #include <cstdint>
 
@@ -119,6 +122,16 @@ namespace sbg::helpers
    * \return                            NMEA GPS type
    */
   NmeaGGAQuality convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbg_gps_type);
+
+  /*
+   * Convert latitude, longitude, altitude to ECEF coordinates.
+   *
+   * \param[in] latitude                Latitude, in degrees [-90 to +90].
+   * \param[in] longitude               Longitude, in degrees [-180 to +180].
+   * \param[in] altitude                Altitude, in meters.
+   * \return                            Vector containing ECEF coordinates in meters.
+   */
+  sbg::SbgVector3d convertLLAtoECEF(double latitude, double longitude, double altitude);
 }
 
 #endif // #ifndef SBG_ROS_ROS_HELPERS_H

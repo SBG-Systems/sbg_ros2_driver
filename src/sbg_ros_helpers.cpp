@@ -140,3 +140,24 @@ sbg::helpers::NmeaGGAQuality sbg::helpers::convertSbgGpsTypeToNmeaGpsType(SbgECo
 
   return nmeaQuality;
 }
+
+sbg::SbgVector3d sbg::helpers::convertLLAtoECEF(double latitude, double longitude, double altitude)
+{
+  //
+  // Conversion from Geodetic coordinates to ECEF is based on World Geodetic System 1984 (WGS84).
+  // Radius are expressed in meters, and latitude/longitude in radian.
+  //
+  static constexpr double EQUATORIAL_RADIUS = 6378137.0;
+  static constexpr double POLAR_RADIUS = 6356752.314245;
+
+  double latitude_rad = sbgDegToRadD(latitude);
+  double longitude_rad = sbgDegToRadD(longitude);
+  double compute_cte = pow(POLAR_RADIUS, 2) / pow(EQUATORIAL_RADIUS, 2);
+  double eccentricity = 1.0 - compute_cte;
+  double prime_vertical_radius = EQUATORIAL_RADIUS / sqrt(1.0 - (pow(eccentricity, 2) * pow(sin(latitude_rad), 2)));
+
+  sbg::SbgVector3d ecef_vector((prime_vertical_radius + altitude) * cos(latitude_rad) * cos(longitude_rad),
+                               (prime_vertical_radius + altitude) * cos(latitude_rad) * sin(longitude_rad),
+                               fma(compute_cte, prime_vertical_radius, altitude) * sin(latitude_rad));
+  return ecef_vector;
+}
