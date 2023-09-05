@@ -117,16 +117,16 @@ std::array<double, 2> Utm::computeEastingNorthing(double latitude, double longit
 
 int Utm::computeZoneNumber(double latitude, double longitude)
 {
-  int zoneNumber;
+  int zone_number;
 
   // Make sure the longitude is between -180.00 .. 179.9
   double long_temp = (longitude + 180) - int((longitude + 180) / 360) * 360 - 180;
 
-  zoneNumber = int((long_temp + 180)/6) + 1;
+  zone_number = int((long_temp + 180) / 6) + 1;
 
   if ( latitude >= 56.0 && latitude < 64.0 && long_temp >= 3.0 && long_temp < 12.0 )
   {
-    zoneNumber = 32;
+    zone_number = 32;
   }
 
   // Special zones for Svalbard
@@ -134,23 +134,23 @@ int Utm::computeZoneNumber(double latitude, double longitude)
   {
     if ( long_temp >= 0.0  && long_temp < 9.0 )
     {
-      zoneNumber = 31;
+      zone_number = 31;
     }
     else if ( long_temp >= 9.0  && long_temp < 21.0 )
     {
-      zoneNumber = 33;
+      zone_number = 33;
     }
     else if ( long_temp >= 21.0 && long_temp < 33.0 )
     {
-      zoneNumber = 35;
+      zone_number = 35;
     }
     else if ( long_temp >= 33.0 && long_temp < 42.0 )
     {
-      zoneNumber = 37;
+      zone_number = 37;
     }
   }
 
-  return zoneNumber;
+  return zone_number;
 }
 
 char Utm::computeLetterDesignator(double latitude)
