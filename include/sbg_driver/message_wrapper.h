@@ -104,11 +104,6 @@ private:
   double                              first_valid_northing_{};
   double                              first_valid_altitude_{};
 
-  static constexpr double             equatorial_radius_ = 6378137.0;
-  static constexpr double             polar_radius_ = 6356752.314245;
-  double                              point_stamped_compute_cte_{};
-  double                              eccentricity_{};
-
   //---------------------------------------------------------------------//
   //- Internal methods                                                  -//
   //---------------------------------------------------------------------//

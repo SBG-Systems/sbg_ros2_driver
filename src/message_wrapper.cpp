@@ -29,9 +29,6 @@ Node("tf_broadcaster")
   first_valid_utc_ = false;
   tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
   static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
-
-  point_stamped_compute_cte_ = pow(polar_radius_, 2) / pow(equatorial_radius_, 2);
-  eccentricity_ = 1.0 - point_stamped_compute_cte_;
 }
 
 //---------------------------------------------------------------------//
@@ -1021,21 +1018,10 @@ const geometry_msgs::msg::PointStamped MessageWrapper::createRosPointStampedMess
 
   point_stamped_message.header = createRosHeader(ref_sbg_ekf_msg.time_stamp);
 
-  //
-  // Conversion from Geodetic coordinates to ECEF is based on World Geodetic System 1984 (WGS84).
-  // Radius are expressed in meters, and latitude/longitude in radian.
-  //
-  double prime_vertical_radius;
-  double latitude;
-  double longitude;
-
-  latitude              = sbgDegToRadD(ref_sbg_ekf_msg.latitude);
-  longitude             = sbgDegToRadD(ref_sbg_ekf_msg.longitude);
-  prime_vertical_radius = equatorial_radius_ / sqrt(1.0 - (pow(eccentricity_, 2) * pow(sin(latitude), 2)));
-
-  point_stamped_message.point.x = (prime_vertical_radius + ref_sbg_ekf_msg.altitude) * cos(latitude) * cos(longitude);
-  point_stamped_message.point.y = (prime_vertical_radius + ref_sbg_ekf_msg.altitude) * cos(latitude) * sin(longitude);
-  point_stamped_message.point.z = fma(point_stamped_compute_cte_, prime_vertical_radius, ref_sbg_ekf_msg.altitude) * sin(latitude);
+  const auto ecef_coordinates = helpers::convertLLAtoECEF(ref_sbg_ekf_msg.latitude, ref_sbg_ekf_msg.longitude, ref_sbg_ekf_msg.altitude);
+  point_stamped_message.point.x = ecef_coordinates(0);
+  point_stamped_message.point.y = ecef_coordinates(1);
+  point_stamped_message.point.z = ecef_coordinates(2);
 
   return point_stamped_message;
 }
