@@ -3,9 +3,7 @@
 *  \author       SBG Systems
 *  \date         25/08/2023
 *
-*  \brief        Handle creation of utm class.
-*
-*  Methods to create Utm from given data.
+*  \brief        Implement simple UTM projections
 *
 *  \section CodeCopyright Copyright Notice
 *  MIT License
@@ -31,8 +29,8 @@
 *  SOFTWARE.
 */
 
-#ifndef SBG_ROS_UTM_H
-#define SBG_ROS_UTM_H
+#ifndef SBG_UTM_H
+#define SBG_UTM_H
 
 // STL headers
 #include <array>
@@ -59,8 +57,8 @@ class Utm final
     /*!
      * Constructor.
      *
-     * \param[in] latitude                  Latitude in degree.
-     * \param[in] longitude                 Longitude in degree.
+     * \param[in] latitude                  Latitude in degree [-90 to +90].
+     * \param[in] longitude                 Longitude in degree [-180 to +180].
      */
     Utm(double latitude, double longitude);
 
@@ -69,9 +67,9 @@ class Utm final
     //---------------------------------------------------------------------//
 
     /*!
-     * Returns if class is initialized.
+     * Returns if the UTM zone has been initialized.
      *
-     * \return        True if class is initialized.
+     * \return        True if the UTM zone has been initialized.
      */
     bool isInit() const;
 
@@ -103,31 +101,24 @@ class Utm final
     /*!
      * Initialize UTM zone.
      *
-     * \param[in] latitude                  Latitude in degree.
-     * \param[in] longitude                 Longitude in degree.
+     * \param[in] latitude                  Latitude in degree [-90 to +90].
+     * \param[in] longitude                 Longitude in degree [-180 to +180].
      */
     void init(double latitude, double longitude);
 
     /*!
-     * Clear values and set them to zero / false.
+     * Reset the instance to uninitialized UTM zone.
      */
     void clear();
 
     /*!
-     * Clear and initialize UTM zone.
-     *
-     * \param[in] latitude                  Latitude in degree.
-     * \param[in] longitude                 Longitude in degree.
-     */
-    void reset(double latitude, double longitude);
-
-    /*!
      * Convert latitude, longitude, to easting and northing.
-     * Originally written by Chuck Gantz- chuck.gantz@globalstar.com
+	 *
+     * Originally written by Chuck Gantz - chuck.gantz@globalstar.com
      *
-     * \param[in] latitude                Latitude, in degrees.
-     * \param[in] longitude               Longitude, in degrees.
-     * \return                            Array containing easting then northing.
+     * \param[in] latitude                Latitude, in degrees [-90 to +90].
+     * \param[in] longitude               Longitude, in degrees [-180 to +180].
+     * \return                            Array containing easting then northing in meters.
      *
      */
     std::array<double, 2> computeEastingNorthing(double latitude, double longitude) const;
@@ -145,7 +136,7 @@ class Utm final
 
     /*!
      * Get UTM letter designator for the given latitude.
-     * Originally written by Chuck Gantz- chuck.gantz@globalstar.com
+     * Originally written by Chuck Gantz - chuck.gantz@globalstar.com
      *
      * \param[in] latitude                Latitude, in degrees.
      * \return                            UTM letter designator.
@@ -167,4 +158,4 @@ class Utm final
 
 }
 
-#endif // SBG_ROS_UTM_H
+#endif // SBG_UTM_H

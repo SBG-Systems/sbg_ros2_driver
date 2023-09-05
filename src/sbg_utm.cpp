@@ -59,12 +59,6 @@ void Utm::clear()
   letter_designator_ = {};
 }
 
-void Utm::reset(double latitude, double longitude)
-{
-  clear();
-  init(latitude, longitude);
-}
-
 std::array<double, 2> Utm::computeEastingNorthing(double latitude, double longitude) const
 {
   constexpr double RADIANS_PER_DEGREE = M_PI / 180.0;
@@ -77,43 +71,39 @@ std::array<double, 2> Utm::computeEastingNorthing(double latitude, double longit
   constexpr double UTM_K0 = 0.9996;              // scale factor
   constexpr double UTM_E2 = (WGS84_E * WGS84_E); // e^2
 
-  constexpr double a = WGS84_A;
-  constexpr double eccSquared = UTM_E2;
-  constexpr double k0 = UTM_K0;
-
-  double LongOrigin;
-  double eccPrimeSquared;
-  double N, T, C, A, M;
+  double long_origin;
+  double ecc_prime_squared;
+  double n, t, c, a, m;
 
   // Make sure the longitude is between -180.00 .. 179.9
-  double LongTemp = (longitude + 180) - int((longitude + 180) / 360) * 360 - 180;
+  double long_temp = (longitude + 180) - int((longitude + 180) / 360) * 360 - 180;
 
-  double LatRad = latitude * RADIANS_PER_DEGREE;
-  double LongRad = LongTemp * RADIANS_PER_DEGREE;
-  double LongOriginRad;
+  double lat_rad = latitude * RADIANS_PER_DEGREE;
+  double long_rad = long_temp * RADIANS_PER_DEGREE;
+  double long_origin_rad;
 
   // +3 puts origin in middle of zone
-  LongOrigin = (zone_number_ - 1) * 6 - 180 + 3;
-  LongOriginRad = LongOrigin * RADIANS_PER_DEGREE;
+  long_origin = (zone_number_ - 1) * 6 - 180 + 3;
+  long_origin_rad = long_origin * RADIANS_PER_DEGREE;
 
-  eccPrimeSquared = (eccSquared)/(1 - eccSquared);
+  ecc_prime_squared = (UTM_E2)/(1 - UTM_E2);
 
-  N = a/sqrt(1 - eccSquared * sin(LatRad) * sin(LatRad));
-  T = tan(LatRad) * tan(LatRad);
-  C = eccPrimeSquared * cos(LatRad) * cos(LatRad);
-  A = cos(LatRad) * (LongRad-LongOriginRad);
+  n = WGS84_A/sqrt(1 - UTM_E2 * sin(lat_rad) * sin(lat_rad));
+  t = tan(lat_rad) * tan(lat_rad);
+  c = ecc_prime_squared * cos(lat_rad) * cos(lat_rad);
+  a = cos(lat_rad) * (long_rad-long_origin_rad);
 
-  M = a * ((1 - eccSquared/4      - 3*eccSquared*eccSquared/64    - 5*eccSquared*eccSquared*eccSquared/256) * LatRad
-              - (3*eccSquared/8   + 3*eccSquared*eccSquared/32    + 45*eccSquared*eccSquared*eccSquared/1024) * sin(2*LatRad)
-                                  + (15*eccSquared*eccSquared/256 + 45*eccSquared*eccSquared*eccSquared/1024) * sin(4*LatRad)
-                                  - (35*eccSquared*eccSquared*eccSquared/3072) * sin(6*LatRad));
+  m = WGS84_A * ((1 - UTM_E2/4 - 3*UTM_E2*UTM_E2/64    - 5*UTM_E2*UTM_E2*UTM_E2/256)   * lat_rad
+              -  (3 * UTM_E2/8 + 3*UTM_E2*UTM_E2/32    + 45*UTM_E2*UTM_E2*UTM_E2/1024) * sin(2*lat_rad)
+                               + (15*UTM_E2*UTM_E2/256 + 45*UTM_E2*UTM_E2*UTM_E2/1024) * sin(4*lat_rad)
+                               - (35*UTM_E2*UTM_E2*UTM_E2/3072)                        * sin(6*lat_rad));
 
-  double utm_easting = (double)(k0*N*(A+(1-T+C)*A*A*A/6
-                       + (5-18*T+T*T+72*C-58*eccPrimeSquared)*A*A*A*A*A/120)
+  double utm_easting = (double)(UTM_K0*n*(a+(1-t+c)*a*a*a/6
+                       + (5-18*t+t*t+72*c-58*ecc_prime_squared)*a*a*a*a*a/120)
                        + 500000.0);
 
-  double utm_northing = (double)(k0*(M+N*tan(LatRad)*(A*A/2+(5-T+9*C+4*C*C)*A*A*A*A/24
-                        + (61-58*T+T*T+600*C-330*eccPrimeSquared)*A*A*A*A*A*A/720)));
+  double utm_northing = (double)(UTM_K0*(m+n*tan(lat_rad)*(a*a/2+(5-t+9*c+4*c*c)*a*a*a*a/24
+                        + (61-58*t+t*t+600*c-330*ecc_prime_squared)*a*a*a*a*a*a/720)));
 
 
   if (latitude < 0)
@@ -130,11 +120,11 @@ int Utm::computeZoneNumber(double latitude, double longitude)
   int zoneNumber;
 
   // Make sure the longitude is between -180.00 .. 179.9
-  double LongTemp = (longitude + 180) - int((longitude + 180) / 360) * 360 - 180;
+  double long_temp = (longitude + 180) - int((longitude + 180) / 360) * 360 - 180;
 
-  zoneNumber = int((LongTemp + 180)/6) + 1;
+  zoneNumber = int((long_temp + 180)/6) + 1;
 
-  if ( latitude >= 56.0 && latitude < 64.0 && LongTemp >= 3.0 && LongTemp < 12.0 )
+  if ( latitude >= 56.0 && latitude < 64.0 && long_temp >= 3.0 && long_temp < 12.0 )
   {
     zoneNumber = 32;
   }
@@ -142,19 +132,19 @@ int Utm::computeZoneNumber(double latitude, double longitude)
   // Special zones for Svalbard
   if ( latitude >= 72.0 && latitude < 84.0 )
   {
-    if ( LongTemp >= 0.0  && LongTemp < 9.0 )
+    if ( long_temp >= 0.0  && long_temp < 9.0 )
     {
       zoneNumber = 31;
     }
-    else if ( LongTemp >= 9.0  && LongTemp < 21.0 )
+    else if ( long_temp >= 9.0  && long_temp < 21.0 )
     {
       zoneNumber = 33;
     }
-    else if ( LongTemp >= 21.0 && LongTemp < 33.0 )
+    else if ( long_temp >= 21.0 && long_temp < 33.0 )
     {
       zoneNumber = 35;
     }
-    else if ( LongTemp >= 33.0 && LongTemp < 42.0 )
+    else if ( long_temp >= 33.0 && long_temp < 42.0 )
     {
       zoneNumber = 37;
     }
@@ -165,94 +155,94 @@ int Utm::computeZoneNumber(double latitude, double longitude)
 
 char Utm::computeLetterDesignator(double latitude)
 {
-  char LetterDesignator;
+  char letter_designator;
 
   if ((84 >= latitude) && (latitude >= 72))
   {
-    LetterDesignator = 'X';
+    letter_designator = 'X';
   }
   else if ((72 > latitude) && (latitude >= 64))
   {
-    LetterDesignator = 'W';
+    letter_designator = 'W';
   }
   else if ((64 > latitude) && (latitude >= 56))
   {
-    LetterDesignator = 'V';
+    letter_designator = 'V';
   }
   else if ((56 > latitude) && (latitude >= 48))
   {
-    LetterDesignator = 'U';
+    letter_designator = 'U';
   }
   else if ((48 > latitude) && (latitude >= 40))
   {
-    LetterDesignator = 'T';
+    letter_designator = 'T';
   }
   else if ((40 > latitude) && (latitude >= 32))
   {
-    LetterDesignator = 'S';
+    letter_designator = 'S';
   }
   else if ((32 > latitude) && (latitude >= 24))
   {
-    LetterDesignator = 'R';
+    letter_designator = 'R';
   }
   else if ((24 > latitude) && (latitude >= 16))
   {
-    LetterDesignator = 'Q';
+    letter_designator = 'Q';
   }
   else if ((16 > latitude) && (latitude >= 8))
   {
-    LetterDesignator = 'P';
+    letter_designator = 'P';
   }
   else if ((8 > latitude) && (latitude >= 0))
   {
-    LetterDesignator = 'N';
+    letter_designator = 'N';
   }
   else if ((0 > latitude) && (latitude >= -8))
   {
-    LetterDesignator = 'M';
+    letter_designator = 'M';
   }
   else if ((-8 > latitude) && (latitude >= -16))
   {
-    LetterDesignator = 'L';
+    letter_designator = 'L';
   }
   else if ((-16 > latitude) && (latitude >= -24))
   {
-    LetterDesignator = 'K';
+    letter_designator = 'K';
   }
   else if ((-24 > latitude) && (latitude >= -32))
   {
-    LetterDesignator = 'J';
+    letter_designator = 'J';
   }
   else if ((-32 > latitude) && (latitude >= -40))
   {
-    LetterDesignator = 'H';
+    letter_designator = 'H';
   }
   else if ((-40 > latitude) && (latitude >= -48))
   {
-    LetterDesignator = 'G';
+    letter_designator = 'G';
   }
   else if ((-48 > latitude) && (latitude >= -56))
   {
-    LetterDesignator = 'F';
+    letter_designator = 'F';
   }
   else if ((-56 > latitude) && (latitude >= -64))
   {
-    LetterDesignator = 'E';
+    letter_designator = 'E';
   }
   else if ((-64 > latitude) && (latitude >= -72))
   {
-    LetterDesignator = 'D';
+    letter_designator = 'D';
   }
   else if ((-72 > latitude) && (latitude >= -80))
   {
-    LetterDesignator = 'C';
+    letter_designator = 'C';
   }
   else
   {
     // 'Z' is an error flag, the Latitude is outside the UTM limits
-    LetterDesignator = 'Z';
+    letter_designator = 'Z';
   }
-  return LetterDesignator;
+  return letter_designator;
 }
 
 double Utm::computeMeridian() const
