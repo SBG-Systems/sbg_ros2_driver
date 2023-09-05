@@ -113,8 +113,6 @@ class Utm final
 
     /*!
      * Convert latitude, longitude, to easting and northing.
-	 *
-     * Originally written by Chuck Gantz - chuck.gantz@globalstar.com
      *
      * \param[in] latitude                Latitude, in degrees [-90 to +90].
      * \param[in] longitude               Longitude, in degrees [-180 to +180].
@@ -136,7 +134,6 @@ class Utm final
 
     /*!
      * Get UTM letter designator for the given latitude.
-     * Originally written by Chuck Gantz - chuck.gantz@globalstar.com
      *
      * \param[in] latitude                Latitude, in degrees.
      * \return                            UTM letter designator.
