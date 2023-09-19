@@ -9,6 +9,7 @@
 
 // Project headers
 #include <sbg_vector3.h>
+#include <sbg_ros_helpers.h>
 
 // STL headers
 #include <type_traits>
@@ -25,63 +26,22 @@ using sbg::MessageWrapper;
 MessageWrapper::MessageWrapper():
 Node("tf_broadcaster")
 {
-  m_first_valid_utc_ = false;
-  m_tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
-  m_static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
-  m_utm0_.easting  = 0.0;
-  m_utm0_.northing = 0.0;
-  m_utm0_.altitude = 0.0;
-  m_utm0_.zone = 0;
+  first_valid_utc_ = false;
+  tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+  static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
 }
 
 //---------------------------------------------------------------------//
 //- Internal methods                                                  -//
 //---------------------------------------------------------------------//
 
-float MessageWrapper::wrapAnglePi(float angle_rad)
-{
-  if (angle_rad > SBG_PI_F)
-  {
-    return (SBG_PI_F * 2.0f - fmodf(angle_rad, SBG_PI_F * 2.0f));
-  }
-
-  if (angle_rad < -SBG_PI_F)
-  {
-    return (SBG_PI_F * 2.0f + fmodf(angle_rad, SBG_PI_F * 2.0f));
-  }
-
-  return angle_rad;
-}
-
-float MessageWrapper::wrapAngle360(float angle_deg)
-{
-  float wrapped_angle_deg = angle_deg;
-
-  if ( (wrapped_angle_deg < -360.0f) || (wrapped_angle_deg > 360.0f) )
-  {
-    wrapped_angle_deg = fmodf(wrapped_angle_deg, 360.0f);
-  }
-
-  if (wrapped_angle_deg < 0.0f)
-  {
-    wrapped_angle_deg = 360.0f + wrapped_angle_deg;
-  }
-
-  return wrapped_angle_deg;
-}
-
-double MessageWrapper::computeMeridian(int zone_number)
-{
-  return (zone_number == 0) ? 0.0 : (zone_number - 1) * 6.0 - 177.0;
-}
-
 const std_msgs::msg::Header MessageWrapper::createRosHeader(uint32_t device_timestamp) const
 {
   std_msgs::msg::Header header;
 
-  header.frame_id = m_frame_id_;
+  header.frame_id = frame_id_;
 
-  if (m_first_valid_utc_ && (m_time_reference_ == TimeReference::INS_UNIX))
+  if (first_valid_utc_ && (time_reference_ == TimeReference::INS_UNIX))
   {
     header.stamp = convertInsTimeToUnix(device_timestamp);
   }
@@ -103,10 +63,45 @@ const rclcpp::Time MessageWrapper::convertInsTimeToUnix(uint32_t device_timestam
   uint32_t  device_timestamp_diff;
   uint64_t  nanoseconds;
 
-  utc_to_epoch          = convertUtcTimeToUnix(m_last_sbg_utc_);
-  device_timestamp_diff = device_timestamp - m_last_sbg_utc_.time_stamp;
+  utc_to_epoch          = convertUtcTimeToUnix(last_sbg_utc_);
+  device_timestamp_diff = device_timestamp - last_sbg_utc_.time_stamp;
 
   nanoseconds = utc_to_epoch.nanoseconds() + static_cast<uint64_t>(device_timestamp_diff) * 1000;
+
+  utc_to_epoch = rclcpp::Time(nanoseconds);
+
+  return utc_to_epoch;
+}
+
+const rclcpp::Time MessageWrapper::convertUtcTimeToUnix(const sbg_driver::msg::SbgUtcTime& ref_sbg_utc_msg) const
+{
+  rclcpp::Time utc_to_epoch;
+  uint32_t  days;
+  uint64_t  nanoseconds;
+
+  //
+  // Convert the UTC time to Epoch(Unix) time, which is the elapsed seconds since 1 Jan 1970.
+  //
+  days        = 0;
+  nanoseconds = 0;
+
+  for (uint16_t yearIndex = 1970; yearIndex < ref_sbg_utc_msg.year; yearIndex++)
+  {
+    days += sbg::helpers::getNumberOfDaysInYear(yearIndex);
+  }
+
+  for (uint8_t monthIndex = 1; monthIndex < ref_sbg_utc_msg.month; monthIndex++)
+  {
+    days += sbg::helpers::getNumberOfDaysInMonth(ref_sbg_utc_msg.year, monthIndex);
+  }
+
+  days += ref_sbg_utc_msg.day - 1;
+
+  nanoseconds = days * 24;
+  nanoseconds = (nanoseconds + ref_sbg_utc_msg.hour) * 60;
+  nanoseconds = (nanoseconds + ref_sbg_utc_msg.min) * 60;
+  nanoseconds = nanoseconds + ref_sbg_utc_msg.sec;
+  nanoseconds = nanoseconds * 1000000000 + ref_sbg_utc_msg.nanosec;
 
   utc_to_epoch = rclcpp::Time(nanoseconds);
 
@@ -289,103 +284,6 @@ const sbg_driver::msg::SbgUtcTimeStatus MessageWrapper::createUtcStatusMessage(c
   return utc_status_message;
 }
 
-uint32_t MessageWrapper::getNumberOfDaysInYear(uint16_t year) const
-{
-  if (isLeapYear(year))
-  {
-    return 366;
-  }
-  else
-  {
-    return 365;
-  }
-}
-
-uint32_t MessageWrapper::getNumberOfDaysInMonth(uint16_t year, uint8_t month_index) const
-{
-  if ((month_index == 4) || (month_index == 6) || (month_index == 9) || (month_index == 11))
-  {
-    return 30;
-  }
-  else if ((month_index == 2))
-  {
-    if (isLeapYear(year))
-    {
-      return 29;
-    }
-    else
-    {
-      return 28;
-    }
-  }
-  else
-  {
-    return 31;
-  }
-}
-
-bool MessageWrapper::isLeapYear(uint16_t year) const
-{
-  return ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0);
-}
-
-const rclcpp::Time MessageWrapper::convertUtcTimeToUnix(const sbg_driver::msg::SbgUtcTime& ref_sbg_utc_msg) const
-{
-  rclcpp::Time utc_to_epoch;
-  uint32_t  days;
-  uint64_t  nanoseconds;
-
-  //
-  // Convert the UTC time to Epoch(Unix) time, which is the elapsed seconds since 1 Jan 1970.
-  //
-  days        = 0;
-  nanoseconds = 0;
-
-  for (uint16_t yearIndex = 1970; yearIndex < ref_sbg_utc_msg.year; yearIndex++)
-  {
-    days += getNumberOfDaysInYear(yearIndex);
-  }
-
-  for (uint8_t monthIndex = 1; monthIndex < ref_sbg_utc_msg.month; monthIndex++)
-  {
-    days += getNumberOfDaysInMonth(ref_sbg_utc_msg.year, monthIndex);
-  }
-
-  days += ref_sbg_utc_msg.day - 1;
-
-  nanoseconds = days * 24;
-  nanoseconds = (nanoseconds + ref_sbg_utc_msg.hour) * 60;
-  nanoseconds = (nanoseconds + ref_sbg_utc_msg.min) * 60;
-  nanoseconds = nanoseconds + ref_sbg_utc_msg.sec;
-  nanoseconds = nanoseconds * 1000000000 + ref_sbg_utc_msg.nanosec;
-
-  utc_to_epoch = rclcpp::Time(nanoseconds);
-
-  return utc_to_epoch;
-}
-
-int32_t MessageWrapper::getUtcOffset() const
-{
-  int32_t       utcOffset;
-
-  if (m_first_valid_utc_)
-  {
-    // Compute the leap second: GPS = UTC + utcOffset
-    utcOffset = (m_last_sbg_utc_.gps_tow/1000)%60 - m_last_sbg_utc_.sec;
-
-    if (utcOffset < 0)
-    {
-      utcOffset = 60 + utcOffset;
-    }
-  }
-  else
-  {
-    utcOffset = DEFAULT_UTC_OFFSET;
-  }
-
-  return utcOffset;
-}
-
 const sbg_driver::msg::SbgAirDataStatus MessageWrapper::createAirDataStatusMessage(const SbgLogAirData& ref_sbg_air_data) const
 {
   sbg_driver::msg::SbgAirDataStatus air_data_status_message;
@@ -400,224 +298,48 @@ const sbg_driver::msg::SbgAirDataStatus MessageWrapper::createAirDataStatusMessa
   return air_data_status_message;
 }
 
-/**
- * Get UTM letter designator for the given latitude.
- *
- * @returns 'Z' if latitude is outside the UTM limits of 84N to 80S
- *
- * Written by Chuck Gantz- chuck.gantz@globalstar.com
- */
-char MessageWrapper::UTMLetterDesignator(double Lat)
-{
-	char LetterDesignator;
-
-	if     ((84 >= Lat) && (Lat >= 72))  LetterDesignator = 'X';
-	else if ((72 > Lat) && (Lat >= 64))  LetterDesignator = 'W';
-	else if ((64 > Lat) && (Lat >= 56))  LetterDesignator = 'V';
-	else if ((56 > Lat) && (Lat >= 48))  LetterDesignator = 'U';
-	else if ((48 > Lat) && (Lat >= 40))  LetterDesignator = 'T';
-	else if ((40 > Lat) && (Lat >= 32))  LetterDesignator = 'S';
-	else if ((32 > Lat) && (Lat >= 24))  LetterDesignator = 'R';
-	else if ((24 > Lat) && (Lat >= 16))  LetterDesignator = 'Q';
-	else if ((16 > Lat) && (Lat >= 8))   LetterDesignator = 'P';
-	else if (( 8 > Lat) && (Lat >= 0))   LetterDesignator = 'N';
-	else if (( 0 > Lat) && (Lat >= -8))  LetterDesignator = 'M';
-	else if ((-8 > Lat) && (Lat >= -16)) LetterDesignator = 'L';
-	else if((-16 > Lat) && (Lat >= -24)) LetterDesignator = 'K';
-	else if((-24 > Lat) && (Lat >= -32)) LetterDesignator = 'J';
-	else if((-32 > Lat) && (Lat >= -40)) LetterDesignator = 'H';
-	else if((-40 > Lat) && (Lat >= -48)) LetterDesignator = 'G';
-	else if((-48 > Lat) && (Lat >= -56)) LetterDesignator = 'F';
-	else if((-56 > Lat) && (Lat >= -64)) LetterDesignator = 'E';
-	else if((-64 > Lat) && (Lat >= -72)) LetterDesignator = 'D';
-	else if((-72 > Lat) && (Lat >= -80)) LetterDesignator = 'C';
-    // 'Z' is an error flag, the Latitude is outside the UTM limits
-	else LetterDesignator = 'Z';
-	return LetterDesignator;
-}
-
-void MessageWrapper::initUTM(double Lat, double Long, double altitude)
-{
-  int zoneNumber;
-
-  // Make sure the longitude is between -180.00 .. 179.9
-  double LongTemp = (Long+180)-int((Long+180)/360)*360-180;
-
-  zoneNumber = int((LongTemp + 180)/6) + 1;
-
-  if( Lat >= 56.0 && Lat < 64.0 && LongTemp >= 3.0 && LongTemp < 12.0 )
-  {
-    zoneNumber = 32;
-  }
-
-  // Special zones for Svalbard
-  if( Lat >= 72.0 && Lat < 84.0 )
-  {
-    if(      LongTemp >= 0.0  && LongTemp <  9.0 ) zoneNumber = 31;
-    else if( LongTemp >= 9.0  && LongTemp < 21.0 ) zoneNumber = 33;
-    else if( LongTemp >= 21.0 && LongTemp < 33.0 ) zoneNumber = 35;
-    else if( LongTemp >= 33.0 && LongTemp < 42.0 ) zoneNumber = 37;
-  }
-
-  m_utm0_.zone = zoneNumber;
-  m_utm0_.altitude = altitude;
-  LLtoUTM(Lat, Long, m_utm0_.zone, m_utm0_.northing, m_utm0_.easting);
-
-  RCLCPP_INFO(rclcpp::get_logger("Message wrapper"), "initialized from lat:%f long:%f UTM zone %d%c: easting:%fm (%dkm) northing:%fm (%dkm)"
-  , Lat, Long, m_utm0_.zone, UTMLetterDesignator(Lat)
-  , m_utm0_.easting, (int)(m_utm0_.easting)/1000
-  , m_utm0_.northing, (int)(m_utm0_.northing)/1000
-  );
-}
-
-/*
- * Modification of gps_common::LLtoUTM() to use a constant UTM zone.
- *
- * Convert lat/long to UTM coords.  Equations from USGS Bulletin 1532
- *
- * East Longitudes are positive, West longitudes are negative.
- * North latitudes are positive, South latitudes are negative
- * Lat and Long are in fractional degrees
- *
- * Originally written by Chuck Gantz- chuck.gantz@globalstar.com.
- */
-void MessageWrapper::LLtoUTM(double Lat, double Long, int zoneNumber, double &UTMNorthing, double &UTMEasting) const
-{
-  const double RADIANS_PER_DEGREE = M_PI/180.0;
-
-  // WGS84 Parameters
-  const double WGS84_A = 6378137.0;        // major axis
-  const double WGS84_E = 0.0818191908;     // first eccentricity
-
-  // UTM Parameters
-  const double UTM_K0 = 0.9996;            // scale factor
-  const double UTM_E2 = (WGS84_E*WGS84_E); // e^2
-
-  double a = WGS84_A;
-  double eccSquared = UTM_E2;
-  double k0 = UTM_K0;
-
-  double LongOrigin;
-  double eccPrimeSquared;
-  double N, T, C, A, M;
-
-  // Make sure the longitude is between -180.00 .. 179.9
-  double LongTemp = (Long+180)-int((Long+180)/360)*360-180;
-
-  double LatRad = Lat*RADIANS_PER_DEGREE;
-  double LongRad = LongTemp*RADIANS_PER_DEGREE;
-  double LongOriginRad;
-
-  // +3 puts origin in middle of zone
-  LongOrigin = (zoneNumber - 1)*6 - 180 + 3;
-  LongOriginRad = LongOrigin * RADIANS_PER_DEGREE;
-
-  eccPrimeSquared = (eccSquared)/(1-eccSquared);
-
-  N = a/sqrt(1-eccSquared*sin(LatRad)*sin(LatRad));
-  T = tan(LatRad)*tan(LatRad);
-  C = eccPrimeSquared*cos(LatRad)*cos(LatRad);
-  A = cos(LatRad)*(LongRad-LongOriginRad);
-
-  M = a*((1 - eccSquared/4      - 3*eccSquared*eccSquared/64     - 5*eccSquared*eccSquared*eccSquared/256)*LatRad
-            - (3*eccSquared/8   + 3*eccSquared*eccSquared/32    + 45*eccSquared*eccSquared*eccSquared/1024)*sin(2*LatRad)
-                                + (15*eccSquared*eccSquared/256 + 45*eccSquared*eccSquared*eccSquared/1024)*sin(4*LatRad)
-                                - (35*eccSquared*eccSquared*eccSquared/3072)*sin(6*LatRad));
-
-  UTMEasting = (double)(k0*N*(A+(1-T+C)*A*A*A/6
-    + (5-18*T+T*T+72*C-58*eccPrimeSquared)*A*A*A*A*A/120)
-    + 500000.0);
-
-  UTMNorthing = (double)(k0*(M+N*tan(LatRad)*(A*A/2+(5-T+9*C+4*C*C)*A*A*A*A/24
-    + (61-58*T+T*T+600*C-330*eccPrimeSquared)*A*A*A*A*A*A/720)));
-
-  if(Lat < 0)
-  {
-    UTMNorthing += 10000000.0; //10000000 meter offset for southern hemisphere
-  }
-}
-
-sbg::MessageWrapper::NmeaGGAQuality MessageWrapper::convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbgGpsType)
-{
-  sbg::MessageWrapper::NmeaGGAQuality  nmeaQuality = NmeaGGAQuality::INVALID;
-
-  switch (sbgGpsType)
-  {
-  case SBG_ECOM_POS_NO_SOLUTION:
-    nmeaQuality = NmeaGGAQuality::INVALID;
-    break;
-
-  case SBG_ECOM_POS_UNKNOWN_TYPE:
-  case SBG_ECOM_POS_SINGLE:
-  case SBG_ECOM_POS_FIXED:
-    nmeaQuality = NmeaGGAQuality::SINGLE;
-    break;
-
-  case SBG_ECOM_POS_PSRDIFF:
-  case SBG_ECOM_POS_SBAS:
-  case SBG_ECOM_POS_OMNISTAR:
-    nmeaQuality = NmeaGGAQuality::DGPS;
-    break;
-
-  case SBG_ECOM_POS_PPP_FLOAT:
-  case SBG_ECOM_POS_PPP_INT:
-    nmeaQuality = NmeaGGAQuality::PPS;
-    break;
-
-  case SBG_ECOM_POS_RTK_INT:
-    nmeaQuality = NmeaGGAQuality::RTK_FIXED;
-    break;
-
-  case SBG_ECOM_POS_RTK_FLOAT:
-    nmeaQuality = NmeaGGAQuality::RTK_FLOAT;
-    break;
-  }
-
-  return nmeaQuality;
-}
-
 //---------------------------------------------------------------------//
 //- Parameters                                                        -//
 //---------------------------------------------------------------------//
 
 void MessageWrapper::setTimeReference(TimeReference time_reference)
 {
-  m_time_reference_ = time_reference;
+  time_reference_ = time_reference;
 }
 
 void MessageWrapper::setFrameId(const std::string &frame_id)
 {
-  m_frame_id_ = frame_id;
+  frame_id_ = frame_id;
 }
 
 void MessageWrapper::setUseEnu(bool enu)
 {
-  m_use_enu_ = enu;
+  use_enu_ = enu;
 }
 
 void MessageWrapper::setOdomEnable(bool odom_enable)
 {
-  m_odom_enable_ = odom_enable;
+  odom_enable_ = odom_enable;
 }
 
 void MessageWrapper::setOdomPublishTf(bool publish_tf)
 {
-  m_odom_publish_tf_ = publish_tf;
+  odom_publish_tf_ = publish_tf;
 }
 
 void MessageWrapper::setOdomFrameId(const std::string &ref_frame_id)
 {
-  m_odom_frame_id_ = ref_frame_id;
+  odom_frame_id_ = ref_frame_id;
 }
 
 void MessageWrapper::setOdomBaseFrameId(const std::string &ref_frame_id)
 {
-  m_odom_base_frame_id_ = ref_frame_id;
+  odom_base_frame_id_ = ref_frame_id;
 }
 
 void MessageWrapper::setOdomInitFrameId(const std::string &ref_frame_id)
 {
-  m_odom_init_frame_id_ = ref_frame_id;
+  odom_init_frame_id_ = ref_frame_id;
 }
 
 //---------------------------------------------------------------------//
@@ -632,11 +354,11 @@ const sbg_driver::msg::SbgEkfEuler MessageWrapper::createSbgEkfEulerMessage(cons
   ekf_euler_message.time_stamp  = ref_log_ekf_euler.timeStamp;
   ekf_euler_message.status      = createEkfStatusMessage(ref_log_ekf_euler.status);
 
-  if (m_use_enu_)
+  if (use_enu_)
   {
     ekf_euler_message.angle.x  = ref_log_ekf_euler.euler[0];
     ekf_euler_message.angle.y  = -ref_log_ekf_euler.euler[1];
-    ekf_euler_message.angle.z  = -wrapAnglePi(-(SBG_PI_F / 2.0f) + ref_log_ekf_euler.euler[2]);
+    ekf_euler_message.angle.z  = -sbg::helpers::wrapAnglePi(-(SBG_PI_F / 2.0f) + ref_log_ekf_euler.euler[2]);
   }
   else
   {
@@ -665,7 +387,7 @@ const sbg_driver::msg::SbgEkfNav MessageWrapper::createSbgEkfNavMessage(const Sb
   ekf_nav_message.longitude = ref_log_ekf_nav.position[1];
   ekf_nav_message.altitude  = ref_log_ekf_nav.position[2];
 
-  if (m_use_enu_)
+  if (use_enu_)
   {
     ekf_nav_message.velocity.x = ref_log_ekf_nav.velocity[1];
     ekf_nav_message.velocity.y = ref_log_ekf_nav.velocity[0];
@@ -709,7 +431,7 @@ const sbg_driver::msg::SbgEkfQuat MessageWrapper::createSbgEkfQuatMessage(const 
   ekf_quat_message.accuracy.y   = ref_log_ekf_quat.eulerStdDev[1];
   ekf_quat_message.accuracy.z   = ref_log_ekf_quat.eulerStdDev[2];
 
-  if (m_use_enu_)
+  if (use_enu_)
   {
     static const tf2::Quaternion q_enu_to_nwu{0, 0, M_SQRT2 / 2, M_SQRT2 / 2};
     tf2::Quaternion q_nwu{ref_log_ekf_quat.quaternion[1],
@@ -765,9 +487,9 @@ const sbg_driver::msg::SbgGpsHdt MessageWrapper::createSbgGpsHdtMessage(const Sb
   gps_hdt_message.pitch_acc        = ref_log_gps_hdt.pitchAccuracy;
   gps_hdt_message.baseline         = ref_log_gps_hdt.baseline;
 
-  if (m_use_enu_)
+  if (use_enu_)
   {
-    gps_hdt_message.true_heading = wrapAngle360(90.0f - ref_log_gps_hdt.heading);
+    gps_hdt_message.true_heading = sbg::helpers::wrapAngle360(90.0f - ref_log_gps_hdt.heading);
     gps_hdt_message.pitch        = -ref_log_gps_hdt.pitch;
   }
   else
@@ -797,7 +519,7 @@ const sbg_driver::msg::SbgGpsPos MessageWrapper::createSbgGpsPosMessage(const Sb
   gps_pos_message.longitude  = ref_log_gps_pos.longitude;
   gps_pos_message.altitude   = ref_log_gps_pos.altitude;
 
-  if (m_use_enu_)
+  if (use_enu_)
   {
     gps_pos_message.position_accuracy.x = ref_log_gps_pos.longitudeAccuracy;
     gps_pos_message.position_accuracy.y = ref_log_gps_pos.latitudeAccuracy;
@@ -832,7 +554,7 @@ const sbg_driver::msg::SbgGpsVel MessageWrapper::createSbgGpsVelMessage(const Sb
   gps_vel_message.gps_tow     = ref_log_gps_vel.timeOfWeek;
   gps_vel_message.course_acc  = ref_log_gps_vel.courseAcc;
 
-  if (m_use_enu_)
+  if (use_enu_)
   {
     gps_vel_message.velocity.x = ref_log_gps_vel.velocity[1];
     gps_vel_message.velocity.y = ref_log_gps_vel.velocity[0];
@@ -842,7 +564,7 @@ const sbg_driver::msg::SbgGpsVel MessageWrapper::createSbgGpsVelMessage(const Sb
     gps_vel_message.velocity_accuracy.y = ref_log_gps_vel.velocityAcc[0];
     gps_vel_message.velocity_accuracy.z = ref_log_gps_vel.velocityAcc[2];
 
-    gps_vel_message.course  = wrapAngle360(90.0f - ref_log_gps_vel.course);
+    gps_vel_message.course  = sbg::helpers::wrapAngle360(90.0f - ref_log_gps_vel.course);
   }
   else
   {
@@ -869,7 +591,7 @@ const sbg_driver::msg::SbgImuData MessageWrapper::createSbgImuDataMessage(const 
   imu_data_message.imu_status   = createImuStatusMessage(ref_log_imu_data.status);
   imu_data_message.temp         = ref_log_imu_data.temperature;
 
-  if (m_use_enu_)
+  if (use_enu_)
   {
     imu_data_message.accel.x        = ref_log_imu_data.accelerometers[0];
     imu_data_message.accel.y        = -ref_log_imu_data.accelerometers[1];
@@ -917,7 +639,7 @@ const sbg_driver::msg::SbgMag MessageWrapper::createSbgMagMessage(const SbgLogMa
   mag_message.time_stamp  = ref_log_mag.timeStamp;
   mag_message.status      = createMagStatusMessage(ref_log_mag);
 
-  if (m_use_enu_)
+  if (use_enu_)
   {
     mag_message.mag.x   = ref_log_mag.magnetometers[0];
     mag_message.mag.y   = -ref_log_mag.magnetometers[1];
@@ -1018,13 +740,13 @@ const sbg_driver::msg::SbgUtcTime MessageWrapper::createSbgUtcTimeMessage(const 
   utc_time_message.nanosec      = ref_log_utc.nanoSecond;
   utc_time_message.gps_tow      = ref_log_utc.gpsTimeOfWeek;
 
-  if (!m_first_valid_utc_)
+  if (!first_valid_utc_)
   {
     if (utc_time_message.clock_status.clock_stable && utc_time_message.clock_status.clock_utc_sync)
     {
       if (utc_time_message.clock_status.clock_status == SBG_ECOM_CLOCK_VALID)
       {
-        m_first_valid_utc_ = true;
+        first_valid_utc_ = true;
         RCLCPP_INFO(rclcpp::get_logger("Message wrapper"), "A full valid UTC log has been detected, timestamp will be synchronized with the UTC data.");
       }
     }
@@ -1033,7 +755,7 @@ const sbg_driver::msg::SbgUtcTime MessageWrapper::createSbgUtcTimeMessage(const 
   //
   // Store the last UTC message.
   //
-  m_last_sbg_utc_ = utc_time_message;
+  last_sbg_utc_ = utc_time_message;
 
   return utc_time_message;
 }
@@ -1063,7 +785,7 @@ const sbg_driver::msg::SbgImuShort MessageWrapper::createSbgImuShortMessage(cons
   imu_short_message.imu_status      = createImuStatusMessage(ref_short_imu_log.status);
   imu_short_message.temperature     = ref_short_imu_log.temperature;
 
-  if (m_use_enu_)
+  if (use_enu_)
   {
     imu_short_message.delta_velocity.x  = ref_short_imu_log.deltaVelocity[0];
     imu_short_message.delta_velocity.y  = -ref_short_imu_log.deltaVelocity[1];
@@ -1097,9 +819,9 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
   imu_ros_message.angular_velocity          = ref_sbg_imu_msg.delta_angle;
   imu_ros_message.linear_acceleration       = ref_sbg_imu_msg.delta_vel;
 
-  imu_ros_message.orientation_covariance[0] = ref_sbg_quat_msg.accuracy.x * ref_sbg_quat_msg.accuracy.x;
-  imu_ros_message.orientation_covariance[4] = ref_sbg_quat_msg.accuracy.y * ref_sbg_quat_msg.accuracy.y;
-  imu_ros_message.orientation_covariance[8] = ref_sbg_quat_msg.accuracy.z * ref_sbg_quat_msg.accuracy.z;
+  imu_ros_message.orientation_covariance[0] = pow(ref_sbg_quat_msg.accuracy.x, 2);
+  imu_ros_message.orientation_covariance[4] = pow(ref_sbg_quat_msg.accuracy.y, 2);
+  imu_ros_message.orientation_covariance[8] = pow(ref_sbg_quat_msg.accuracy.z, 2);
 
   //
   // Angular velocity and linear acceleration covariances are not provided.
@@ -1126,8 +848,6 @@ void MessageWrapper::fillTransform(const std::string &ref_parent_frame_id, const
   refTransformStamped.transform.rotation.y = ref_pose.orientation.y;
   refTransformStamped.transform.rotation.z = ref_pose.orientation.z;
   refTransformStamped.transform.rotation.w = ref_pose.orientation.w;
-
-  m_tf_broadcaster_->sendTransform(refTransformStamped);
 }
 
 const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driver::msg::SbgImuData &ref_sbg_imu_msg, const sbg_driver::msg::SbgEkfNav &ref_ekf_nav_msg, const sbg_driver::msg::SbgEkfQuat &ref_ekf_quat_msg, const sbg_driver::msg::SbgEkfEuler &ref_ekf_euler_msg)
@@ -1150,42 +870,52 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
 const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driver::msg::SbgImuData &ref_sbg_imu_msg, const sbg_driver::msg::SbgEkfNav &ref_ekf_nav_msg, const tf2::Quaternion &ref_orientation, const sbg_driver::msg::SbgEkfEuler &ref_ekf_euler_msg)
 {
   nav_msgs::msg::Odometry odo_ros_msg;
-  double utm_northing, utm_easting;
   std::string utm_zone;
   geometry_msgs::msg::TransformStamped transform;
 
   // The pose message provides the position and orientation of the robot relative to the frame specified in header.frame_id
   odo_ros_msg.header = createRosHeader(ref_sbg_imu_msg.time_stamp);
-  odo_ros_msg.header.frame_id = m_odom_frame_id_;
+  odo_ros_msg.header.frame_id = odom_frame_id_;
   tf2::convert(ref_orientation, odo_ros_msg.pose.pose.orientation);
 
   // Convert latitude and longitude to UTM coordinates.
-  if (m_utm0_.zone == 0)
+  if (!utm_.isInit())
   {
-    initUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, ref_ekf_nav_msg.altitude);
+    utm_.init(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude);
+    const auto first_valid_easting_northing = utm_.computeEastingNorthing(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude);
+    first_valid_easting_ = first_valid_easting_northing[0];
+    first_valid_northing_ = first_valid_easting_northing[1];
+    first_valid_altitude_ = ref_ekf_nav_msg.altitude;
 
-    if (m_odom_publish_tf_)
+    RCLCPP_INFO(rclcpp::get_logger("Message wrapper"), "initialized from lat:%f long:%f UTM zone %d%c: easting:%fm (%dkm) northing:%fm (%dkm)"
+    , ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, utm_.getZoneNumber(), utm_.getLetterDesignator()
+    , first_valid_easting_, (int)(first_valid_easting_) / 1000
+    , first_valid_northing_, (int)(first_valid_northing_) / 1000
+    );
+
+    if (odom_publish_tf_)
     {
       // Publish UTM initial transformation.
       geometry_msgs::msg::Pose pose;
-      pose.position.x = m_utm0_.easting;
-      pose.position.y = m_utm0_.northing;
-      pose.position.z = m_utm0_.altitude;
+      pose.position.x = first_valid_easting_;
+      pose.position.y = first_valid_northing_;
+      pose.position.z = first_valid_altitude_;
 
-      fillTransform(m_odom_init_frame_id_, m_odom_frame_id_, pose, transform);
-      m_static_tf_broadcaster_->sendTransform(transform);
+      fillTransform(odom_init_frame_id_, odom_frame_id_, pose, transform);
+      tf_broadcaster_->sendTransform(transform);
+      static_tf_broadcaster_->sendTransform(transform);
     }
   }
 
-  LLtoUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, m_utm0_.zone, utm_northing, utm_easting);
-  odo_ros_msg.pose.pose.position.x = utm_easting  - m_utm0_.easting;
-  odo_ros_msg.pose.pose.position.y = utm_northing - m_utm0_.northing;
-  odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - m_utm0_.altitude;
+  const auto easting_northing = utm_.computeEastingNorthing(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude);
+  odo_ros_msg.pose.pose.position.x = easting_northing[0] - first_valid_easting_;
+  odo_ros_msg.pose.pose.position.y = easting_northing[1] - first_valid_northing_;
+  odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - first_valid_altitude_;
 
   // Compute convergence angle.
   double longitudeRad      = sbgDegToRadD(ref_ekf_nav_msg.longitude);
   double latitudeRad       = sbgDegToRadD(ref_ekf_nav_msg.latitude);
-  double central_meridian  = sbgDegToRadD(computeMeridian(m_utm0_.zone));
+  double central_meridian  = sbgDegToRadD(utm_.getMeridian());
   double convergence_angle = atan(tan(longitudeRad - central_meridian) * sin(latitudeRad));
 
   // Convert position standard deviations to UTM frame.
@@ -1197,30 +927,30 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   odo_ros_msg.pose.covariance[0*6 + 0] = std_x * std_x;
   odo_ros_msg.pose.covariance[1*6 + 1] = std_y * std_y;
   odo_ros_msg.pose.covariance[2*6 + 2] = std_z * std_z;
-  odo_ros_msg.pose.covariance[3*6 + 3] = ref_ekf_euler_msg.accuracy.x * ref_ekf_euler_msg.accuracy.x;
-  odo_ros_msg.pose.covariance[4*6 + 4] = ref_ekf_euler_msg.accuracy.y * ref_ekf_euler_msg.accuracy.y;
-  odo_ros_msg.pose.covariance[5*6 + 5] = ref_ekf_euler_msg.accuracy.z * ref_ekf_euler_msg.accuracy.z;
+  odo_ros_msg.pose.covariance[3*6 + 3] = pow(ref_ekf_euler_msg.accuracy.x, 2);
+  odo_ros_msg.pose.covariance[4*6 + 4] = pow(ref_ekf_euler_msg.accuracy.y, 2);
+  odo_ros_msg.pose.covariance[5*6 + 5] = pow(ref_ekf_euler_msg.accuracy.z, 2);
 
   // The twist message gives the linear and angular velocity relative to the frame defined in child_frame_id
-  odo_ros_msg.child_frame_id            = m_frame_id_;
+  odo_ros_msg.child_frame_id            = frame_id_;
   odo_ros_msg.twist.twist.linear.x      = ref_ekf_nav_msg.velocity.x;
   odo_ros_msg.twist.twist.linear.y      = ref_ekf_nav_msg.velocity.y;
   odo_ros_msg.twist.twist.linear.z      = ref_ekf_nav_msg.velocity.z;
   odo_ros_msg.twist.twist.angular.x     = ref_sbg_imu_msg.gyro.x;
   odo_ros_msg.twist.twist.angular.y     = ref_sbg_imu_msg.gyro.y;
   odo_ros_msg.twist.twist.angular.z     = ref_sbg_imu_msg.gyro.z;
-  odo_ros_msg.twist.covariance[0*6 + 0] = ref_ekf_nav_msg.velocity_accuracy.x * ref_ekf_nav_msg.velocity_accuracy.x;
-  odo_ros_msg.twist.covariance[1*6 + 1] = ref_ekf_nav_msg.velocity_accuracy.y * ref_ekf_nav_msg.velocity_accuracy.y;
-  odo_ros_msg.twist.covariance[2*6 + 2] = ref_ekf_nav_msg.velocity_accuracy.z * ref_ekf_nav_msg.velocity_accuracy.z;
+  odo_ros_msg.twist.covariance[0*6 + 0] = pow(ref_ekf_nav_msg.velocity_accuracy.x, 2);
+  odo_ros_msg.twist.covariance[1*6 + 1] = pow(ref_ekf_nav_msg.velocity_accuracy.y, 2);
+  odo_ros_msg.twist.covariance[2*6 + 2] = pow(ref_ekf_nav_msg.velocity_accuracy.z, 2);
   odo_ros_msg.twist.covariance[3*6 + 3] = 0;
   odo_ros_msg.twist.covariance[4*6 + 4] = 0;
   odo_ros_msg.twist.covariance[5*6 + 5] = 0;
 
-  if (m_odom_publish_tf_)
+  if (odom_publish_tf_)
   {
     // Publish odom transformation.
-    fillTransform(odo_ros_msg.header.frame_id, m_odom_base_frame_id_, odo_ros_msg.pose.pose, transform);
-    m_tf_broadcaster_->sendTransform(transform);
+    fillTransform(odo_ros_msg.header.frame_id, odom_base_frame_id_, odo_ros_msg.pose.pose, transform);
+    tf_broadcaster_->sendTransform(transform);
   }
 
   return odo_ros_msg;
@@ -1288,28 +1018,10 @@ const geometry_msgs::msg::PointStamped MessageWrapper::createRosPointStampedMess
 
   point_stamped_message.header = createRosHeader(ref_sbg_ekf_msg.time_stamp);
 
-  //
-  // Conversion from Geodetic coordinates to ECEF is based on World Geodetic System 1984 (WGS84).
-  // Radius are expressed in meters, and latitude/longitude in radian.
-  //
-  double equatorial_radius;
-  double polar_radius;
-  double prime_vertical_radius;
-  double eccentricity;
-  double latitude;
-  double longitude;
-
-  equatorial_radius = 6378137.0;
-  polar_radius      = 6356752.314245;
-  eccentricity      = 1 - pow(polar_radius, 2) / pow(equatorial_radius, 2);
-  latitude          = sbgDegToRadD(ref_sbg_ekf_msg.latitude);
-  longitude         = sbgDegToRadD(ref_sbg_ekf_msg.longitude);
-
-  prime_vertical_radius = equatorial_radius / sqrt(1.0 - pow(eccentricity, 2) * pow(sin(latitude), 2));
-
-  point_stamped_message.point.x = (prime_vertical_radius + ref_sbg_ekf_msg.altitude) * cos(latitude) * cos(longitude);
-  point_stamped_message.point.y = (prime_vertical_radius + ref_sbg_ekf_msg.altitude) * cos(latitude) * sin(longitude);
-  point_stamped_message.point.z = ((pow(polar_radius, 2) / pow(equatorial_radius, 2)) * prime_vertical_radius + ref_sbg_ekf_msg.altitude) * sin(latitude);
+  const auto ecef_coordinates = helpers::convertLLAtoECEF(ref_sbg_ekf_msg.latitude, ref_sbg_ekf_msg.longitude, ref_sbg_ekf_msg.altitude);
+  point_stamped_message.point.x = ecef_coordinates(0);
+  point_stamped_message.point.y = ecef_coordinates(1);
+  point_stamped_message.point.z = ecef_coordinates(2);
 
   return point_stamped_message;
 }
@@ -1361,9 +1073,9 @@ const sensor_msgs::msg::NavSatFix MessageWrapper::createRosNavSatFixMessage(cons
   nav_sat_fix_message.longitude = ref_sbg_gps_msg.longitude;
   nav_sat_fix_message.altitude  = ref_sbg_gps_msg.altitude + ref_sbg_gps_msg.undulation;
 
-  nav_sat_fix_message.position_covariance[0] = ref_sbg_gps_msg.position_accuracy.x * ref_sbg_gps_msg.position_accuracy.x;
-  nav_sat_fix_message.position_covariance[4] = ref_sbg_gps_msg.position_accuracy.y * ref_sbg_gps_msg.position_accuracy.y;
-  nav_sat_fix_message.position_covariance[8] = ref_sbg_gps_msg.position_accuracy.z * ref_sbg_gps_msg.position_accuracy.z;
+  nav_sat_fix_message.position_covariance[0] = pow(ref_sbg_gps_msg.position_accuracy.x, 2);
+  nav_sat_fix_message.position_covariance[4] = pow(ref_sbg_gps_msg.position_accuracy.y, 2);
+  nav_sat_fix_message.position_covariance[8] = pow(ref_sbg_gps_msg.position_accuracy.z, 2);
 
   nav_sat_fix_message.position_covariance_type = nav_sat_fix_message.COVARIANCE_TYPE_DIAGONAL_KNOWN;
 
@@ -1394,7 +1106,7 @@ const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(cons
   gps_tow_ms = ref_log_gps_pos.timeOfWeek + (24ul * 3600ul * 1000ul);
 
   // Apply the GPS to UTC leap second offset
-  gps_tow_ms = gps_tow_ms - getUtcOffset() * 1000ul;
+  gps_tow_ms = gps_tow_ms - (sbg::helpers::getUtcOffset(first_valid_utc_, last_sbg_utc_.gps_tow, last_sbg_utc_.sec) * 1000ul);
 
   // Extract UTC hours/mins/seconds values
   utc_hour      = (gps_tow_ms / (3600 * 1000)) % 24;
@@ -1408,16 +1120,16 @@ const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(cons
         (utc_ms < 100 || utc_ms > 900) )
   {
     // Latitude conversion
-    float   latitude    = std::clamp(static_cast<float>(ref_log_gps_pos.latitude), -90.0f, 90.0f);
+    float   latitude     = std::clamp(static_cast<float>(ref_log_gps_pos.latitude), -90.0f, 90.0f);
     float   latitude_abs = std::fabs(latitude);
-    int32_t lat_degs    = static_cast<int32_t>(latitude_abs);
-    float   lat_mins    = (latitude_abs - static_cast<float>(lat_degs)) * 60.0f;
+    int32_t lat_degs     = static_cast<int32_t>(latitude_abs);
+    float   lat_mins     = (latitude_abs - static_cast<float>(lat_degs)) * 60.0f;
 
     // Longitude conversion
-    float   longitude     = std::clamp(static_cast<float>(ref_log_gps_pos.longitude), -180.0f, 180.0f);
+    float   longitude      = std::clamp(static_cast<float>(ref_log_gps_pos.longitude), -180.0f, 180.0f);
     float   longitude_abs  = std::fabs(longitude);
-    int32_t lon_degs      = static_cast<int32_t>(longitude_abs);
-    float   lon_mins      = (longitude_abs - static_cast<float>(lon_degs)) * 60.0f;
+    int32_t lon_degs       = static_cast<int32_t>(longitude_abs);
+    float   lon_mins       = (longitude_abs - static_cast<float>(lon_degs)) * 60.0f;
 
     // Compute and clamp each parameter
     float     h_dop           = std::clamp(std::hypot(ref_log_gps_pos.latitudeAccuracy, ref_log_gps_pos.longitudeAccuracy), 0.0f, 9.9f);
@@ -1442,7 +1154,7 @@ const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(cons
                         lon_degs,
                         lon_mins,
                         (longitude < 0.0f?'W':'E'),
-                        static_cast<int32_t>(convertSbgGpsTypeToNmeaGpsType(sbgEComLogGpsPosGetType(ref_log_gps_pos.status))),
+                        static_cast<int32_t>(sbg::helpers::convertSbgGpsTypeToNmeaGpsType(sbgEComLogGpsPosGetType(ref_log_gps_pos.status))),
                         sv_used,
                         h_dop,
                         altitude,

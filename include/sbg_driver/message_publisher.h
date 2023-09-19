@@ -1,32 +1,32 @@
 /*!
-*	\file         message_publisher.h
-*	\author       SBG Systems
-*	\date         13/03/2020
+*  \file         message_publisher.h
+*  \author       SBG Systems
+*  \date         13/03/2020
 *
-*	\brief        Manage publishment of messages from logs.
+*  \brief        Manage publishing of messages from logs.
 *
-*	\section CodeCopyright Copyright Notice
-*	MIT License
+*  \section CodeCopyright Copyright Notice
+*  MIT License
 *
-*	Copyright (c) 2020 SBG Systems
+*  Copyright (c) 2023 SBG Systems
 *
-*	Permission is hereby granted, free of charge, to any person obtaining a copy
-*	of this software and associated documentation files (the "Software"), to deal
-*	in the Software without restriction, including without limitation the rights
-*	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-*	copies of the Software, and to permit persons to whom the Software is
-*	furnished to do so, subject to the following conditions:
+*  Permission is hereby granted, free of charge, to any person obtaining a copy
+*  of this software and associated documentation files (the "Software"), to deal
+*  in the Software without restriction, including without limitation the rights
+*  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+*  copies of the Software, and to permit persons to whom the Software is
+*  furnished to do so, subject to the following conditions:
 *
-*	The above copyright notice and this permission notice shall be included in all
-*	copies or substantial portions of the Software.
+*  The above copyright notice and this permission notice shall be included in all
+*  copies or substantial portions of the Software.
 *
-*	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-*	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-*	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-*	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-*	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-*	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-*	SOFTWARE.
+*  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+*  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+*  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+*  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+*  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+*  SOFTWARE.
 */
 
 #ifndef SBG_ROS_MESSAGE_PUBLISHER_H
@@ -45,48 +45,48 @@ class MessagePublisher
 {
 private:
 
-  rclcpp::Publisher<sbg_driver::msg::SbgStatus, std::allocator<void>>::SharedPtr   	    m_sbgStatus_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgUtcTime, std::allocator<void>>::SharedPtr    	m_sbgUtcTime_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgImuData, std::allocator<void>>::SharedPtr  	    m_sbgImuData_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgEkfEuler, std::allocator<void>>::SharedPtr   	m_sbgEkfEuler_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgEkfQuat, std::allocator<void>>::SharedPtr       m_sbgEkfQuat_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgEkfNav, std::allocator<void>>::SharedPtr        m_sbgEkfNav_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgShipMotion, std::allocator<void>>::SharedPtr    m_sbgShipMotion_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgMag, std::allocator<void>>::SharedPtr         	m_sbgMag_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgMagCalib, std::allocator<void>>::SharedPtr   	m_sbgMagCalib_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgGpsVel, std::allocator<void>>::SharedPtr     	m_sbgGpsVel_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgGpsPos, std::allocator<void>>::SharedPtr    	m_sbgGpsPos_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgGpsHdt, std::allocator<void>>::SharedPtr      	m_sbgGpsHdt_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgGpsRaw, std::allocator<void>>::SharedPtr      	m_sbgGpsRaw_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgOdoVel, std::allocator<void>>::SharedPtr      	m_sbgOdoVel_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr         m_sbgEventA_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr         m_sbgEventB_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr         m_sbgEventC_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr         m_sbgEventD_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr         m_sbgEventE_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgImuShort, std::allocator<void>>::SharedPtr   	m_SbgImuShort_pub_;
-  rclcpp::Publisher<sbg_driver::msg::SbgAirData, std::allocator<void>>::SharedPtr     	m_SbgAirData_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgStatus, std::allocator<void>>::SharedPtr        sbg_status_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgUtcTime, std::allocator<void>>::SharedPtr       sbg_utc_time_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgImuData, std::allocator<void>>::SharedPtr       sbg_imu_data_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEkfEuler, std::allocator<void>>::SharedPtr      sbg_ekf_euler_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEkfQuat, std::allocator<void>>::SharedPtr       sbg_ekf_quat_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEkfNav, std::allocator<void>>::SharedPtr        sbg_ekf_nav_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgShipMotion, std::allocator<void>>::SharedPtr    sbg_ship_motion_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgMag, std::allocator<void>>::SharedPtr           sbg_mag_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgMagCalib, std::allocator<void>>::SharedPtr      sbg_mag_calib_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgGpsVel, std::allocator<void>>::SharedPtr        sbg_gps_vel_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgGpsPos, std::allocator<void>>::SharedPtr        sbg_gps_pos_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgGpsHdt, std::allocator<void>>::SharedPtr        sbg_gps_hdt_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgGpsRaw, std::allocator<void>>::SharedPtr        sbg_gps_raw_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgOdoVel, std::allocator<void>>::SharedPtr        sbg_odo_vel_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr         sbg_event_a_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr         sbg_event_b_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr         sbg_event_c_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr         sbg_event_d_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEvent, std::allocator<void>>::SharedPtr         sbg_event_e_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgImuShort, std::allocator<void>>::SharedPtr      sbg_imu_short_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgAirData, std::allocator<void>>::SharedPtr       sbg_air_data_pub_;
 
-  rclcpp::Publisher<sensor_msgs::msg::Imu, std::allocator<void>>::SharedPtr             m_imu_pub_;
-  sbg_driver::msg::SbgImuData  m_sbg_imu_message_;
-  sbg_driver::msg::SbgEkfQuat  m_sbg_ekf_quat_message_;
-  sbg_driver::msg::SbgEkfNav   m_sbg_ekf_nav_message_;
-  sbg_driver::msg::SbgEkfEuler m_sbg_ekf_euler_message_;
+  rclcpp::Publisher<sensor_msgs::msg::Imu, std::allocator<void>>::SharedPtr             imu_pub_;
+  sbg_driver::msg::SbgImuData                                                           sbg_imu_message_;
+  sbg_driver::msg::SbgEkfQuat                                                           sbg_ekf_quat_message_;
+  sbg_driver::msg::SbgEkfNav                                                            sbg_ekf_nav_message_;
+  sbg_driver::msg::SbgEkfEuler                                                          sbg_ekf_euler_message_;
 
-  rclcpp::Publisher<sensor_msgs::msg::Temperature, std::allocator<void>>::SharedPtr     m_temp_pub_;
-  rclcpp::Publisher<sensor_msgs::msg::MagneticField, std::allocator<void>>::SharedPtr   m_mag_pub_;
-  rclcpp::Publisher<sensor_msgs::msg::FluidPressure, std::allocator<void>>::SharedPtr   m_fluid_pub_;
-  rclcpp::Publisher<geometry_msgs::msg::PointStamped, std::allocator<void>>::SharedPtr  m_pos_ecef_pub_;
-  rclcpp::Publisher<geometry_msgs::msg::TwistStamped, std::allocator<void>>::SharedPtr  m_velocity_pub_;
-  rclcpp::Publisher<sensor_msgs::msg::TimeReference, std::allocator<void>>::SharedPtr   m_utc_reference_pub_;
-  rclcpp::Publisher<sensor_msgs::msg::NavSatFix, std::allocator<void>>::SharedPtr       m_nav_sat_fix_pub_;
-  rclcpp::Publisher<nav_msgs::msg::Odometry, std::allocator<void>>::SharedPtr           m_odometry_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::Temperature, std::allocator<void>>::SharedPtr     temp_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::MagneticField, std::allocator<void>>::SharedPtr   mag_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::FluidPressure, std::allocator<void>>::SharedPtr   fluid_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::PointStamped, std::allocator<void>>::SharedPtr  pos_ecef_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::TwistStamped, std::allocator<void>>::SharedPtr  velocity_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::TimeReference, std::allocator<void>>::SharedPtr   utc_reference_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::NavSatFix, std::allocator<void>>::SharedPtr       nav_sat_fix_pub_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry, std::allocator<void>>::SharedPtr           odometry_pub_;
 
   rclcpp::Publisher<nmea_msgs::msg::Sentence, std::allocator<void>>::SharedPtr          nmea_gga_pub_;
 
-  MessageWrapper          m_message_wrapper_;
-  uint32_t                m_max_messages_;
-  std::string             m_frame_id_;
+  MessageWrapper                                                                        message_wrapper_;
+  uint32_t                                                                              max_messages_;
+  std::string                                                                           frame_id_;
 
   //---------------------------------------------------------------------//
   //- Private methods                                                   -//
