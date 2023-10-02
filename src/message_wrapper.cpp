@@ -887,6 +887,7 @@ const sensor_msgs::msg::NavSatFix MessageWrapper::createEkfNavsatfixMessage(cons
     ekf_navsatfix_message.position_covariance[4] = ref_ekf_nav_msg.position_accuracy.y * ref_ekf_nav_msg.position_accuracy.y;
     ekf_navsatfix_message.position_covariance[8] = ref_ekf_nav_msg.position_accuracy.z * ref_ekf_nav_msg.position_accuracy.z;
 
+    ekf_navsatfix_message.position_covariance_type = ekf_navsatfix_message.COVARIANCE_TYPE_DIAGONAL_KNOWN;
     return ekf_navsatfix_message;
 }
 const sbg_driver::msg::SbgMag MessageWrapper::createSbgMagMessage(const SbgLogMag& ref_log_mag) const
