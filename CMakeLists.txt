@@ -15,7 +15,6 @@ find_package(tf2_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(nmea_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
-find_package(Boost REQUIRED)
 
 ################################################
 ## Declare ROS messages, services and actions ##
