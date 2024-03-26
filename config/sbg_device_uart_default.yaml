@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    # Configuration file for SBG device through an Uart interface.
+    # Configuration file for SBG Ellipse devices through a UART interface.
     
     driver:
       # Node frequency (Hz)
@@ -11,7 +11,7 @@
       frequency: 400
 
     odometry:
-      # Enable ROS odometry messages.
+      # Enable/Disable ROS odometry messages.
       enable: false
       # Publish odometry transforms.
       publishTf: true
@@ -20,23 +20,26 @@
       baseFrameId: "base_link"
       initFrameId: "map"
 
-    # Configuration of the device with ROS.
+    # Enable/Disable Ellipse's configuration with ROS. 
+    # The parameters "use_enu", "rtcm", "nmea" are modifiable even when the "confWithRos" is disabled.
+    # confWithRos needs to be disabled when using an Ekinox/Apogee/Quanta/Navsight or PULSE-40 product.
     confWithRos: false
     
-    # Uart configuration
+    # UART configuration
     uartConf:
       # Port Name
       portName: "/dev/ttyUSB0"
     
-      # Baude rate (4800 ,9600 ,19200 ,38400 ,115200 [default],230400 ,460800 ,921600)
+      # Baud rate (4800, 9600, 19200, 38400, 115200[default], 230400 ,460800 ,921600)
+      # Note that changing it in ROS is not possible. It needs to match the one configured in the device. 
       baudRate: 115200
     
       # Port Id
       # 0 PORT_A: Main communication interface. Full duplex.
-      # 1 PORT_B: Auxiliary input interface for RTCM
-      # 2 PORT_C: Auxiliary communication interface. Full duplex.
-      # 3 PORT_D: Auxiliary input interface
-      # 4 PORT_E: Auxiliary input/output interface
+      # 1 PORT_B: Auxiliary input interface. Not available for Ellipse-A.
+      # 2 PORT_C: Auxiliary communication interface. Full duplex. Only for Ellipse-E.
+      # 3 PORT_D: Auxiliary input interface. Only for Ellipse-E.
+      # 4 PORT_E: Auxiliary input/output interface. 
       portID: 0
     
     # Sensor Parameters
@@ -44,15 +47,15 @@
       # Initial latitude (°)
       initLat: 48.419727
       # Initial longitude (°)
-      initLong: -4.472119
+      initLong: 2.167387
       # Initial altitude (above WGS84 ellipsoid) (m)
       initAlt: 100.0
       # Year at startup
-      year: 2018
+      year: 2023
       # month in year at startup
-      month: 03
+      month: 09
       # day in month at startup
-      day: 10
+      day: 01
     
       # Montion profile ID
       # 1 GENERAL_PURPOSE Should be used as a default when other profiles do not apply
@@ -60,9 +63,12 @@
       # 3 MARINE          Used in marine and underwater applications
       # 4 AIRPLANE        For fixed wings aircraft
       # 5 HELICOPTER      For rotary wing aircraft
+      # 7 UAV             For UAV platforms with low dynamics
       motionProfile: 1
     
     # IMU_ALIGNMENT_LEVER_ARM
+    # The vehicle frame is defined as follows: X-axis positive forward, Y-axis positive to the right, and Z-axis positive downward
+    # Note: The vehicle frame for lever arm configuration is always the same even when the use_enu is activated
     imuAlignementLeverArm:
       # IMU X axis direction in vehicle frame
       # 0 ALIGNMENT_FORWARD   IMU Axis is turned in vehicle's forward direction
@@ -95,16 +101,16 @@
     
     # AIDING_ASSIGNMENT
     # Note: GNSS1 module configuration can only be set to an external port on Ellipse-E version.
-    # Ellipse-N users must set this module to MODULE_INTERNAL. On the other hand, rtcmModule is only
-    # available for Ellipse-N users. This module must be set to MODULE_DISABLED for other users.
+    # Ellipse-A users must set this module to MODULE_DISABLED.
+    # You should use either sbgCenter or sbgECom library to change the port assignment configuration 
     aidingAssignment:
-      # GNSS module port assignment:
+      # GNSS module port assignment: You should use either sbgCenter or sbgECom library to change this parameter
       # 255 Module is disabled
       # 1 Module connected on PORT_B
       # 2 Module connected on PORT_C
       # 3 Module connected on PORT_D
       # 5 Module is connected internally
-      gnss1ModulePortAssignment: 255
+      gnss1ModulePortAssignment: 5
       # GNSS module sync assignment:
       # 0 Module is disabled
       # 1 Synchronization is done using SYNC_IN_A pin
@@ -114,9 +120,9 @@
       # 5 Synchronization is internal
       # 6 Synchronization is done using SYNC_OUT_A pin
       # 7 Synchronization is done using SYNC_OUT_B pin
-      gnss1ModuleSyncAssignment: 0
-      # RTCM input port assignment for Ellipse-N DGPS (see gnss1ModulePortAssignment for values)
-      rtcmPortAssignment: 255
+      gnss1ModuleSyncAssignment: 5
+      # RTCM input port assignment for Ellipse-N/D: You should use either sbgCenter or sbgECom library to change this parameter
+      rtcmPortAssignment: 5
       # Odometer module pin assignment
       # 0 Odometer is disabled
       # 1 Odometer connected only to ODO_A (unidirectional).
@@ -138,7 +144,7 @@
       calibration:
         # 1 2D Tell the device that the magnetic calibration will be performed with limited motions. 
         #     This calibration mode is only designed to be used when roll and pitch motions are less than ± 5°. 
-        #     To work correctly, the device should be rotated through at least a full circle.
+        #     To work correctly, the device should be rotated through at least a full horizontal circle.
         # 2 3D Tell the device to start a full 3D magnetic calibration procedure. The 3D magnetic calibration offers the best accuracy
         mode: 2
     
@@ -151,15 +157,15 @@
     
     
     # GNSS configuration
-    # Note: Secondary level arms should only be considered in case of dual antenna GNSS receiver. It can be left to 0 otherwise.
+    # GNSS lever arms should be measured from the IMU to the primary/secondary GNSS antenna in the vehicle frame
+    # The vehicle frame is defined as follows: X-axis positive forward, Y-axis positive to the right, and Z-axis positive downward
+    # Note: The vehicle frame for lever arm configuration is always the same even when the use_enu is activated
     gnss:
       # Gnss Model Id
-      # 101 Used on Ellipse-N to setup the internal GNSS in GPS+GLONASS
+      # 101 Used on Ellipse-N/D to setup the internal GNSS 
       # 102 Default mode for Ellipse-E connection to external GNSS
-      # 103 Used on Ellipse-N to setup the internal GNSS in GPS+BEIDOU
       # 104 Used on Ellipse-E to setup a connection to ublox in read only mode.
       # 106 Used on Ellipse-E to setup a connection to Novatel receiver in read only mode.
-      # 107 Used on Ellipse-D by default
       gnss_model_id: 101
     
       #GNSS primary antenna lever arm in IMU X axis (m)
@@ -180,7 +186,7 @@
     
       # Secondary antenna operating mode.
       # 1 The GNSS will be used in single antenna mode only and the secondary lever arm is not used.
-      # 2 [Reserved] The GNSS dual antenna information will be used but the secondary lever arm is not known.
+      # 2 [Reserved] The GNSS dual antenna information will be used but the secondary lever arm is not known. 
       # 3 The GNSS dual antenna information will be used and we have a rough guess for the secondary lever arm.
       # 4 The GNSS dual antenna information will be used and the secondary lever arm is accurately entered and doesn't need online re-estimation.
       secondaryLeverMode: 1
@@ -205,7 +211,10 @@
       # false: positive
       # true: negative
       direction: false
-    
+      
+      # Lever arms should be measured from the IMU to the odometer in the vehicle frame
+      # The vehicle frame is defined as follows: X-axis positive forward, Y-axis positive to the right, and Z-axis positive downward
+      # Note: The vehicle frame for lever arm configuration is always the same even when the use_enu is activated
       # Odometer lever arm in IMU X axis (m)
       leverArmX: 0.0
       # Odometer lever arm in IMU Y axis (m)
@@ -251,19 +260,19 @@
 
       # Ros standard output:
       # Note: If true publish ROS standard messages.
-      ros_standard: false
+      ros_standard: true
 
       # Frame convention:
       # Note: If true messages are expressed in the ENU convention.
       #
       # true : ENU convention (X east, Y north, Z up)
       # false (default): NED convention (X north, Y east, Z down)
-      use_enu: false
+      use_enu: true
 
       # Frame ID:
       # Note: If the frame convention is NED so the default frame ID is (imu_link_ned)
       #       else if the convention is ENU so the default frame ID is (imu_link)
-      frame_id: "imu_link_ned"
+      frame_id: "imu_link"
     
       # Status general, clock, com aiding, solution, heave
       log_status: 200
@@ -300,8 +309,8 @@
       log_event_d: 0
       # Air data
       log_air_data: 0
-      # Short IMU data
-      log_imu_short: 8
+      # Short IMU data (Can only be on new data)
+      log_imu_short: 10001
 
     rtcm:
       # Should ros driver subscribe to RTCM topic
