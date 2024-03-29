@@ -77,7 +77,7 @@ void ConfigStore::loadSensorParameters(const rclcpp::Node& ref_node_handle)
   init_condition_conf_.month    = getParameter<uint8_t>(ref_node_handle, "sensorParameters.year", 03);
   init_condition_conf_.day      = getParameter<uint8_t>(ref_node_handle, "sensorParameters.year", 10);
 
-  motion_profile_model_info_.id = getParameter<uint32>(ref_node_handle, "sensorParameters.motionProfile", SBG_ECOM_MOTION_PROFILE_GENERAL_PURPOSE);
+  motion_profile_model_info_ = getParameter<SbgEComMotionProfileStdIds>(ref_node_handle, "sensorParameters.motionProfile", SBG_ECOM_MOTION_PROFILE_GENERAL_PURPOSE);
 }
 
 void ConfigStore::loadImuAlignementParameters(const rclcpp::Node& ref_node_handle)
@@ -107,7 +107,7 @@ void ConfigStore::loadAidingAssignementParameters(const rclcpp::Node& ref_node_h
 
 void ConfigStore::loadMagnetometersParameters(const rclcpp::Node& ref_node_handle)
 {
-  mag_model_info_.id                = getParameter<uint32_t>(ref_node_handle, "magnetometer.magnetometerModel", SBG_ECOM_MAG_MODEL_NORMAL);
+  mag_model_info_                   = getParameter<SbgEComMagModelsStdId>(ref_node_handle, "magnetometer.magnetometerModel", SBG_ECOM_MAG_MODEL_NORMAL);
   mag_rejection_conf_.magneticField = getParameter<SbgEComRejectionMode>(ref_node_handle, "magnetometer.magnetometerRejectMode", SBG_ECOM_AUTOMATIC_MODE);
 
   mag_calib_mode_       = getParameter<SbgEComMagCalibMode>(ref_node_handle, "magnetometer.calibration.mode", SBG_ECOM_MAG_CALIB_MODE_2D);
@@ -116,7 +116,7 @@ void ConfigStore::loadMagnetometersParameters(const rclcpp::Node& ref_node_handl
 
 void ConfigStore::loadGnssParameters(const rclcpp::Node& ref_node_handle)
 {
-  gnss_model_info_.id = getParameter<uint32_t>(ref_node_handle, "gnss.gnss_model_id", SBG_ECOM_GNSS_MODEL_NMEA);
+  gnss_model_info_ = getParameter<SbgEComGnssModelsStdIds>(ref_node_handle, "gnss.gnss_model_id", SBG_ECOM_GNSS_MODEL_NMEA);
 
   ref_node_handle.get_parameter_or<float>("gnss.primaryLeverArmX", gnss_installation_.leverArmPrimary[0], 0.0f);
   ref_node_handle.get_parameter_or<float>("gnss.primaryLeverArmY", gnss_installation_.leverArmPrimary[1], 0.0f);
@@ -271,7 +271,7 @@ const SbgEComInitConditionConf &ConfigStore::getInitialConditions() const
   return init_condition_conf_;
 }
 
-const SbgEComModelInfo &ConfigStore::getMotionProfile() const
+const SbgEComMotionProfileStdIds &ConfigStore::getMotionProfile() const
 {
   return motion_profile_model_info_;
 }
@@ -291,7 +291,7 @@ const SbgEComAidingAssignConf &ConfigStore::getAidingAssignement() const
   return aiding_assignement_conf_;
 }
 
-const SbgEComModelInfo &ConfigStore::getMagnetometerModel() const
+const SbgEComMagModelsStdId &ConfigStore::getMagnetometerModel() const
 {
   return mag_model_info_;
 }
@@ -311,7 +311,7 @@ const SbgEComMagCalibBandwidth &ConfigStore::getMagnetometerCalibBandwidth() con
   return mag_calib_bandwidth_;
 }
 
-const SbgEComModelInfo &ConfigStore::getGnssModel() const
+const SbgEComGnssModelsStdIds &ConfigStore::getGnssModel() const
 {
   return gnss_model_info_;
 }

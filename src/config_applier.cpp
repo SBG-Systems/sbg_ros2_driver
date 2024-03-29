@@ -86,22 +86,22 @@ void ConfigApplier::configureInitCondition(const SbgEComInitConditionConf& ref_i
   }
 }
 
-void ConfigApplier::configureMotionProfile(const SbgEComModelInfo& ref_motion_profile)
+void ConfigApplier::configureMotionProfile(const SbgEComMotionProfileStdIds& ref_motion_profile)
 {
   //
   // Get the motion profile ID, and compare with the loaded one parameter.
   // If the profiles are different, update the device with the loaded one.
   //
-  SbgEComModelInfo  motion_profile;
-  SbgErrorCode      error_code;
+  SbgEComMotionProfileStdIds  motion_profile;
+  SbgErrorCode                error_code;
 
-  error_code = sbgEComCmdSensorGetMotionProfileInfo(&ref_sbg_com_handle_, &motion_profile);
+  error_code = sbgEComCmdSensorGetMotionProfileId(&ref_sbg_com_handle_, &motion_profile);
 
   checkConfigurationGet(error_code, std::string("Motion profile"));
 
-  if (motion_profile.id != ref_motion_profile.id)
+  if (motion_profile != ref_motion_profile)
   {
-    error_code = sbgEComCmdSensorSetMotionProfileId(&ref_sbg_com_handle_, ref_motion_profile.id);
+    error_code = sbgEComCmdSensorSetMotionProfileId(&ref_sbg_com_handle_, ref_motion_profile);
 
     checkConfigurationApplied(error_code, std::string("Motion profile"));
   }
@@ -160,22 +160,22 @@ void ConfigApplier::configureAidingAssignement(const SbgEComAidingAssignConf& re
   }
 }
 
-void ConfigApplier::configureMagModel(const SbgEComModelInfo& ref_mag_model)
+void ConfigApplier::configureMagModel(const SbgEComMagModelsStdId& ref_mag_model)
 {
   //
   // Get the magnetometer model, and compare with the loaded parameter.
   // If the model are different, update the device with the loaded parameter.
   //
-  SbgEComModelInfo  model_info;
-  SbgErrorCode      error_code;
+  SbgEComMagModelsStdId  model_info;
+  SbgErrorCode           error_code;
 
-  error_code = sbgEComCmdMagGetModelInfo(&ref_sbg_com_handle_, &model_info);
+  error_code = sbgEComCmdMagGetModelId(&ref_sbg_com_handle_, &model_info);
 
   checkConfigurationGet(error_code, std::string("Magnetometer model"));
 
-  if (model_info.id != ref_mag_model.id)
+  if (model_info != ref_mag_model)
   {
-    error_code = sbgEComCmdMagSetModelId(&ref_sbg_com_handle_, ref_mag_model.id);
+    error_code = sbgEComCmdMagSetModelId(&ref_sbg_com_handle_, ref_mag_model);
 
     checkConfigurationApplied(error_code, std::string("Magnetometer model"));
   }
@@ -202,22 +202,22 @@ void ConfigApplier::configureMagRejection(const SbgEComMagRejectionConf& ref_mag
   }
 }
 
-void ConfigApplier::configureGnssModel(const SbgEComModelInfo& ref_gnss_model)
+void ConfigApplier::configureGnssModel(const SbgEComGnssModelsStdIds& ref_gnss_model)
 {
   //
   // Get the Gnss model, and compare with the loaded model.
   // If the models are different, update the device with the loaded model.
   //
-  SbgEComModelInfo  model_info;
-  SbgErrorCode      error_code;
+  SbgEComGnssModelsStdIds  model_info;
+  SbgErrorCode             error_code;
 
-  error_code = sbgEComCmdGnss1GetModelInfo(&ref_sbg_com_handle_, &model_info);
+  error_code = sbgEComCmdGnss1GetModelId(&ref_sbg_com_handle_, &model_info);
 
   checkConfigurationGet(error_code, std::string("Gnss model"));
 
-  if (model_info.id != ref_gnss_model.id)
+  if (model_info != ref_gnss_model)
   {
-    error_code = sbgEComCmdGnss1SetModelId(&ref_sbg_com_handle_, ref_gnss_model.id);
+    error_code = sbgEComCmdGnss1SetModelId(&ref_sbg_com_handle_, ref_gnss_model);
 
     checkConfigurationApplied(error_code, std::string("Gnss model"));
   }

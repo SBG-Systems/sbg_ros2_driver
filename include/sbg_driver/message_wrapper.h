@@ -146,7 +146,7 @@ private:
    * \param[in] ref_log_gps_pos     SBG GPS position log.
    * \return                        GPS Position status.
    */
-  const sbg_driver::msg::SbgGpsPosStatus createGpsPosStatusMessage(const SbgLogGpsPos& ref_log_gps_pos) const;
+  const sbg_driver::msg::SbgGpsPosStatus createGpsPosStatusMessage(const SbgEComLogGnssPos& ref_log_gps_pos) const;
 
   /*!
    * Create SBG-ROS GPS Velocity status message.
@@ -154,7 +154,7 @@ private:
    * \param[in] ref_log_gps_vel     SBG GPS Velocity log.
    * \return                        GPS Velocity status.
    */
-  const sbg_driver::msg::SbgGpsVelStatus createGpsVelStatusMessage(const SbgLogGpsVel& ref_log_gps_vel) const;
+  const sbg_driver::msg::SbgGpsVelStatus createGpsVelStatusMessage(const SbgEComLogGnssVel& ref_log_gps_vel) const;
 
   /*!
    * Create a SBG-ROS IMU status message.
@@ -170,7 +170,7 @@ private:
    * \param[in] ref_log_mag         SBG Magnetometer log.
    * \return                        Magnetometer status message.
    */
-  const sbg_driver::msg::SbgMagStatus createMagStatusMessage(const SbgLogMag& ref_log_mag) const;
+  const sbg_driver::msg::SbgMagStatus createMagStatusMessage(const SbgEComLogMag& ref_log_mag) const;
 
   /*!
    * Create a SBG-ROS Ship motion status message.
@@ -178,7 +178,7 @@ private:
    * \param[in] ref_log_ship_motion SBG Ship motion log.
    * \return                        ship motion status message.
    */
-  const sbg_driver::msg::SbgShipMotionStatus createShipMotionStatusMessage(const SbgLogShipMotionData& ref_log_ship_motion) const;
+  const sbg_driver::msg::SbgShipMotionStatus createShipMotionStatusMessage(const SbgEComLogShipMotion& ref_log_ship_motion) const;
 
   /*!
    * Create a SBG-ROS aiding status message.
@@ -186,7 +186,7 @@ private:
    * \param[in] ref_log_status      SBG status log.
    * \return                        Aiding status message.
    */
-  const sbg_driver::msg::SbgStatusAiding createStatusAidingMessage(const SbgLogStatusData& ref_log_status) const;
+  const sbg_driver::msg::SbgStatusAiding createStatusAidingMessage(const SbgEComLogStatus& ref_log_status) const;
 
   /*!
    * Create a SBG-ROS com status message.
@@ -194,7 +194,7 @@ private:
    * \param[in] ref_log_status      SBG status log.
    * \return                        Com status message.
    */
-  const sbg_driver::msg::SbgStatusCom createStatusComMessage(const SbgLogStatusData& ref_log_status) const;
+  const sbg_driver::msg::SbgStatusCom createStatusComMessage(const SbgEComLogStatus& ref_log_status) const;
 
   /*!
    * Create a SBG-ROS general status message.
@@ -202,7 +202,7 @@ private:
    * \param[in] ref_log_status      SBG status log.
    * \return                        General status message.
    */
-  const sbg_driver::msg::SbgStatusGeneral createStatusGeneralMessage(const SbgLogStatusData& ref_log_status) const;
+  const sbg_driver::msg::SbgStatusGeneral createStatusGeneralMessage(const SbgEComLogStatus& ref_log_status) const;
 
   /*!
    * Create a SBG-ROS UTC time status message.
@@ -210,7 +210,7 @@ private:
    * \param[in] ref_log_utc         SBG UTC data log.
    * \return                        UTC time status message.
    */
-  const sbg_driver::msg::SbgUtcTimeStatus createUtcStatusMessage(const SbgLogUtcData& ref_log_utc) const;
+  const sbg_driver::msg::SbgUtcTimeStatus createUtcStatusMessage(const SbgEComLogUtc& ref_log_utc) const;
 
   /*!
    * Create a SBG-ROS air data status message.
@@ -218,7 +218,7 @@ private:
    * \param[in] ref_sbg_air_data    SBG AirData log.
    * \return                        SBG-ROS air data status message.
    */
-  const sbg_driver::msg::SbgAirDataStatus createAirDataStatusMessage(const SbgLogAirData& ref_sbg_air_data) const;
+  const sbg_driver::msg::SbgAirDataStatus createAirDataStatusMessage(const SbgEComLogAirData& ref_sbg_air_data) const;
  
   /*!
    * Create a ROS standard TwistStamped message.
@@ -327,7 +327,7 @@ public:
    * \param[in] ref_log_ekf_euler   SBG Ekf Euler log.
    * \return                        Ekf Euler message.
    */
-  const sbg_driver::msg::SbgEkfEuler createSbgEkfEulerMessage(const SbgLogEkfEulerData& ref_log_ekf_euler) const;
+  const sbg_driver::msg::SbgEkfEuler createSbgEkfEulerMessage(const SbgEComLogEkfEuler& ref_log_ekf_euler) const;
 
   /*!
    * Create a SBG-ROS Ekf Navigation message.
@@ -335,7 +335,7 @@ public:
    * \param[in] ref_log_ekf_nav     SBG Ekf Navigation log.
    * \return                        Ekf Navigation message.
    */
-  const sbg_driver::msg::SbgEkfNav createSbgEkfNavMessage(const SbgLogEkfNavData& ref_log_ekf_nav) const;
+  const sbg_driver::msg::SbgEkfNav createSbgEkfNavMessage(const SbgEComLogEkfNav& ref_log_ekf_nav) const;
 
   /*!
    * Create a SBG-ROS Ekf Quaternion message.
@@ -343,7 +343,7 @@ public:
    * \param[in] ref_log_ekf_quat    SBG Ekf Quaternion log.
    * \return                        Ekf Quaternion message.
    */
-  const sbg_driver::msg::SbgEkfQuat createSbgEkfQuatMessage(const SbgLogEkfQuatData& ref_log_ekf_quat) const;
+  const sbg_driver::msg::SbgEkfQuat createSbgEkfQuatMessage(const SbgEComLogEkfQuat& ref_log_ekf_quat) const;
 
   /*!
    * Create a SBG-ROS event message.
@@ -351,7 +351,7 @@ public:
    * \param[in] ref_log_event       SBG event log.
    * \return                        Event message.
    */
-  const sbg_driver::msg::SbgEvent createSbgEventMessage(const SbgLogEvent& ref_log_event) const;
+  const sbg_driver::msg::SbgEvent createSbgEventMessage(const SbgEComLogEvent& ref_log_event) const;
 
   /*!
    * Create SBG-ROS GPS-HDT message.
@@ -359,7 +359,7 @@ public:
    * \param[in] ref_log_gps_hdt     SBG GPS HDT log.
    * \return                        GPS HDT message.
    */
-  const sbg_driver::msg::SbgGpsHdt createSbgGpsHdtMessage(const SbgLogGpsHdt& ref_log_gps_hdt) const;
+  const sbg_driver::msg::SbgGpsHdt createSbgGpsHdtMessage(const SbgEComLogGnssHdt& ref_log_gps_hdt) const;
 
   /*!
    * Create a SBG-ROS GPS-Position message.
@@ -367,7 +367,7 @@ public:
    * \param[in] ref_log_gps_pos     SBG GPS Position log.
    * \return                        GPS Position message.
    */
-  const sbg_driver::msg::SbgGpsPos createSbgGpsPosMessage(const SbgLogGpsPos& ref_log_gps_pos) const;
+  const sbg_driver::msg::SbgGpsPos createSbgGpsPosMessage(const SbgEComLogGnssPos& ref_log_gps_pos) const;
 
   /*!
    * Create a SBG-ROS GPS raw message.
@@ -375,7 +375,7 @@ public:
    * \param[in] ref_log_gps_raw     SBG GPS raw log.
    * \return                        GPS raw message.
    */
-  const sbg_driver::msg::SbgGpsRaw createSbgGpsRawMessage(const SbgLogGpsRaw& ref_log_gps_raw) const;
+  const sbg_driver::msg::SbgGpsRaw createSbgGpsRawMessage(const SbgEComLogRawData& ref_log_gps_raw) const;
 
   /*!
    * Create a SBG-ROS GPS Velocity message.
@@ -383,7 +383,7 @@ public:
    * \param[in] ref_log_gps_vel     SBG GPS Velocity log.
    * \return                        GPS Velocity message.
    */
-  const sbg_driver::msg::SbgGpsVel createSbgGpsVelMessage(const SbgLogGpsVel& ref_log_gps_vel) const;
+  const sbg_driver::msg::SbgGpsVel createSbgGpsVelMessage(const SbgEComLogGnssVel& ref_log_gps_vel) const;
 
   /*!
    * Create a SBG-ROS Imu data message.
@@ -391,7 +391,7 @@ public:
    * \param[in] ref_log_imu_data    SBG Imu data log.
    * \return                        Imu data message.
    */
-  const sbg_driver::msg::SbgImuData createSbgImuDataMessage(const SbgLogImuData& ref_log_imu_data) const;
+  const sbg_driver::msg::SbgImuData createSbgImuDataMessage(const SbgEComLogImuLegacy& ref_log_imu_data) const;
 
   /*!
    * Create a SBG-ROS Magnetometer message.
@@ -399,7 +399,7 @@ public:
    * \param[in] ref_log_mag         SBG Magnetometer log.
    * \return                        Magnetometer message.
    */
-  const sbg_driver::msg::SbgMag createSbgMagMessage(const SbgLogMag& ref_log_mag) const;
+  const sbg_driver::msg::SbgMag createSbgMagMessage(const SbgEComLogMag& ref_log_mag) const;
 
   /*!
    * Create a SBG-ROS Magnetometer calibration message.
@@ -407,7 +407,7 @@ public:
    * \param[in] ref_log_mag_calib   SBG Magnetometer calibration log.
    * \return                        Magnetometer calibration message.
    */
-  const sbg_driver::msg::SbgMagCalib createSbgMagCalibMessage(const SbgLogMagCalib& ref_log_mag_calib) const;
+  const sbg_driver::msg::SbgMagCalib createSbgMagCalibMessage(const SbgEComLogMagCalib& ref_log_mag_calib) const;
 
   /*!
    * Create a SBG-ROS Odometer velocity message.
@@ -415,7 +415,7 @@ public:
    * \param[in] ref_log_odo         SBG Odometer log.
    * \return                        Odometer message.
    */
-  const sbg_driver::msg::SbgOdoVel createSbgOdoVelMessage(const SbgLogOdometerData& ref_log_odo) const;
+  const sbg_driver::msg::SbgOdoVel createSbgOdoVelMessage(const SbgEComLogOdometer& ref_log_odo) const;
 
   /*!
    * Create a SBG-ROS Shipmotion message.
@@ -423,7 +423,7 @@ public:
    * \param[in] ref_log_ship_motion SBG Ship motion log.
    * \return                        Ship motion message.
    */
-  const sbg_driver::msg::SbgShipMotion createSbgShipMotionMessage(const SbgLogShipMotionData& ref_log_ship_motion) const;
+  const sbg_driver::msg::SbgShipMotion createSbgShipMotionMessage(const SbgEComLogShipMotion& ref_log_ship_motion) const;
 
   /*!
    * Create a SBG-ROS status message from a SBG status log.
@@ -431,7 +431,7 @@ public:
    * \param[in] ref_log_status      SBG status log.
    * \return                        Status message.
    */
-  const sbg_driver::msg::SbgStatus createSbgStatusMessage(const SbgLogStatusData& ref_log_status) const;
+  const sbg_driver::msg::SbgStatus createSbgStatusMessage(const SbgEComLogStatus& ref_log_status) const;
 
   /*!
    * Create a SBG-ROS UTC time message from a SBG UTC log.
@@ -439,7 +439,7 @@ public:
    * \param[in] ref_log_utc         SBG UTC log.
    * \return                        UTC time message.                  
    */
-  const sbg_driver::msg::SbgUtcTime createSbgUtcTimeMessage(const SbgLogUtcData& ref_log_utc);
+  const sbg_driver::msg::SbgUtcTime createSbgUtcTimeMessage(const SbgEComLogUtc& ref_log_utc);
 
   /*!
    * Create a SBG-ROS Air data message from a SBG log.
@@ -447,7 +447,7 @@ public:
    * \param[in] ref_air_data_log    SBG AirData log.
    * \return                        SBG-ROS airData message.
    */
-  const sbg_driver::msg::SbgAirData createSbgAirDataMessage(const SbgLogAirData& ref_air_data_log) const;
+  const sbg_driver::msg::SbgAirData createSbgAirDataMessage(const SbgEComLogAirData& ref_air_data_log) const;
 
   /*!
    * Create a SBG-ROS Short Imu message.
@@ -455,7 +455,7 @@ public:
    * \param[in] ref_short_imu_log   SBG Imu short log.
    * \return                        SBG-ROS Imu short message.
    */
-  const sbg_driver::msg::SbgImuShort createSbgImuShortMessage(const SbgLogImuShort& ref_short_imu_log) const;
+  const sbg_driver::msg::SbgImuShort createSbgImuShortMessage(const SbgEComLogImuShort& ref_short_imu_log) const;
 
   /*!
    * Create a ROS standard IMU message from SBG messages.
@@ -577,7 +577,7 @@ public:
    * \param[in] ref_log_gps_pos     SBG GPS Position log.
    * \return                        ROS NMEA GGA message.
    */
-  const nmea_msgs::msg::Sentence createNmeaGGAMessageForNtrip(const SbgLogGpsPos& ref_log_gps_pos) const;
+  const nmea_msgs::msg::Sentence createNmeaGGAMessageForNtrip(const SbgEComLogGnssPos& ref_log_gps_pos) const;
 };
 }
 

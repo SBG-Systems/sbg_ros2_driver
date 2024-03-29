@@ -136,29 +136,29 @@ const sbg_driver::msg::SbgEkfStatus MessageWrapper::createEkfStatusMessage(uint3
   return ekf_status_message;
 }
 
-const sbg_driver::msg::SbgGpsPosStatus MessageWrapper::createGpsPosStatusMessage(const SbgLogGpsPos& ref_log_gps_pos) const
+const sbg_driver::msg::SbgGpsPosStatus MessageWrapper::createGpsPosStatusMessage(const SbgEComLogGnssPos& ref_log_gps_pos) const
 {
   sbg_driver::msg::SbgGpsPosStatus gps_pos_status_message;
 
-  gps_pos_status_message.status       = sbgEComLogGpsPosGetStatus(ref_log_gps_pos.status);
-  gps_pos_status_message.type         = sbgEComLogGpsPosGetType(ref_log_gps_pos.status);
+  gps_pos_status_message.status       = sbgEComLogGnssPosGetStatus(&ref_log_gps_pos);
+  gps_pos_status_message.type         = sbgEComLogGnssPosGetType(&ref_log_gps_pos);
 
-  gps_pos_status_message.gps_l1_used  = (ref_log_gps_pos.status & SBG_ECOM_GPS_POS_GPS_L1_USED) != 0;
-  gps_pos_status_message.gps_l2_used  = (ref_log_gps_pos.status & SBG_ECOM_GPS_POS_GPS_L2_USED) != 0;
-  gps_pos_status_message.gps_l5_used  = (ref_log_gps_pos.status & SBG_ECOM_GPS_POS_GPS_L5_USED) != 0;
+  gps_pos_status_message.gps_l1_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GPS_L1_USED) != 0;
+  gps_pos_status_message.gps_l2_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GPS_L2_USED) != 0;
+  gps_pos_status_message.gps_l5_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GPS_L5_USED) != 0;
 
-  gps_pos_status_message.glo_l1_used  = (ref_log_gps_pos.status & SBG_ECOM_GPS_POS_GLO_L1_USED) != 0;
-  gps_pos_status_message.glo_l2_used  = (ref_log_gps_pos.status & SBG_ECOM_GPS_POS_GLO_L2_USED) != 0;
+  gps_pos_status_message.glo_l1_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GLO_L1_USED) != 0;
+  gps_pos_status_message.glo_l2_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GLO_L2_USED) != 0;
 
   return gps_pos_status_message;
 }
 
-const sbg_driver::msg::SbgGpsVelStatus MessageWrapper::createGpsVelStatusMessage(const SbgLogGpsVel& ref_log_gps_vel) const
+const sbg_driver::msg::SbgGpsVelStatus MessageWrapper::createGpsVelStatusMessage(const SbgEComLogGnssVel& ref_log_gps_vel) const
 {
   sbg_driver::msg::SbgGpsVelStatus gps_vel_status_message;
 
-  gps_vel_status_message.vel_status = sbgEComLogGpsVelGetStatus(ref_log_gps_vel.status);
-  gps_vel_status_message.vel_type   = sbgEComLogGpsVelGetType(ref_log_gps_vel.status);
+  gps_vel_status_message.vel_status = sbgEComLogGnssVelGetStatus(&ref_log_gps_vel);
+  gps_vel_status_message.vel_type   = sbgEComLogGnssVelGetType(&ref_log_gps_vel);
 
   return gps_vel_status_message;
 }
@@ -183,7 +183,7 @@ const sbg_driver::msg::SbgImuStatus MessageWrapper::createImuStatusMessage(uint1
   return imu_status_message;
 }
 
-const sbg_driver::msg::SbgMagStatus MessageWrapper::createMagStatusMessage(const SbgLogMag& ref_log_mag) const
+const sbg_driver::msg::SbgMagStatus MessageWrapper::createMagStatusMessage(const SbgEComLogMag& ref_log_mag) const
 {
   sbg_driver::msg::SbgMagStatus mag_status_message;
 
@@ -202,7 +202,7 @@ const sbg_driver::msg::SbgMagStatus MessageWrapper::createMagStatusMessage(const
   return mag_status_message;
 }
 
-const sbg_driver::msg::SbgShipMotionStatus MessageWrapper::createShipMotionStatusMessage(const SbgLogShipMotionData& ref_log_ship_motion) const
+const sbg_driver::msg::SbgShipMotionStatus MessageWrapper::createShipMotionStatusMessage(const SbgEComLogShipMotion& ref_log_ship_motion) const
 {
   sbg_driver::msg::SbgShipMotionStatus ship_motion_status_message;
 
@@ -214,7 +214,7 @@ const sbg_driver::msg::SbgShipMotionStatus MessageWrapper::createShipMotionStatu
   return ship_motion_status_message;
 }
 
-const sbg_driver::msg::SbgStatusAiding MessageWrapper::createStatusAidingMessage(const SbgLogStatusData& ref_log_status) const
+const sbg_driver::msg::SbgStatusAiding MessageWrapper::createStatusAidingMessage(const SbgEComLogStatus& ref_log_status) const
 {
   sbg_driver::msg::SbgStatusAiding status_aiding_message;
 
@@ -230,7 +230,7 @@ const sbg_driver::msg::SbgStatusAiding MessageWrapper::createStatusAidingMessage
   return status_aiding_message;
 }
 
-const sbg_driver::msg::SbgStatusCom MessageWrapper::createStatusComMessage(const SbgLogStatusData& ref_log_status) const
+const sbg_driver::msg::SbgStatusCom MessageWrapper::createStatusComMessage(const SbgEComLogStatus& ref_log_status) const
 {
   sbg_driver::msg::SbgStatusCom status_com_message;
 
@@ -258,7 +258,7 @@ const sbg_driver::msg::SbgStatusCom MessageWrapper::createStatusComMessage(const
   return status_com_message;
 }
 
-const sbg_driver::msg::SbgStatusGeneral MessageWrapper::createStatusGeneralMessage(const SbgLogStatusData& ref_log_status) const
+const sbg_driver::msg::SbgStatusGeneral MessageWrapper::createStatusGeneralMessage(const SbgEComLogStatus& ref_log_status) const
 {
   sbg_driver::msg::SbgStatusGeneral status_general_message;
 
@@ -271,20 +271,20 @@ const sbg_driver::msg::SbgStatusGeneral MessageWrapper::createStatusGeneralMessa
   return status_general_message;
 }
 
-const sbg_driver::msg::SbgUtcTimeStatus MessageWrapper::createUtcStatusMessage(const SbgLogUtcData& ref_log_utc) const
+const sbg_driver::msg::SbgUtcTimeStatus MessageWrapper::createUtcStatusMessage(const SbgEComLogUtc& ref_log_utc) const
 {
   sbg_driver::msg::SbgUtcTimeStatus utc_status_message;
 
-  utc_status_message.clock_stable     = (ref_log_utc.status & SBG_ECOM_CLOCK_STABLE_INPUT) != 0;
-  utc_status_message.clock_utc_sync   = (ref_log_utc.status & SBG_ECOM_CLOCK_UTC_SYNC) != 0;
+  utc_status_message.clock_stable     = sbgEComLogUtcHasClockInput(&ref_log_utc);
+  utc_status_message.clock_utc_sync   = sbgEComLogUtcTimeIsAccurate(&ref_log_utc);
 
-  utc_status_message.clock_status     = static_cast<uint8_t>(sbgEComLogUtcGetClockStatus(ref_log_utc.status));
-  utc_status_message.clock_utc_status = static_cast<uint8_t>(sbgEComLogUtcGetClockUtcStatus(ref_log_utc.status));
+  utc_status_message.clock_status     = static_cast<uint8_t>(sbgEComLogUtcGetClockState(&ref_log_utc));
+  utc_status_message.clock_utc_status = static_cast<uint8_t>(sbgEComLogUtcGetUtcStatus(&ref_log_utc));
 
   return utc_status_message;
 }
 
-const sbg_driver::msg::SbgAirDataStatus MessageWrapper::createAirDataStatusMessage(const SbgLogAirData& ref_sbg_air_data) const
+const sbg_driver::msg::SbgAirDataStatus MessageWrapper::createAirDataStatusMessage(const SbgEComLogAirData& ref_sbg_air_data) const
 {
   sbg_driver::msg::SbgAirDataStatus air_data_status_message;
 
@@ -346,7 +346,7 @@ void MessageWrapper::setOdomInitFrameId(const std::string &ref_frame_id)
 //- Operations                                                        -//
 //---------------------------------------------------------------------//
 
-const sbg_driver::msg::SbgEkfEuler MessageWrapper::createSbgEkfEulerMessage(const SbgLogEkfEulerData& ref_log_ekf_euler) const
+const sbg_driver::msg::SbgEkfEuler MessageWrapper::createSbgEkfEulerMessage(const SbgEComLogEkfEuler& ref_log_ekf_euler) const
 {
   sbg_driver::msg::SbgEkfEuler ekf_euler_message;
 
@@ -374,7 +374,7 @@ const sbg_driver::msg::SbgEkfEuler MessageWrapper::createSbgEkfEulerMessage(cons
   return ekf_euler_message;
 }
 
-const sbg_driver::msg::SbgEkfNav MessageWrapper::createSbgEkfNavMessage(const SbgLogEkfNavData& ref_log_ekf_nav) const
+const sbg_driver::msg::SbgEkfNav MessageWrapper::createSbgEkfNavMessage(const SbgEComLogEkfNav& ref_log_ekf_nav) const
 {
   sbg_driver::msg::SbgEkfNav ekf_nav_message;
 
@@ -419,7 +419,7 @@ const sbg_driver::msg::SbgEkfNav MessageWrapper::createSbgEkfNavMessage(const Sb
   return ekf_nav_message;
 }
 
-const sbg_driver::msg::SbgEkfQuat MessageWrapper::createSbgEkfQuatMessage(const SbgLogEkfQuatData& ref_log_ekf_quat) const
+const sbg_driver::msg::SbgEkfQuat MessageWrapper::createSbgEkfQuatMessage(const SbgEComLogEkfQuat& ref_log_ekf_quat) const
 {
   sbg_driver::msg::SbgEkfQuat  ekf_quat_message;
 
@@ -454,7 +454,7 @@ const sbg_driver::msg::SbgEkfQuat MessageWrapper::createSbgEkfQuatMessage(const 
   return ekf_quat_message;
 }
 
-const sbg_driver::msg::SbgEvent MessageWrapper::createSbgEventMessage(const SbgLogEvent& ref_log_event) const
+const sbg_driver::msg::SbgEvent MessageWrapper::createSbgEventMessage(const SbgEComLogEvent& ref_log_event) const
 {
   sbg_driver::msg::SbgEvent event_message;
 
@@ -475,7 +475,7 @@ const sbg_driver::msg::SbgEvent MessageWrapper::createSbgEventMessage(const SbgL
   return event_message;
 }
 
-const sbg_driver::msg::SbgGpsHdt MessageWrapper::createSbgGpsHdtMessage(const SbgLogGpsHdt& ref_log_gps_hdt) const
+const sbg_driver::msg::SbgGpsHdt MessageWrapper::createSbgGpsHdtMessage(const SbgEComLogGnssHdt& ref_log_gps_hdt) const
 {
   sbg_driver::msg::SbgGpsHdt gps_hdt_message;
 
@@ -501,7 +501,7 @@ const sbg_driver::msg::SbgGpsHdt MessageWrapper::createSbgGpsHdtMessage(const Sb
   return gps_hdt_message;
 }
 
-const sbg_driver::msg::SbgGpsPos MessageWrapper::createSbgGpsPosMessage(const SbgLogGpsPos& ref_log_gps_pos) const
+const sbg_driver::msg::SbgGpsPos MessageWrapper::createSbgGpsPosMessage(const SbgEComLogGnssPos& ref_log_gps_pos) const
 {
   sbg_driver::msg::SbgGpsPos gps_pos_message;
 
@@ -535,7 +535,7 @@ const sbg_driver::msg::SbgGpsPos MessageWrapper::createSbgGpsPosMessage(const Sb
   return gps_pos_message;
 }
 
-const sbg_driver::msg::SbgGpsRaw MessageWrapper::createSbgGpsRawMessage(const SbgLogGpsRaw& ref_log_gps_raw) const
+const sbg_driver::msg::SbgGpsRaw MessageWrapper::createSbgGpsRawMessage(const SbgEComLogRawData& ref_log_gps_raw) const
 {
   sbg_driver::msg::SbgGpsRaw gps_raw_message;
 
@@ -544,7 +544,7 @@ const sbg_driver::msg::SbgGpsRaw MessageWrapper::createSbgGpsRawMessage(const Sb
   return gps_raw_message;
 }
 
-const sbg_driver::msg::SbgGpsVel MessageWrapper::createSbgGpsVelMessage(const SbgLogGpsVel& ref_log_gps_vel) const
+const sbg_driver::msg::SbgGpsVel MessageWrapper::createSbgGpsVelMessage(const SbgEComLogGnssVel& ref_log_gps_vel) const
 {
   sbg_driver::msg::SbgGpsVel gps_vel_message;
 
@@ -582,7 +582,7 @@ const sbg_driver::msg::SbgGpsVel MessageWrapper::createSbgGpsVelMessage(const Sb
   return gps_vel_message;
 }
 
-const sbg_driver::msg::SbgImuData MessageWrapper::createSbgImuDataMessage(const SbgLogImuData& ref_log_imu_data) const
+const sbg_driver::msg::SbgImuData MessageWrapper::createSbgImuDataMessage(const SbgEComLogImuLegacy& ref_log_imu_data) const
 {
   sbg_driver::msg::SbgImuData  imu_data_message;
 
@@ -631,7 +631,7 @@ const sbg_driver::msg::SbgImuData MessageWrapper::createSbgImuDataMessage(const 
   return imu_data_message;
 }
 
-const sbg_driver::msg::SbgMag MessageWrapper::createSbgMagMessage(const SbgLogMag& ref_log_mag) const
+const sbg_driver::msg::SbgMag MessageWrapper::createSbgMagMessage(const SbgEComLogMag& ref_log_mag) const
 {
   sbg_driver::msg::SbgMag  mag_message;
 
@@ -663,7 +663,7 @@ const sbg_driver::msg::SbgMag MessageWrapper::createSbgMagMessage(const SbgLogMa
   return mag_message;
 }
 
-const sbg_driver::msg::SbgMagCalib MessageWrapper::createSbgMagCalibMessage(const SbgLogMagCalib& ref_log_mag_calib) const
+const sbg_driver::msg::SbgMagCalib MessageWrapper::createSbgMagCalibMessage(const SbgEComLogMagCalib& ref_log_mag_calib) const
 {
   sbg_driver::msg::SbgMagCalib mag_calib_message;
 
@@ -673,7 +673,7 @@ const sbg_driver::msg::SbgMagCalib MessageWrapper::createSbgMagCalibMessage(cons
   return mag_calib_message;
 }
 
-const sbg_driver::msg::SbgOdoVel MessageWrapper::createSbgOdoVelMessage(const SbgLogOdometerData& ref_log_odo) const
+const sbg_driver::msg::SbgOdoVel MessageWrapper::createSbgOdoVelMessage(const SbgEComLogOdometer& ref_log_odo) const
 {
   sbg_driver::msg::SbgOdoVel odo_vel_message;
 
@@ -686,7 +686,7 @@ const sbg_driver::msg::SbgOdoVel MessageWrapper::createSbgOdoVelMessage(const Sb
   return odo_vel_message;
 }
 
-const sbg_driver::msg::SbgShipMotion MessageWrapper::createSbgShipMotionMessage(const SbgLogShipMotionData& ref_log_ship_motion) const
+const sbg_driver::msg::SbgShipMotion MessageWrapper::createSbgShipMotionMessage(const SbgEComLogShipMotion& ref_log_ship_motion) const
 {
   sbg_driver::msg::SbgShipMotion ship_motion_message;
 
@@ -709,7 +709,7 @@ const sbg_driver::msg::SbgShipMotion MessageWrapper::createSbgShipMotionMessage(
   return ship_motion_message;
 }
 
-const sbg_driver::msg::SbgStatus MessageWrapper::createSbgStatusMessage(const SbgLogStatusData& ref_log_status) const
+const sbg_driver::msg::SbgStatus MessageWrapper::createSbgStatusMessage(const SbgEComLogStatus& ref_log_status) const
 {
   sbg_driver::msg::SbgStatus status_message;
 
@@ -723,7 +723,7 @@ const sbg_driver::msg::SbgStatus MessageWrapper::createSbgStatusMessage(const Sb
   return status_message;
 }
 
-const sbg_driver::msg::SbgUtcTime MessageWrapper::createSbgUtcTimeMessage(const SbgLogUtcData& ref_log_utc)
+const sbg_driver::msg::SbgUtcTime MessageWrapper::createSbgUtcTimeMessage(const SbgEComLogUtc& ref_log_utc)
 {
   sbg_driver::msg::SbgUtcTime utc_time_message;
 
@@ -744,7 +744,7 @@ const sbg_driver::msg::SbgUtcTime MessageWrapper::createSbgUtcTimeMessage(const 
   {
     if (utc_time_message.clock_status.clock_stable && utc_time_message.clock_status.clock_utc_sync)
     {
-      if (utc_time_message.clock_status.clock_status == SBG_ECOM_CLOCK_VALID)
+      if (utc_time_message.clock_status.clock_status == SBG_ECOM_CLOCK_STATE_VALID)
       {
         first_valid_utc_ = true;
         RCLCPP_INFO(rclcpp::get_logger("Message wrapper"), "A full valid UTC log has been detected, timestamp will be synchronized with the UTC data.");
@@ -760,7 +760,7 @@ const sbg_driver::msg::SbgUtcTime MessageWrapper::createSbgUtcTimeMessage(const 
   return utc_time_message;
 }
 
-const sbg_driver::msg::SbgAirData MessageWrapper::createSbgAirDataMessage(const SbgLogAirData& ref_air_data_log) const
+const sbg_driver::msg::SbgAirData MessageWrapper::createSbgAirDataMessage(const SbgEComLogAirData& ref_air_data_log) const
 {
   sbg_driver::msg::SbgAirData air_data_message;
 
@@ -776,7 +776,7 @@ const sbg_driver::msg::SbgAirData MessageWrapper::createSbgAirDataMessage(const 
   return air_data_message;
 }
 
-const sbg_driver::msg::SbgImuShort MessageWrapper::createSbgImuShortMessage(const SbgLogImuShort& ref_short_imu_log) const
+const sbg_driver::msg::SbgImuShort MessageWrapper::createSbgImuShortMessage(const SbgEComLogImuShort& ref_short_imu_log) const
 {
   sbg_driver::msg::SbgImuShort imu_short_message;
 
@@ -913,9 +913,9 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - first_valid_altitude_;
 
   // Compute convergence angle.
-  double longitudeRad      = sbgDegToRadD(ref_ekf_nav_msg.longitude);
-  double latitudeRad       = sbgDegToRadD(ref_ekf_nav_msg.latitude);
-  double central_meridian  = sbgDegToRadD(utm_.getMeridian());
+  double longitudeRad      = sbgDegToRadd(ref_ekf_nav_msg.longitude);
+  double latitudeRad       = sbgDegToRadd(ref_ekf_nav_msg.latitude);
+  double central_meridian  = sbgDegToRadd(utm_.getMeridian());
   double convergence_angle = atan(tan(longitudeRad - central_meridian) * sin(latitudeRad));
 
   // Convert position standard deviations to UTM frame.
@@ -1047,11 +1047,11 @@ const sensor_msgs::msg::NavSatFix MessageWrapper::createRosNavSatFixMessage(cons
 
   nav_sat_fix_message.header = createRosHeader(ref_sbg_gps_msg.time_stamp);
 
-  if (ref_sbg_gps_msg.status.type == SBG_ECOM_POS_NO_SOLUTION)
+  if (ref_sbg_gps_msg.status.type == SBG_ECOM_GNSS_POS_TYPE_NO_SOLUTION)
   {
     nav_sat_fix_message.status.status = nav_sat_fix_message.status.STATUS_NO_FIX;
   }
-  else if (ref_sbg_gps_msg.status.type == SBG_ECOM_POS_SBAS)
+  else if (ref_sbg_gps_msg.status.type == SBG_ECOM_GNSS_POS_TYPE_SBAS)
   {
     nav_sat_fix_message.status.status = nav_sat_fix_message.status.STATUS_SBAS_FIX;
   }
@@ -1093,7 +1093,7 @@ const sensor_msgs::msg::FluidPressure MessageWrapper::createRosFluidPressureMess
   return fluid_pressure_message;
 }
 
-const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(const SbgLogGpsPos &ref_log_gps_pos) const
+const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(const SbgEComLogGnssPos &ref_log_gps_pos) const
 {
   nmea_msgs::msg::Sentence  nmea_gga_msg;
   uint32_t                  gps_tow_ms;
@@ -1115,8 +1115,8 @@ const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(cons
   utc_ms        = (gps_tow_ms % 1000);
 
   // Only output a GGA message at 1 Hz (plain second) and for valid positions
-  if (  (sbgEComLogGpsPosGetStatus(ref_log_gps_pos.status) == SBG_ECOM_POS_SOL_COMPUTED) &&
-        (sbgEComLogGpsPosGetType(ref_log_gps_pos.status) != SBG_ECOM_POS_NO_SOLUTION) &&
+  if (  (sbgEComLogGnssPosGetStatus(&ref_log_gps_pos) == SBG_ECOM_GNSS_POS_STATUS_SOL_COMPUTED) &&
+        (sbgEComLogGnssPosGetType(&ref_log_gps_pos) != SBG_ECOM_GNSS_POS_TYPE_NO_SOLUTION) &&
         (utc_ms < 100 || utc_ms > 900) )
   {
     // Latitude conversion
@@ -1154,7 +1154,7 @@ const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(cons
                         lon_degs,
                         lon_mins,
                         (longitude < 0.0f?'W':'E'),
-                        static_cast<int32_t>(sbg::helpers::convertSbgGpsTypeToNmeaGpsType(sbgEComLogGpsPosGetType(ref_log_gps_pos.status))),
+                        static_cast<int32_t>(sbg::helpers::convertSbgGpsTypeToNmeaGpsType(sbgEComLogGnssPosGetType(&ref_log_gps_pos))),
                         sv_used,
                         h_dop,
                         altitude,

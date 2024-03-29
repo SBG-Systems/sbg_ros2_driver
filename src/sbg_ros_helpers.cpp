@@ -102,38 +102,38 @@ int32_t sbg::helpers::getUtcOffset(bool first_valid_utc, uint32_t gps_tow, uint8
   return utcOffset;
 }
 
-sbg::helpers::NmeaGGAQuality sbg::helpers::convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbg_gps_type)
+sbg::helpers::NmeaGGAQuality sbg::helpers::convertSbgGpsTypeToNmeaGpsType(SbgEComGnssPosType sbg_gps_type)
 {
   sbg::helpers::NmeaGGAQuality  nmeaQuality = NmeaGGAQuality::INVALID;
 
   switch (sbg_gps_type)
   {
-    case SBG_ECOM_POS_NO_SOLUTION:
+    case SBG_ECOM_GNSS_POS_TYPE_NO_SOLUTION:
       nmeaQuality = NmeaGGAQuality::INVALID;
       break;
 
-    case SBG_ECOM_POS_UNKNOWN_TYPE:
-    case SBG_ECOM_POS_SINGLE:
-    case SBG_ECOM_POS_FIXED:
+    case SBG_ECOM_GNSS_POS_TYPE_UNKNOWN:
+    case SBG_ECOM_GNSS_POS_TYPE_SINGLE:
+    case SBG_ECOM_GNSS_POS_TYPE_FIXED:
       nmeaQuality = NmeaGGAQuality::SINGLE;
       break;
 
-    case SBG_ECOM_POS_PSRDIFF:
-    case SBG_ECOM_POS_SBAS:
-    case SBG_ECOM_POS_OMNISTAR:
+    case SBG_ECOM_GNSS_POS_TYPE_PSRDIFF:
+    case SBG_ECOM_GNSS_POS_TYPE_SBAS:
+    case SBG_ECOM_GNSS_POS_TYPE_OMNISTAR:
       nmeaQuality = NmeaGGAQuality::DGPS;
       break;
 
-    case SBG_ECOM_POS_PPP_FLOAT:
-    case SBG_ECOM_POS_PPP_INT:
+    case SBG_ECOM_GNSS_POS_TYPE_PPP_FLOAT:
+    case SBG_ECOM_GNSS_POS_TYPE_PPP_INT:
       nmeaQuality = NmeaGGAQuality::PPS;
       break;
 
-    case SBG_ECOM_POS_RTK_INT:
+    case SBG_ECOM_GNSS_POS_TYPE_RTK_INT:
       nmeaQuality = NmeaGGAQuality::RTK_FIXED;
       break;
 
-    case SBG_ECOM_POS_RTK_FLOAT:
+    case SBG_ECOM_GNSS_POS_TYPE_RTK_FLOAT:
       nmeaQuality = NmeaGGAQuality::RTK_FLOAT;
       break;
   }
@@ -150,8 +150,8 @@ sbg::SbgVector3d sbg::helpers::convertLLAtoECEF(double latitude, double longitud
   static constexpr double EQUATORIAL_RADIUS = 6378137.0;
   static constexpr double POLAR_RADIUS = 6356752.314245;
 
-  double latitude_rad = sbgDegToRadD(latitude);
-  double longitude_rad = sbgDegToRadD(longitude);
+  double latitude_rad = sbgDegToRadd(latitude);
+  double longitude_rad = sbgDegToRadd(longitude);
   double compute_cte = pow(POLAR_RADIUS, 2) / pow(EQUATORIAL_RADIUS, 2);
   double eccentricity = 1.0 - compute_cte;
   double prime_vertical_radius = EQUATORIAL_RADIUS / sqrt(1.0 - (pow(eccentricity, 2) * pow(sin(latitude_rad), 2)));

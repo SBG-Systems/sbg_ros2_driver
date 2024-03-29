@@ -99,7 +99,7 @@ private:
    *  \param[in]  p_user_arg      Optional user supplied argument.
    *  \return                     SBG_NO_ERROR if the received log has been used successfully.
    */
-  static SbgErrorCode onLogReceivedCallback(SbgEComHandle* p_handle, SbgEComClass msg_class, SbgEComMsgId msg, const SbgBinaryLogData* p_log_data, void* p_user_arg);
+  static SbgErrorCode onLogReceivedCallback(SbgEComHandle* p_handle, SbgEComClass msg_class, SbgEComMsgId msg, const SbgEComLogUnion* p_log_data, void* p_user_arg);
 
   /*!
    * Function to handle the received log.
@@ -108,7 +108,7 @@ private:
    * \param[in]  msg              Message ID of the log received.
    * \param[in]  ref_sbg_data     Contains the received log data as an union.
    */
-  void onLogReceived(SbgEComClass msg_class, SbgEComMsgId msg, const SbgBinaryLogData& ref_sbg_data);
+  void onLogReceived(SbgEComClass msg_class, SbgEComMsgId msg, const SbgEComLogUnion& ref_sbg_data);
 
   /*!
    * Load the parameters.
@@ -135,7 +135,7 @@ private:
    * \param[in] sbg_version_enc   SBG version encoded.
    * \return                      String version decoded.
    */
-  std::string getVersionAsString(uint32 sbg_version_enc) const;
+  std::string getVersionAsString(uint32_t sbg_version_enc) const;
 
   /*!
    * Initialize the publishers according to the configuration.
