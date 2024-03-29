@@ -1,26 +1,29 @@
-﻿#include "sbgEComCmdInfo.h"
+﻿// sbgCommonLib headers
+#include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 
+// Project headers
+#include <sbgECom.h>
+
+// Local headers
+#include "sbgEComCmdCommon.h"
+#include "sbgEComCmdInfo.h"
+
 //----------------------------------------------------------------------//
-//- Info commands		                                               -//
+//- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
-/*!
- *	Retrieve the device information.
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[in]	pInfo						A pointer to a structure to hold device information.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
 SbgErrorCode sbgEComCmdGetInfo(SbgEComHandle *pHandle, SbgEComDeviceInfo *pInfo)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
+	
 
 	assert(pHandle);
 	assert(pInfo);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -40,7 +43,7 @@ SbgErrorCode sbgEComCmdGetInfo(SbgEComHandle *pHandle, SbgEComDeviceInfo *pInfo)
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_INFO, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_INFO, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have correctly received a message
@@ -50,12 +53,14 @@ SbgErrorCode sbgEComCmdGetInfo(SbgEComHandle *pHandle, SbgEComDeviceInfo *pInfo)
 				//
 				// Make sure we have received a payload
 				//
-				if (receivedSize > 0)
+				if (sbgEComProtocolPayloadGetSize(&receivedPayload) > 0)
 				{
+					SbgStreamBuffer		inputStream;
+
 					//
 					// Initialize stream buffer to read parameters
 					//
-					sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+					sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 					//
 					// Read parameters
@@ -93,6 +98,8 @@ SbgErrorCode sbgEComCmdGetInfo(SbgEComHandle *pHandle, SbgEComDeviceInfo *pInfo)
 			break;
 		}
 	}
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
 
 	return errorCode;
 }

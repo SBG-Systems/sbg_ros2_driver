@@ -1,26 +1,28 @@
-﻿#include "sbgEComCmdFeatures.h"
+﻿// sbgCommonLib headers
+#include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 
+// Project headers
+#include <sbgECom.h>
+
+// Local headers
+#include "sbgEComCmdCommon.h"
+#include "sbgEComCmdFeatures.h"
+
 //----------------------------------------------------------------------//
-//- Features commands	                                               -//
+//- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
-/*!
- *	Retrieve the device and embedded GPS receiver features.
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[in]	pFeatures					A pointer to a structure to hold features.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
 SbgErrorCode sbgEComCmdGetFeatures(SbgEComHandle *pHandle, SbgEComFeatures *pFeatures)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
-
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
+	
 	assert(pHandle);
 	assert(pFeatures);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -40,17 +42,19 @@ SbgErrorCode sbgEComCmdGetFeatures(SbgEComHandle *pHandle, SbgEComFeatures *pFea
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_FEATURES, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_FEATURES, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a SBG_ECOM_CMD_GPS_FEATURES command
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to read parameters
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				//
 				// Read parameters
@@ -62,7 +66,19 @@ SbgErrorCode sbgEComCmdGetFeatures(SbgEComHandle *pHandle, SbgEComFeatures *pFea
 				pFeatures->gnssFeaturesMask		= sbgStreamBufferReadUint32LE(&inputStream);
 				sbgStreamBufferReadBuffer(&inputStream, pFeatures->gnssProductCode, 32*sizeof(char));
 				sbgStreamBufferReadBuffer(&inputStream, pFeatures->gnssSerialNumber, 32*sizeof(char));
-
+				
+				//
+				// Only parse the GNSS firmware version if available
+				//
+				if (sbgStreamBufferGetSpace(&inputStream) > 0)
+				{
+					sbgStreamBufferReadBuffer(&inputStream, pFeatures->gnssFirmwareVersion, 32 * sizeof(char));
+				}
+				else
+				{
+					strcpy(pFeatures->gnssFirmwareVersion, "");
+				}
+				
 				//
 				// The command has been executed successfully so return
 				//
@@ -77,6 +93,8 @@ SbgErrorCode sbgEComCmdGetFeatures(SbgEComHandle *pHandle, SbgEComFeatures *pFea
 			break;
 		}
 	}
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
 	
 	return errorCode;
 }

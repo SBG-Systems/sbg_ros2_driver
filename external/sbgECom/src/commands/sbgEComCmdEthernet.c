@@ -1,12 +1,21 @@
-﻿#include "sbgEComCmdEthernet.h"
+﻿// sbgCommonLib headers
+#include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 
+// Project headers
+#include <sbgECom.h>
+
+// Local headers
+#include "sbgEComCmdCommon.h"
+#include "sbgEComCmdEthernet.h"
+
 //----------------------------------------------------------------------//
-//- Private methods declarations                                       -//
+//- Private methods                                                    -//
 //----------------------------------------------------------------------//
 
 /*!
  * Write in the output stream buffer, the provided Ethernet configuration.
+ * 
  * \param[out]	pOutputStream					Pointer on the output stream buffer to write to.
  * \param[in]	pEthernetConf					Structure used to hold the parameters to write to the payload buffer.
  * \return										SBG_NO_ERROR if the structure has been written correctly.
@@ -34,6 +43,7 @@ static SbgErrorCode sbgEComEthernetConfWrite(SbgStreamBuffer *pOutputStream, con
 
 /*!
  * Parse the input stream buffer to extract all parameters and fill the corresponding structure.
+ * 
  * \param[in]	pInputStream					Pointer on the input stream buffer to read from.
  * \param[out]	pEthernetConf					Structure used to store the parsed parameters.
  * \return										SBG_NO_ERROR if the structure has been parsed correctly.
@@ -63,24 +73,16 @@ static SbgErrorCode sbgEComEthernetConfParse(SbgStreamBuffer *pInputStream, SbgE
 //- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
-/*!
-* Get the configuration for the Ethernet interface.
-* Warning: this method only returns the Ethernet configuration and NOT the ip address currently used by the device.
-* You should rather use sbgEComEthernetInfo to retreive the current assigned IP.
-* \param[in]	pHandle						A valid sbgECom handle.
-* \param[out]	pEthernetConf				Poiner to a SbgEComEthernetConf struct that holds the read configuration from the device.
-* \return									SBG_NO_ERROR if the command has been executed successfully.
-*/
 SbgErrorCode sbgEComEthernetGetConf(SbgEComHandle *pHandle, SbgEComEthernetConf *pEthernetConf)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
 
 	assert(pHandle);
 	assert(pEthernetConf);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -88,7 +90,7 @@ SbgErrorCode sbgEComEthernetGetConf(SbgEComHandle *pHandle, SbgEComEthernetConf 
 	for (trial = 0; trial < pHandle->numTrials; trial++)
 	{
 		//
-		// Send the command with no payload to retreive the network configuration
+		// Send the command with no payload to retrieve the network configuration
 		//
 		errorCode = sbgEComProtocolSend(&pHandle->protocolHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ETHERNET_CONF, NULL, 0);
 
@@ -100,17 +102,19 @@ SbgErrorCode sbgEComEthernetGetConf(SbgEComHandle *pHandle, SbgEComEthernetConf 
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ETHERNET_CONF, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ETHERNET_CONF, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received correctly the answer
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to read parameters
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				//
 				// Read all parameters from the payload and return any error during the parse
@@ -131,21 +135,17 @@ SbgErrorCode sbgEComEthernetGetConf(SbgEComHandle *pHandle, SbgEComEthernetConf 
 			break;
 		}
 	}
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
 	
 	return errorCode;
 }
 
-/*!
-* Set the configuration for the Ethernet interface.
-* \param[in]	pHandle						A valid sbgECom handle.
-* \param[in]	pEthernetConf				Poiner to a SbgEComEthernetConf struct that holds the new configuration to apply.
-* \return									SBG_NO_ERROR if the command has been executed successfully.
-*/
 SbgErrorCode sbgEComEthernetSetConf(SbgEComHandle *pHandle, const SbgEComEthernetConf *pEthernetConf)
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
 	uint32_t			trial;
-	uint8_t				outputBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	uint8_t				outputBuffer[24];
 	SbgStreamBuffer		outputStream;
 
 	assert(pHandle);
@@ -207,24 +207,16 @@ SbgErrorCode sbgEComEthernetSetConf(SbgEComHandle *pHandle, const SbgEComEtherne
 	return errorCode;
 }
 
-/*!
-* Get the current assigned and used IP address as well as network inforamtion.
-* In opposition to sbgEComEthernetGetConf, this method will not return the Ethernet configuration.
-* It will rather return the IP address currently used by the device.
-* \param[in]	pHandle						A valid sbgECom handle.
-* \param[out]	pEthernetConf				Poiner to a SbgEComEthernetConf struct that holds the read IP settings from the device.
-* \return									SBG_NO_ERROR if the command has been executed successfully.
-*/
 SbgErrorCode sbgEComEthernetInfo(SbgEComHandle *pHandle, SbgEComEthernetConf *pEthernetConf)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;	
 
 	assert(pHandle);
 	assert(pEthernetConf);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -232,7 +224,7 @@ SbgErrorCode sbgEComEthernetInfo(SbgEComHandle *pHandle, SbgEComEthernetConf *pE
 	for (trial = 0; trial < pHandle->numTrials; trial++)
 	{
 		//
-		// Send the command with no payload to retreive the network configuration
+		// Send the command with no payload to retrieve the network configuration
 		//
 		errorCode = sbgEComProtocolSend(&pHandle->protocolHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ETHERNET_INFO, NULL, 0);
 
@@ -244,17 +236,19 @@ SbgErrorCode sbgEComEthernetInfo(SbgEComHandle *pHandle, SbgEComEthernetConf *pE
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ETHERNET_INFO, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ETHERNET_INFO, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received correctly the answer
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to read parameters
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 				
 				//
 				// Read all parameters from the payload and return any error during the parse
@@ -275,6 +269,8 @@ SbgErrorCode sbgEComEthernetInfo(SbgEComHandle *pHandle, SbgEComEthernetConf *pE
 			break;
 		}
 	}
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
 
 	return errorCode;
 }

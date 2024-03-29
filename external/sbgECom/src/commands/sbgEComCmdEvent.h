@@ -1,40 +1,50 @@
 /*!
- *	\file		sbgEComCmdEvent.h
- *  \author		SBG Systems (Maxime Renaudet)
- *	\date		11 June 2014
+ * \file			sbgEComCmdEvent.h
+ * \ingroup			commands
+ * \author			SBG Systems
+ * \date			11 June 2014
  *
- *	\brief		This file implements SbgECom commands related to events.
+ * \brief			Input/output event markers configuration commands.
  *
- *	\section CodeCopyright Copyright Notice 
- *  The MIT license
- *  
- *  Copyright (C) 2007-2020, SBG Systems SAS. All rights reserved.
+ * \copyright		Copyright (C) 2022, SBG Systems SAS. All rights reserved.
+ * \beginlicense	The MIT license
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *  
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * \endlicense
  */
-#ifndef __SBG_ECOM_CMD_EVENT_H__
-#define __SBG_ECOM_CMD_EVENT_H__
 
-#include "sbgEComCmdCommon.h"
+#ifndef SBG_ECOM_CMD_EVENT_H
+#define SBG_ECOM_CMD_EVENT_H
+
+// sbgCommonLib headers
+#include <sbgCommon.h>
+
+// Project headers
+#include <sbgECom.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //----------------------------------------------------------------------//
-//- Event definitions												   -//
+//- Event definitions                                                  -//
 //----------------------------------------------------------------------//
 
 /*!
@@ -89,7 +99,9 @@ typedef enum _SbgEComSyncOutFunction
 	SBG_ECOM_SYNC_OUT_MODE_EVENT_IN_D	= 10006,	/*!< Output is generated on a Sync In D event. */
 
 	SBG_ECOM_SYNC_OUT_MODE_DIRECT_PPS	= 10100,	/*!< The internal GNSS PPS signal is directly routed to the Sync Out.
-														 This mode is only valid for ELLIPSE-N with hardware revisions above 1.2.1.0.
+														 This mode is only valid for the following products:
+															- ELLIPSE-N with hardware revisions above 1.2.1.0
+															- ELLIPSE-N & ELLIPSE-D Generation 3 or above.
 														 Polarity and duration parameters are ignored with this specific mode. */
 
 } SbgEComSyncOutFunction;
@@ -105,7 +117,7 @@ typedef enum _SbgEComSyncOutPolarity
 } SbgEComSyncOutPolarity;
 
 //----------------------------------------------------------------------//
-//- Event configurations											   -//
+//- Event configurations                                               -//
 //----------------------------------------------------------------------//
 
 /*!
@@ -114,7 +126,7 @@ typedef enum _SbgEComSyncOutPolarity
 typedef struct _SbgEComSyncInConf
 {
 	SbgEComSyncInSensitivity	sensitivity;	/*!< Sensitivity of the sync in. */
-	int32_t						delay;			/*!< Delay to take into account for the sync in. (in us)*/
+	int32_t						delay;			/*!< Delay to take into account for the sync in. (in ns)*/
 } SbgEComSyncInConf;
 
 /*!
@@ -124,15 +136,16 @@ typedef struct _SbgEComSyncOutConf
 {
 	SbgEComSyncOutFunction		outputFunction;	/*!< Output function of the sync out pin */
 	SbgEComSyncOutPolarity		polarity;		/*!< Polarity of the sync out. */
-	uint32_t						duration;		/*!< Pulse width for the sync out (in ns). */
+	uint32_t					duration;		/*!< Pulse width for the sync out (in ns). */
 } SbgEComSyncOutConf;
 
 //----------------------------------------------------------------------//
-//- Event commands				                                       -//
+//- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
 /*!
  *	Retrieve the configuration of a Sync In.
+ * 
  *	\param[in]	pHandle						A valid sbgECom handle.
  *	\param[in]	syncInId					The id of the sync whose configuration is to be retrieved.
  *	\param[out]	pConf						Pointer to a SbgEComSyncInConf to contain the current configuration of the sync in.
@@ -142,6 +155,7 @@ SbgErrorCode sbgEComCmdSyncInGetConf(SbgEComHandle *pHandle, SbgEComSyncInId syn
 
 /*!
  *	Set the configuration of a Sync In.
+ * 
  *	\param[in]	pHandle						A valid sbgECom handle.
  *	\param[in]	syncInId					The id of the sync whose configuration is to be set.
  *	\param[in]	pConf						Pointer to a SbgEComSyncInConf that contains the new configuration for the sync in.
@@ -151,6 +165,7 @@ SbgErrorCode sbgEComCmdSyncInSetConf(SbgEComHandle *pHandle, SbgEComSyncInId syn
 
 /*!
  *	Retrieve the configuration of a Sync Out.
+ * 
  *	\param[in]	pHandle						A valid sbgECom handle.
  *	\param[in]	syncOutId					The id of the sync whose configuration is to be retrieved.
  *	\param[out]	pConf						Pointer to a SbgEComSyncOutConf to contain the current configuration of the sync out.
@@ -160,6 +175,7 @@ SbgErrorCode sbgEComCmdSyncOutGetConf(SbgEComHandle *pHandle, SbgEComSyncOutId s
 
 /*!
  *	Set the configuration of a Sync Out.
+ * 
  *	\param[in]	pHandle						A valid sbgECom handle.
  *	\param[in]	syncOutId					The id of the sync whose configuration is to be set.
  *	\param[in]	pConf						Pointer to a SbgEComSyncOutConf that contains the new configuration for the sync Out.
@@ -167,4 +183,8 @@ SbgErrorCode sbgEComCmdSyncOutGetConf(SbgEComHandle *pHandle, SbgEComSyncOutId s
  */
 SbgErrorCode sbgEComCmdSyncOutSetConf(SbgEComHandle *pHandle, SbgEComSyncOutId syncOutId, const SbgEComSyncOutConf *pConf);
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif // SBG_ECOM_CMD_EVENT_H

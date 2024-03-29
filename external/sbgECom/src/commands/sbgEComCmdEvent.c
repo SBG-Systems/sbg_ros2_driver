@@ -1,39 +1,40 @@
-﻿#include "sbgEComCmdEvent.h"
+﻿// sbgCommonLib headers
+#include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 
+// Project headers
+#include <sbgECom.h>
+
+// Local headers
+#include "sbgEComCmdCommon.h"
+#include "sbgEComCmdEvent.h"
+
 //----------------------------------------------------------------------//
-//- Event commands		                                               -//
+//- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
-/*!
- *	Retrieve the configuration of a Sync In.
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[in]	syncInId					The id of the sync whose configuration is to be retrieved.
- *	\param[out]	pConf						Pointer to a SbgEComSyncInConf to contain the current configuration of the sync in.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
 SbgErrorCode sbgEComCmdSyncInGetConf(SbgEComHandle *pHandle, SbgEComSyncInId syncInId, SbgEComSyncInConf *pConf)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				outputBuffer;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
 
 	assert(pHandle);
 	assert(pConf);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
 	//
 	for (trial = 0; trial < pHandle->numTrials; trial++)
 	{
+		uint8_t	syncInIdParam = syncInId;
+
 		//
 		// Send the command with syncInId as a 1-byte payload
 		//
-		outputBuffer = (uint8_t)syncInId;
-		errorCode = sbgEComProtocolSend(&pHandle->protocolHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_SYNC_IN_CONF, &outputBuffer, sizeof(uint8_t));
+		errorCode = sbgEComProtocolSend(&pHandle->protocolHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_SYNC_IN_CONF, &syncInIdParam, sizeof(syncInIdParam));
 
 		//
 		// Make sure that the command has been sent
@@ -43,25 +44,27 @@ SbgErrorCode sbgEComCmdSyncInGetConf(SbgEComHandle *pHandle, SbgEComSyncInId syn
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_SYNC_IN_CONF, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_SYNC_IN_CONF, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a SBG_ECOM_CMD_SYNC_IN_CONF command
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to read parameters
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				//
 				// Read parameters
 				// First is returned the id of the sync, then the sensitivity and the delay at last.
 				//
-				syncInId = (SbgEComSyncInId)sbgStreamBufferReadUint8LE(&inputStream);					
-				pConf->sensitivity = (SbgEComSyncInSensitivity)sbgStreamBufferReadUint8LE(&inputStream);
-				pConf->delay = sbgStreamBufferReadInt32LE(&inputStream);
+				syncInId			= (SbgEComSyncInId)sbgStreamBufferReadUint8LE(&inputStream);					
+				pConf->sensitivity	= (SbgEComSyncInSensitivity)sbgStreamBufferReadUint8LE(&inputStream);
+				pConf->delay		= sbgStreamBufferReadInt32LE(&inputStream);
 
 				//
 				// The command has been executed successfully so return
@@ -78,21 +81,16 @@ SbgErrorCode sbgEComCmdSyncInGetConf(SbgEComHandle *pHandle, SbgEComSyncInId syn
 		}
 	}
 	
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
+
 	return errorCode;
 }
 
-/*!
- *	Set the configuration of a Sync In.
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[in]	syncInId					The id of the sync whose configuration is to be set.
- *	\param[in]	pConf						Pointer to a SbgEComSyncInConf that contains the new configuration for the sync in.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
 SbgErrorCode sbgEComCmdSyncInSetConf(SbgEComHandle *pHandle, SbgEComSyncInId syncInId, const SbgEComSyncInConf *pConf)
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
 	uint32_t			trial;
-	uint8_t				outputBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	uint8_t				outputBuffer[8];
 	SbgStreamBuffer		outputStream;
 
 	assert(pHandle);
@@ -153,35 +151,28 @@ SbgErrorCode sbgEComCmdSyncInSetConf(SbgEComHandle *pHandle, SbgEComSyncInId syn
 	return errorCode;
 }
 
-/*!
- *	Retrieve the configuration of a Sync Out.
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[in]	syncOutId					The id of the sync whose configuration is to be retrieved.
- *	\param[out]	pConf						Pointer to a SbgEComSyncOutConf to contain the current configuration of the sync out.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
 SbgErrorCode sbgEComCmdSyncOutGetConf(SbgEComHandle *pHandle, SbgEComSyncOutId syncOutId, SbgEComSyncOutConf *pConf)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
-	uint8_t				outputBuffer;
-
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
+	
 	assert(pHandle);
 	assert(pConf);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
 	//
 	for (trial = 0; trial < pHandle->numTrials; trial++)
 	{
+		uint8_t	syncOutIdParam = syncOutId;
+
 		//
 		// Send the command with syncOutId as a 1-byte payload
 		//
-		outputBuffer = (uint8_t)syncOutId;
-		errorCode = sbgEComProtocolSend(&pHandle->protocolHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_SYNC_OUT_CONF, &outputBuffer, sizeof(uint8_t));
+		errorCode = sbgEComProtocolSend(&pHandle->protocolHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_SYNC_OUT_CONF, &syncOutIdParam, sizeof(syncOutIdParam));
 
 		//
 		// Make sure that the command has been sent
@@ -191,17 +182,19 @@ SbgErrorCode sbgEComCmdSyncOutGetConf(SbgEComHandle *pHandle, SbgEComSyncOutId s
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_SYNC_OUT_CONF, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_SYNC_OUT_CONF, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a SBG_ECOM_CMD_SYNC_OUT_CONF command
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to read parameters
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				//
 				// Read parameters
@@ -227,22 +220,17 @@ SbgErrorCode sbgEComCmdSyncOutGetConf(SbgEComHandle *pHandle, SbgEComSyncOutId s
 			break;
 		}
 	}
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
 	
 	return errorCode;
 }
 
-/*!
- *	Set the configuration of a Sync Out.
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[in]	syncOutId					The id of the sync whose configuration is to be set.
- *	\param[in]	pConf						Pointer to a SbgEComSyncOutConf that contains the new configuration for the sync Out.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
 SbgErrorCode sbgEComCmdSyncOutSetConf(SbgEComHandle *pHandle, SbgEComSyncOutId syncOutId, const SbgEComSyncOutConf *pConf)
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
 	uint32_t			trial;
-	uint8_t				outputBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	uint8_t				outputBuffer[16];
 	SbgStreamBuffer		outputStream;
 
 	assert(pHandle);

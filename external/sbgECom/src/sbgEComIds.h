@@ -1,51 +1,41 @@
 ﻿/*!
- *	\file		sbgEComIds.h
- *  \author		SBG Systems (Raphael Siryani)
- *	\date		25 February 2013
+ * \file			sbgEComIds.h
+ * \ingroup			main
+ * \author			SBG Systems
+ * \date			25 February 2013
  *
- *	\brief		Defines all sbgECom commands identifiers.
+ * \brief			Defines all sbgECom commands identifiers.
  *
- *	\section CodeCopyright Copyright Notice 
- *  The MIT license
- *  
- *  Copyright (C) 2007-2020, SBG Systems SAS. All rights reserved.
+ * \copyright		Copyright (C) 2022, SBG Systems SAS. All rights reserved.
+ * \beginlicense	The MIT license
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *  
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * \endlicense
  */
 
-/*!
- *	\mainpage SBG Systems Enhanced Communication library documentation
- *	Welcome to the sbgECom library documentation.<br>
- *	This documentation describes all functions implemented in the sbgECom library.
- */
+#ifndef SBG_ECOM_IDS_H
+#define SBG_ECOM_IDS_H
 
-#ifndef __SBG_ECOM_IDS_H__
-#define __SBG_ECOM_IDS_H__
-
-//----------------------------------------------------------------------//
-//- Macro definitions						                           -//
-//----------------------------------------------------------------------//
-
-/*!
- * Helper macro to build an id with its class
- */
-#define SBG_ECOM_BUILD_ID(classId, logId)			(((uint16_t)classId << 8) | (uint8_t)logId)
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //----------------------------------------------------------------------//
 //- Definition of all class id for sbgECom                             -//
@@ -53,6 +43,8 @@
 
 /*!
  * Enum that defines all the message classes available.
+ *
+ * Keep in mind that message classes are encoded on 7 bits.
  */
 typedef enum _SbgEComClass
 {
@@ -68,6 +60,7 @@ typedef enum _SbgEComClass
 															Note: This class is only used for identification purpose and does not contain any sbgECom message. */
 
 	SBG_ECOM_CLASS_LOG_CMD_0			= 0x10,			/*!< Class that contains sbgECom protocol commands. */
+
 } SbgEComClass;
 
 //----------------------------------------------------------------------//
@@ -83,7 +76,7 @@ typedef enum _SbgEComLog
 
 	SBG_ECOM_LOG_UTC_TIME 					= 2,		/*!< Provides UTC time reference */
 
-	SBG_ECOM_LOG_IMU_DATA 					= 3,		/*!< Includes IMU status, acc., gyro, temp delta speeds and delta angles values */
+	SBG_ECOM_LOG_IMU_DATA 					= 3,		/*!< DEPRECATED: Synchronous IMU measurements (time aligned to UTC - NEVER use for Post Processing). */
 
 	SBG_ECOM_LOG_MAG 						= 4,		/*!< Magnetic data with associated accelerometer on each axis */
 	SBG_ECOM_LOG_MAG_CALIB 					= 5,		/*!< Magnetometer calibration data (raw buffer) */
@@ -97,12 +90,10 @@ typedef enum _SbgEComLog
 	SBG_ECOM_LOG_GPS1_VEL 					= 13,		/*!< GPS velocities from primary or secondary GPS receiver */
 	SBG_ECOM_LOG_GPS1_POS 					= 14,		/*!< GPS positions from primary or secondary GPS receiver */
 	SBG_ECOM_LOG_GPS1_HDT 					= 15,		/*!< GPS true heading from dual antenna system */
-	SBG_ECOM_LOG_GPS1_RAW					= 31,		/*!< GPS 1 raw data for post processing. */
 
 	SBG_ECOM_LOG_GPS2_VEL					= 16,		/*!< GPS 2 velocity log data. */
 	SBG_ECOM_LOG_GPS2_POS					= 17,		/*!< GPS 2 position log data. */
 	SBG_ECOM_LOG_GPS2_HDT					= 18,		/*!< GPS 2 true heading log data. */
-	SBG_ECOM_LOG_GPS2_RAW					= 38,		/*!< GPS 2 raw data for post processing. */
 
 	SBG_ECOM_LOG_ODO_VEL 					= 19,		/*!< Provides odometer velocity */
 
@@ -115,25 +106,33 @@ typedef enum _SbgEComLog
 	SBG_ECOM_LOG_DVL_BOTTOM_TRACK			= 29,		/*!< Doppler Velocity Log for bottom tracking data. */
 	SBG_ECOM_LOG_DVL_WATER_TRACK			= 30,		/*!< Doppler Velocity log for water layer data. */
 
+	SBG_ECOM_LOG_GPS1_RAW					= 31,		/*!< GPS 1 raw data for post processing. */
+
 	SBG_ECOM_LOG_SHIP_MOTION_HP				= 32,		/*!< Return delayed ship motion such as surge, sway, heave. */
-	
+
 	SBG_ECOM_LOG_AIR_DATA					= 36,		/*!< Air Data aiding such as barometric altimeter and true air speed. */
 
-	SBG_ECOM_LOG_USBL						= 37,		/*!< Raw USBL position data for subsea navigation. */
-	
-	SBG_ECOM_LOG_DEBUG_0					= 39,		/*!< Debug Log. */
-	SBG_ECOM_LOG_IMU_RAW_DATA				= 40,		/*!< Factory only log. */
-	SBG_ECOM_LOG_DEBUG_1					= 41,		/*!< Debug Log. */
-	SBG_ECOM_LOG_DEBUG_2					= 42,		/*!< Debug Log. */
-	SBG_ECOM_LOG_DEBUG_3					= 43,		/*!< Debug Log. */
+	SBG_ECOM_LOG_USBL						= 37,		/*!< Raw USBL position data for sub-sea navigation. */
 
-	SBG_ECOM_LOG_IMU_SHORT					= 44,		/*!< Short IMU message recommended for post processing usages. */
+	SBG_ECOM_LOG_GPS2_RAW					= 38,		/*!< GPS 2 raw data for post processing. */
+
+
+	SBG_ECOM_LOG_IMU_SHORT					= 44,		/*!< Asynchronous IMU measurements output at the IMU rate and to use for Post Processing with Qinertia. */
 
 	SBG_ECOM_LOG_EVENT_OUT_A				= 45,		/*!< Event marker used to time stamp each generated Sync Out A signal. */
 	SBG_ECOM_LOG_EVENT_OUT_B				= 46,		/*!< Event marker used to time stamp each generated Sync Out B signal. */
 
-	SBG_ECOM_LOG_DEPTH						= 47,		/*!< Depth sensor measurement log used for subsea navigation. */
+	SBG_ECOM_LOG_DEPTH						= 47,		/*!< Depth sensor measurement log used for sub-sea navigation. */
 	SBG_ECOM_LOG_DIAG						= 48,		/*!< Diagnostic log. */
+
+	SBG_ECOM_LOG_RTCM_RAW					= 49,		/*!< RTCM raw data. */
+
+	SBG_ECOM_LOG_GPS1_SAT					= 50,		/*!< GPS 1 Satellite data. */
+	SBG_ECOM_LOG_GPS2_SAT					= 51,		/*!< GNSS2 Satellite data. */
+
+	SBG_ECOM_LOG_EKF_ROT_ACCEL_BODY			= 52,		/*!< INS body rotation rate and lateral acceleration (bias, earth rotation and gravity free compensated). */
+	SBG_ECOM_LOG_EKF_ROT_ACCEL_NED			= 53,		/*!< INS North/East/Down rotation rate and lateral acceleration (bias, earth rotation and gravity free compensated). */
+	SBG_ECOM_LOG_EKF_VEL_BODY				= 54,		/*!< INS X,Y,Z body velocity and standard deviation. */
 
 	SBG_ECOM_LOG_ECOM_NUM_MESSAGES						/*!< Helper definition to know the number of ECom messages */
 } SbgEComLog;
@@ -148,7 +147,7 @@ typedef enum _SbgEComLog1MsgId
 } SbgEComLog1;
 
 /*!
- * Enum that defines all the available Nmea output logs from the sbgECom library.
+ * Enum that defines all the available NMEA output logs from the sbgECom library.
  */
 typedef enum _SbgEComNmeaLog
 {
@@ -160,11 +159,13 @@ typedef enum _SbgEComNmeaLog
 	SBG_ECOM_LOG_NMEA_VBW					= 5,		/*!< Water referenced and ground referenced speed data. */
 	SBG_ECOM_LOG_NMEA_DPT					= 7,		/*!< Depth sensor output. */
 	SBG_ECOM_LOG_NMEA_VTG					= 8,		/*!< Track an Speed over the ground. */
+	SBG_ECOM_LOG_NMEA_RTO					= 9,		/*!< Rate and direction of turn. */
+	SBG_ECOM_LOG_NMEA_GSV					= 10,		/*!< GNSS Satellites in View with azimuth, elevation and SNR information */
 	SBG_ECOM_LOG_NMEA_NUM_MESSAGES						/*!< Helper definition to know the number of NMEA messages */
 } SbgEComNmeaLog;
 
 /*!
- * Enum that defines all the available Proprietary Nmea output logs from the sbgECom library.
+ * Enum that defines all the available Proprietary NMEA output logs from the sbgECom library.
  */
 typedef enum _SbgEComIdNmea1Log
 {
@@ -179,6 +180,13 @@ typedef enum _SbgEComIdNmea1Log
 	SBG_ECOM_LOG_NMEA_1_PHOCT				= 8,		/*!< Ixblue NMEA like log used to output attitude and ship motion. */
 	SBG_ECOM_LOG_NMEA_1_INDYN				= 9,		/*!< Ixblue NMEA like log used to output position, heading, attitude, attitude rate and speed. */
 
+	SBG_ECOM_LOG_NMEA_1_GGK					= 10,		/*!< Trimble NMEA like log with Time, Latitude, Longitude, Ellipsoidal height */
+	SBG_ECOM_LOG_NMEA_1_PPS					= 11,		/*!< Trimble (Applanix) NMEA like log with UTC and PPS information. */
+
+	SBG_ECOM_LOG_NMEA_1_WASSP				= 12,		/*!< WASSP NMEA like log similar to PASHR one. */
+
+	SBG_ECOM_LOG_NMEA_1_PSBGA				= 13,		/*!< SBG Systems proprietary sentence that reports EKF attitude and status. */
+
 	SBG_ECOM_LOG_NMEA_1_NUM_MESSAGES					/*!< Helper definition to know the number of NMEA messages */
 } SbgEComIdNmea1Log;
 
@@ -191,15 +199,21 @@ typedef enum _SbgEComIdThirdParty
 	SBG_ECOM_THIRD_PARTY_KVH				= 1,		/*!< Roll, Pitch, Yaw */
 
 	SBG_ECOM_THIRD_PARTY_PD0				= 2,		/*!< Teledyne PD0 DVL proprietary frame. */
-	SBG_ECOM_THIRD_PARTY_SIMRAD_1000		= 3,		/*!< Konsberg SimRad 1000 proprietary frame that outputs Roll, Pitch and Heading.  */
-	SBG_ECOM_THIRD_PARTY_SIMRAD_3000		= 4,		/*!< Konsberg SimRad 3000 proprietary frame that outputs Roll, Pitch and Heading. */
-		
-	SBG_ECOM_THIRD_PARTY_SEAPATH_B26		= 5,		/*!< Konsberg Seapth Binary Log 26 used for MBES FM mode. */
+	SBG_ECOM_THIRD_PARTY_SIMRAD_1000		= 3,		/*!< Kongsberg SimRad 1000 proprietary frame that outputs Roll, Pitch and Heading.  */
+	SBG_ECOM_THIRD_PARTY_SIMRAD_3000		= 4,		/*!< Kongsberg SimRad 3000 proprietary frame that outputs Roll, Pitch and Heading. */
+
+	SBG_ECOM_THIRD_PARTY_SEAPATH_B26		= 5,		/*!< Kongsberg Seapth Binary Log 26 used for MBES FM mode. */
 	SBG_ECOM_THIRD_PARTY_DOLOG_HRP			= 6,		/*!< DOLOG Heading, Roll, Pitch proprietary and binary message. */
 	SBG_ECOM_THIRD_PARTY_AHRS_500			= 7,		/*!< Crossbow AHRS-500 Data Packet output with attitude, rate, acceleration and status. */
+	SBG_ECOM_THIRD_PARTY_ADA_01				= 8,		/*!< ADA specific Data Packet with IMU/INS/Status data */
+
+	SBG_ECOM_THIRD_PARTY_AT_ITINS			= 9,		/*!< Cobham Aviator UAV 200 navigation (orientation & position) data */
+
+	SBG_ECOM_THIRD_PARTY_KONGSBERG_MB		= 10,		/*!< Kongsberg multi-beam binary log. */
 
 	SBG_ECOM_LOG_THIRD_PARTY_NUM_MESSAGES				/*!< Helper definition to know the number of third party messages */
 } SbgEComIdThirdParty;
+
 
 /*!
  * Enum that defines all the available commands for the sbgECom library.
@@ -235,7 +249,6 @@ typedef enum _SbgEComCmd
 	/* GNSS configuration */
 	SBG_ECOM_CMD_GNSS_1_MODEL_ID 			= 17,		/*!< Set/get GNSS model information */
 	SBG_ECOM_CMD_GNSS_1_LEVER_ARM_ALIGNMENT = 18,		/*!< DEPRECATED: GNSS installation configuration (lever arm, antenna alignments) */
-	SBG_ECOM_CMD_GNSS_1_INSTALLATION		= 46,		/*!< Define or retrieve the GNSS 1 main and secondary lever arms configuration. */
 	SBG_ECOM_CMD_GNSS_1_REJECT_MODES 		= 19,		/*!< GNSS aiding rejection modes configuration. */
 
 	/* Odometer configuration */
@@ -247,7 +260,7 @@ typedef enum _SbgEComCmd
 	SBG_ECOM_CMD_UART_CONF 					= 23,		/*!< UART interfaces configuration */
 	SBG_ECOM_CMD_CAN_BUS_CONF 				= 24,		/*!< CAN bus interface configuration */
 	SBG_ECOM_CMD_CAN_OUTPUT_CONF			= 25,		/*!< CAN identifiers configuration */
-		
+
 	/* Events configuration */
 	SBG_ECOM_CMD_SYNC_IN_CONF 				= 26,		/*!< Synchronization inputs configuration */
 	SBG_ECOM_CMD_SYNC_OUT_CONF 				= 27,		/*!< Synchronization outputs configuration */
@@ -255,7 +268,6 @@ typedef enum _SbgEComCmd
 	/* Output configuration */
 	SBG_ECOM_CMD_NMEA_TALKER_ID 			= 29,		/*!< NMEA talker ID configuration */
 	SBG_ECOM_CMD_OUTPUT_CONF 				= 30,		/*!< Output configuration */
-	SBG_ECOM_CMD_LEGACY_CONT_OUTPUT_CONF 	= 31,		/*!< Legacy serial output mode configuration */
 
 	/* Advanced configuration */
 	SBG_ECOM_CMD_ADVANCED_CONF 				= 32,		/*!< Advanced settings configuration */
@@ -265,7 +277,7 @@ typedef enum _SbgEComCmd
 
 	/* Licenses related commands */
 	SBG_ECOM_CMD_LICENSE_APPLY				= 34,		/*!< Upload and apply a new license */
-		
+
 	/* Message class output switch */
 	SBG_ECOM_CMD_OUTPUT_CLASS_ENABLE		= 35,		/*!< Enable/disable the output of an entire class */
 
@@ -289,6 +301,12 @@ typedef enum _SbgEComCmd
 	/* Odometer configuration (using CAN) */
 	SBG_ECOM_CMD_ODO_CAN_CONF 				= 45,		/*!< Configuration for CAN based odometer (CAN ID & DBC) */
 
+	SBG_ECOM_CMD_GNSS_1_INSTALLATION		= 46,		/*!< Define or retrieve the GNSS 1 main and secondary lever arms configuration. */
+
+	/* REST API related commands */
+	SBG_ECOM_CMD_API_POST					= 47,		/*!< Command equivalent to the HTTP POST method for a REST API. */
+	SBG_ECOM_CMD_API_GET					= 48,		/*!< Command equivalent to the HTTP GET method for a REST API. */
+
 	/* Misc. */
 	SBG_ECOM_LOG_ECOM_NUM_CMDS							/*!< Helper definition to know the number of commands */
 } SbgEComCmd;
@@ -304,24 +322,28 @@ typedef uint8_t	SbgEComMsgId;
 //----------------------------------------------------------------------//
 
 /*!
- *	Test if the message class is a binary log one.
+ * Test if the message class is a binary log one.
  *
- *	\param[in]	msgClass				Message class.
- *	\return								TRUE if the message class corresponds to a binary log.
+ * \param[in]	msgClass				Message class.
+ * \return								TRUE if the message class corresponds to a binary log.
  */
 SBG_INLINE bool sbgEComMsgClassIsALog(SbgEComClass msgClass)
 {
 	//
 	// Test if this class id is part of the enum
 	//
-	if ((msgClass == SBG_ECOM_CLASS_LOG_ECOM_0) || (msgClass == SBG_ECOM_CLASS_LOG_ECOM_1))
+	if ((msgClass == SBG_ECOM_CLASS_LOG_ECOM_0) || (msgClass == SBG_ECOM_CLASS_LOG_ECOM_1) )
 	{
-		return TRUE;
+		return true;
 	}
 	else
 	{
-		return FALSE;
+		return false;
 	}
 }
 
-#endif	/* __SBG_ECOM_CMDS_H__ */
+#ifdef __cplusplus
+}
+#endif
+
+#endif	// SBG_ECOM_IDS_H

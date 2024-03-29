@@ -1,12 +1,13 @@
-﻿/* sbgCommonLib headers */
+﻿// sbgCommonLib headers
 #include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 
-/* Project headers */
+// Project headers
+#include <sbgECom.h>
 
-/* Local headers */
+// Local headers
+#include "sbgEComCmdCommon.h"
 #include "sbgEComCmdGnss.h"
-#include "transfer/sbgEComTransfer.h"
 
 //----------------------------------------------------------------------//
 //- Private methods                                                    -//
@@ -20,33 +21,37 @@
  * \param[in]	cmdId						The command identifier to set parameters for a specific GNSS module.
  * \return									SBG_NO_ERROR if the command has been executed successfully.
  */
-static SbgErrorCode sbgEComCmdGnssSetModelId(SbgEComHandle *pHandle, uint32_t id, SbgEComCmd cmdId)
+static SbgErrorCode sbgEComCmdGnssSetModelId(SbgEComHandle *pHandle, SbgEComGnssModelsStdIds modelId, SbgEComCmd cmdId)
 {
 	assert(pHandle);
 
-	//
-	// Call generic function with specific command name
-	//
-	return sbgEComCmdGenericSetModelId(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, cmdId, id);
+	return sbgEComCmdGenericSetModelId(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, cmdId, modelId);
 }
 
 /*!
- * Retrieve GNSS error model information.
+ * Retrieve GNSS error model id.
  *
  * \param[in]	pHandle						A valid sbgECom handle.
- * \param[out]	pMotionProfileInfo			Pointer to a SbgEComModelInfo to contain the current GNSS error model info.
+ * \param[out]	pModelId					Retrieved model id.
  * \param[in]	cmdId						The command identifier to get parameters for a specific GNSS module.
  * \return									SBG_NO_ERROR if the command has been executed successfully.
  */
-static SbgErrorCode sbgEComCmdGnssGetModelInfo(SbgEComHandle *pHandle, SbgEComModelInfo *pModelInfo, SbgEComCmd cmdId)
+static SbgErrorCode sbgEComCmdGnssGetModelId(SbgEComHandle *pHandle, SbgEComGnssModelsStdIds *pModelId, SbgEComCmd cmdId)
 {
-	assert(pHandle);
-	assert(pModelInfo);
+	SbgErrorCode	errorCode = SBG_NO_ERROR;
+	uint32_t		modelIdAsUint;
 
-	//
-	// Call generic function with specific command name
-	//
-	return sbgEComCmdGenericGetModelInfo(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, cmdId, pModelInfo);
+	assert(pHandle);
+	assert(pModelId);
+
+	errorCode = sbgEComCmdGenericGetModelId(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, cmdId, &modelIdAsUint);
+
+	if (errorCode == SBG_NO_ERROR)
+	{
+		*pModelId = (SbgEComGnssModelsStdIds)modelIdAsUint;
+	}
+
+	return errorCode;
 }
 
 /*!
@@ -59,14 +64,14 @@ static SbgErrorCode sbgEComCmdGnssGetModelInfo(SbgEComHandle *pHandle, SbgEComMo
  */
 static SbgErrorCode sbgEComCmdGnssInstallationGet(SbgEComHandle *pHandle, SbgEComGnssInstallation *pGnssInstallation, SbgEComCmd cmdId)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
 
 	assert(pHandle);
 	assert(pGnssInstallation);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -86,17 +91,19 @@ static SbgErrorCode sbgEComCmdGnssInstallationGet(SbgEComHandle *pHandle, SbgECo
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, cmdId, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, cmdId, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a valid answer
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to read parameters
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				//
 				// Read parameters
@@ -125,6 +132,8 @@ static SbgErrorCode sbgEComCmdGnssInstallationGet(SbgEComHandle *pHandle, SbgECo
 			break;
 		}
 	}
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
 	
 	return errorCode;
 }
@@ -141,7 +150,7 @@ static SbgErrorCode sbgEComCmdGnssInstallationSet(SbgEComHandle *pHandle, const 
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
 	uint32_t			trial;
-	uint8_t				outputBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	uint8_t				outputBuffer[64];
 	SbgStreamBuffer		outputStream;
 
 	assert(pHandle);
@@ -218,14 +227,14 @@ static SbgErrorCode sbgEComCmdGnssInstallationSet(SbgEComHandle *pHandle, const 
  */
 static SbgErrorCode sbgEComCmdGnssGetRejection(SbgEComHandle *pHandle, SbgEComGnssRejectionConf *pRejectConf, SbgEComCmd cmdId)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
 
 	assert(pHandle);
 	assert(pRejectConf);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -245,17 +254,19 @@ static SbgErrorCode sbgEComCmdGnssGetRejection(SbgEComHandle *pHandle, SbgEComGn
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, cmdId, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, cmdId, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a SBG_ECOM_CMD_GNSS_1_REJECT_MODES command
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to read parameters
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				//
 				// Read parameters
@@ -279,6 +290,8 @@ static SbgErrorCode sbgEComCmdGnssGetRejection(SbgEComHandle *pHandle, SbgEComGn
 			break;
 		}
 	}
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
 	
 	return errorCode;
 }
@@ -295,7 +308,7 @@ static SbgErrorCode sbgEComCmdGnssSetRejection(SbgEComHandle *pHandle, const Sbg
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
 	uint32_t			trial;
-	uint8_t				outputBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	uint8_t				outputBuffer[64];
 	SbgStreamBuffer		outputStream;
 
 	assert(pHandle);
@@ -358,159 +371,22 @@ static SbgErrorCode sbgEComCmdGnssSetRejection(SbgEComHandle *pHandle, const Sbg
 }
 
 //----------------------------------------------------------------------//
-//- GNSS public commands		                                       -//
+//- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
-SbgErrorCode sbgEComCmdGnss1SetModelId(SbgEComHandle *pHandle, uint32_t id)
+SbgErrorCode sbgEComCmdGnss1SetModelId(SbgEComHandle *pHandle, SbgEComGnssModelsStdIds modelId)
 {
 	assert(pHandle);
 
-	return sbgEComCmdGnssSetModelId(pHandle, id, SBG_ECOM_CMD_GNSS_1_MODEL_ID);
+	return sbgEComCmdGnssSetModelId(pHandle, modelId, SBG_ECOM_CMD_GNSS_1_MODEL_ID);
 }
 
-SbgErrorCode sbgEComCmdGnss1GetModelInfo(SbgEComHandle *pHandle, SbgEComModelInfo *pModelInfo)
+SbgErrorCode sbgEComCmdGnss1GetModelId(SbgEComHandle *pHandle, SbgEComGnssModelsStdIds *pModelId)
 {
 	assert(pHandle);
-	assert(pModelInfo);
+	assert(pModelId);
 
-	return sbgEComCmdGnssGetModelInfo(pHandle, pModelInfo, SBG_ECOM_CMD_GNSS_1_MODEL_ID);
-}
-
-SbgErrorCode sbgEComCmdGnss1GetLeverArmAlignment(SbgEComHandle *pHandle, SbgEComGnssAlignmentInfo *pAlignConf)
-{
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
-
-	assert(pHandle);
-	assert(pAlignConf);
-
-	//
-	// Send the command three times
-	//
-	for (trial = 0; trial < pHandle->numTrials; trial++)
-	{
-		//
-		// Send the command only since this is a no-payload command
-		//
-		errorCode = sbgEComProtocolSend(&pHandle->protocolHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_GNSS_1_LEVER_ARM_ALIGNMENT, NULL, 0);
-
-		//
-		// Make sure that the command has been sent
-		//
-		if (errorCode == SBG_NO_ERROR)
-		{
-			//
-			// Try to read the device answer for 500 ms
-			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_GNSS_1_LEVER_ARM_ALIGNMENT, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
-
-			//
-			// Test if we have received a SBG_ECOM_CMD_GNSS_1_LEVER_ARM_ALIGNMENT command
-			//
-			if (errorCode == SBG_NO_ERROR)
-			{
-				//
-				// Initialize stream buffer to read parameters
-				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
-
-				//
-				// Read parameters
-				//
-				pAlignConf->leverArmX = sbgStreamBufferReadFloatLE(&inputStream);
-				pAlignConf->leverArmY = sbgStreamBufferReadFloatLE(&inputStream);
-				pAlignConf->leverArmZ = sbgStreamBufferReadFloatLE(&inputStream);
-				pAlignConf->pitchOffset = sbgStreamBufferReadFloatLE(&inputStream);
-				pAlignConf->yawOffset = sbgStreamBufferReadFloatLE(&inputStream);
-				pAlignConf->antennaDistance = sbgStreamBufferReadFloatLE(&inputStream);
-
-				//
-				// The command has been executed successfully so return
-				//
-				break;
-			}
-		}
-		else
-		{
-			//
-			// We have a write error so exit the try loop
-			//
-			break;
-		}
-	}
-	
-	return errorCode;
-}
-
-SbgErrorCode sbgEComCmdGnss1SetLeverArmAlignment(SbgEComHandle *pHandle, const SbgEComGnssAlignmentInfo *pAlignConf)
-{
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	uint8_t				outputBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		outputStream;
-
-	assert(pHandle);
-	assert(pAlignConf);
-
-	//
-	// Send the command three times
-	//
-	for (trial = 0; trial < pHandle->numTrials; trial++)
-	{
-		//
-		// Initialize stream buffer for output
-		//
-		sbgStreamBufferInitForWrite(&outputStream, outputBuffer, sizeof(outputBuffer));
-
-		//
-		// Build payload
-		//
-		sbgStreamBufferWriteFloatLE(&outputStream, pAlignConf->leverArmX);
-		sbgStreamBufferWriteFloatLE(&outputStream, pAlignConf->leverArmY);
-		sbgStreamBufferWriteFloatLE(&outputStream, pAlignConf->leverArmZ);
-		sbgStreamBufferWriteFloatLE(&outputStream, pAlignConf->pitchOffset);
-		sbgStreamBufferWriteFloatLE(&outputStream, pAlignConf->yawOffset);
-		sbgStreamBufferWriteFloatLE(&outputStream, pAlignConf->antennaDistance);
-
-		//
-		// Send the payload over ECom
-		//
-		errorCode = sbgEComProtocolSend(&pHandle->protocolHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_GNSS_1_LEVER_ARM_ALIGNMENT, sbgStreamBufferGetLinkedBuffer(&outputStream), sbgStreamBufferGetLength(&outputStream));
-
-		//
-		// Make sure that the command has been sent
-		//
-		if (errorCode == SBG_NO_ERROR)
-		{
-			//
-			// Try to read the device answer for 500 ms
-			//
-			errorCode = sbgEComWaitForAck(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_GNSS_1_LEVER_ARM_ALIGNMENT, pHandle->cmdDefaultTimeOut);
-
-			//
-			// Test if we have received a valid ACK
-			//
-			if (errorCode == SBG_NO_ERROR)
-			{
-				//
-				// The command has been executed successfully so return
-				//
-				break;
-			}
-		}
-		else
-		{
-			//
-			// We have a write error so exit the try loop
-			//
-			break;
-		}
-	}
-	
-	return errorCode;
+	return sbgEComCmdGnssGetModelId(pHandle, pModelId, SBG_ECOM_CMD_GNSS_1_MODEL_ID);
 }
 
 SbgErrorCode sbgEComCmdGnss1InstallationGet(SbgEComHandle *pHandle, SbgEComGnssInstallation *pGnssInstallation)

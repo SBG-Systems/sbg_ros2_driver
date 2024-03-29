@@ -1,15 +1,18 @@
-﻿/* sbgCommonLib headers */
+﻿// sbgCommonLib headers
+#include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 
-/* Project headers */
-#include "transfer/sbgEComTransfer.h"
+// Project headers
+#include <sbgECom.h>
 
-/* Local headers */
+// Local headers
 #include "sbgEComCmdAirData.h"
+#include "sbgEComCmdCommon.h"
 
 //----------------------------------------------------------------------//
 //- Public methods                                                     -//
 //----------------------------------------------------------------------//
+
 
 SbgErrorCode sbgEComCmdAirDataSetModelId(SbgEComHandle *pHandle, SbgEComAirDataModelsIds modelId)
 {
@@ -112,13 +115,13 @@ SbgErrorCode sbgEComCmdAirDataSetLeverArm(SbgEComHandle *pHandle, const float *p
 SbgErrorCode sbgEComCmdAirDataGetLeverArm(SbgEComHandle *pHandle, float *pLeverArm)
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
 	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[64];
-	SbgStreamBuffer		inputStream;
-
+	
 	assert(pHandle);
 	assert(pLeverArm);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -138,17 +141,19 @@ SbgErrorCode sbgEComCmdAirDataGetLeverArm(SbgEComHandle *pHandle, float *pLeverA
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_AIRDATA_LEVER_ARM, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_AIRDATA_LEVER_ARM, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a SBG_ECOM_CMD_GNSS_1_LEVER_ARM_ALIGNMENT command
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to parse the payload
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				pLeverArm[0] = sbgStreamBufferReadFloatLE(&inputStream);
 				pLeverArm[1] = sbgStreamBufferReadFloatLE(&inputStream);
@@ -169,6 +174,8 @@ SbgErrorCode sbgEComCmdAirDataGetLeverArm(SbgEComHandle *pHandle, float *pLeverA
 			break;
 		}
 	}
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
 
 	return errorCode;
 }
@@ -247,14 +254,14 @@ SbgErrorCode sbgEComCmdAirDataSetRejection(SbgEComHandle *pHandle, const SbgECom
 
 SbgErrorCode sbgEComCmdAirDataGetRejection(SbgEComHandle *pHandle, SbgEComAirDataRejectionConf *pRejectConf)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[2 * sizeof(uint8_t)];
-	SbgStreamBuffer		inputStream;
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
 
 	assert(pHandle);
 	assert(pRejectConf);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -274,17 +281,19 @@ SbgErrorCode sbgEComCmdAirDataGetRejection(SbgEComHandle *pHandle, SbgEComAirDat
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_AIRDATA_REJECT_MODES, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_AIRDATA_REJECT_MODES, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a SBG_ECOM_CMD_GNSS_1_REJECT_MODES command
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to parse payload
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				//
 				// Parse the payload
@@ -307,6 +316,8 @@ SbgErrorCode sbgEComCmdAirDataGetRejection(SbgEComHandle *pHandle, SbgEComAirDat
 			break;
 		}
 	}
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
 
 	return errorCode;
 }

@@ -1,37 +1,47 @@
-/*!
- *	\file		sbgEComCmdFeatures.h
- *  \author		SBG Systems (Alexis Guinamard)
- *	\date		19 March 2015
+ï»¿/*!
+ * \file			sbgEComCmdFeatures.h
+ * \ingroup			commands
+ * \author			SBG Systems
+ * \date			19 March 2015
  *
- *	\brief		This file implements SbgECom commands related to device features.
+ * \brief			Commands used to query supported device features.
  *
- *	\section CodeCopyright Copyright Notice 
- *  The MIT license
- *  
- *  Copyright (C) 2007-2020, SBG Systems SAS. All rights reserved.
+ * \copyright		Copyright (C) 2022, SBG Systems SAS. All rights reserved.
+ * \beginlicense	The MIT license
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *  
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * \endlicense
  */
-#ifndef __SBG_ECOM_CMD_FEATURES_H__
-#define __SBG_ECOM_CMD_FEATURES_H__
 
-#include "sbgEComCmdCommon.h"
+#ifndef SBG_ECOM_CMD_FEATURES_H
+#define SBG_ECOM_CMD_FEATURES_H
+
+// sbgCommonLib headers
+#include <sbgCommon.h>
+
+// Project headers
+#include <sbgECom.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //----------------------------------------------------------------------//
 //- Feature commands definitions                                       -//
@@ -90,8 +100,9 @@ typedef enum _SbgEComGnssType
 	SBG_ECOM_GNSS_TYPE_NOV_OEM615		= 3,	/*!< Novatel OEM615 device */
 	SBG_ECOM_GNSS_TYPE_NOV_OEM615_DUAL	= 4,	/*!< Two Novatel OEM615 devices for dual antenna */
 	SBG_ECOM_GNSS_TYPE_NOV_OEM617D		= 5,	/*!< Novatel OEM617D device */
-	SBG_ECOM_GNSS_TYPE_SEP_AX4			= 6,	/*!< Septentrio Asterx m4 */
-	SBG_ECOM_GNSS_TYPE_SEP_AXM2A		= 7		/*!< Septentrio Asterx m2a */
+	SBG_ECOM_GNSS_TYPE_SEP_AX4			= 6,	/*!< Septentrio AsteRx-m4 */
+	SBG_ECOM_GNSS_TYPE_SEP_AXM2A		= 7,	/*!< Septentrio AsteRx-m2a */
+	SBG_ECOM_GNSS_TYPE_UBX_F9P			= 8,	/*!< Ublox ZED-F9P module */
 } SbgEComGnssType;
 
 /*!
@@ -100,24 +111,30 @@ typedef enum _SbgEComGnssType
 typedef struct _SbgEComFeatures
 {
 	uint32_t			sensorFeaturesMask;			/*!< The different measurement capabilities of this unit */
-	SbgEComGnssType gnssType;					/*!< The type of GNSS receiver used (brand and model) */
-	uint8_t			gnssUpdateRate;				/*!< The actual GNSS update rate */
+	SbgEComGnssType		gnssType;					/*!< The type of GNSS receiver used (brand and model) */
+	uint8_t				gnssUpdateRate;				/*!< The actual GNSS update rate */
 	uint32_t			gnssSignalsMask;			/*!< GNSS receiver signals tracking */
 	uint32_t			gnssFeaturesMask;			/*!< GNSS receiver computation and output features */
-	char			gnssProductCode[32];		/*!< String containing the GNSS receiver product code (“\0” if unknown) */
-	char			gnssSerialNumber[32];		/*!< String containing the GNSS receiver serial number (“\0” if unknown) */
+	char				gnssProductCode[32];		/*!< String containing the GNSS receiver product code ("\0" if unknown) */
+	char				gnssSerialNumber[32];		/*!< String containing the GNSS receiver serial number ("\0" if unknown) */
+	char				gnssFirmwareVersion[32];	/*!< String containing the GNSS receiver firmware version ("\0" if unknown) */
 } SbgEComFeatures;
 
 //----------------------------------------------------------------------//
-//- Info commands				                                       -//
+//- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
 /*!
- *	Retrieve the device and embedded GPS receiver features.
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[in]	pFeatures					A pointer to a structure to hold features.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
+ * Retrieve the device and embedded GPS receiver features.
+ * 
+ * \param[in]	pHandle						A valid sbgECom handle.
+ * \param[in]	pFeatures					A pointer to a structure to hold features.
+ * \return									SBG_NO_ERROR if the command has been executed successfully.
  */
 SbgErrorCode sbgEComCmdGetFeatures(SbgEComHandle *pHandle, SbgEComFeatures *pFeatures);
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif // SBG_ECOM_CMD_FEATURES_H

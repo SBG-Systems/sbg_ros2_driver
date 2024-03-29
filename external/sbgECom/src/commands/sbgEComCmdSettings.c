@@ -1,20 +1,19 @@
-﻿#include "sbgEComCmdSettings.h"
-#include "transfer/sbgEComTransfer.h"
+﻿// sbgCommonLib headers
+#include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 
+// Project headers
+#include <sbgECom.h>
+#include <transfer/sbgEComTransfer.h>
+
+// Local headers
+#include "sbgEComCmdCommon.h"
+#include "sbgEComCmdSettings.h"
+
 //----------------------------------------------------------------------//
-//- Settings commands                                                  -//
+//- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
-/*!
- *	Execute one of the available settings action : <BR>
- *			- SBG_ECOM_REBOOT_ONLY : Only reboot the device.<BR>
- *			- SBG_ECOM_SAVE_SETTINGS : Save the settings to non-volatile memory and then reboot the device.<BR>
- *			- SBG_ECOM_RESTORE_DEFAULT_SETTINGS : Restore default settings, save them to non-volatile memory and reboot the device.<BR>
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[in]	action						One of the available SbgEComSettingsAction.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
 SbgErrorCode sbgEComCmdSettingsAction(SbgEComHandle *pHandle, SbgEComSettingsAction action)
 {
 	SbgErrorCode	errorCode = SBG_NO_ERROR;
@@ -23,6 +22,12 @@ SbgErrorCode sbgEComCmdSettingsAction(SbgEComHandle *pHandle, SbgEComSettingsAct
 	SbgStreamBuffer	outputStream;
 
 	assert(pHandle);
+
+	//
+	// Build the payload to send
+	//
+	sbgStreamBufferInitForWrite(&outputStream, outputBuffer, sizeof(outputBuffer));
+	sbgStreamBufferWriteUint8(&outputStream, action);
 	
 	//
 	// Send the command three times
@@ -30,10 +35,8 @@ SbgErrorCode sbgEComCmdSettingsAction(SbgEComHandle *pHandle, SbgEComSettingsAct
 	for (trial = 0; trial < pHandle->numTrials; trial++)
 	{	
 		//
-		// Send the command and the action as a 1-byte payload
+		// Send the command and the action
 		//
-		sbgStreamBufferInitForWrite(&outputStream, outputBuffer, sizeof(outputBuffer));
-		sbgStreamBufferWriteUint8(&outputStream, action);
 		errorCode = sbgEComProtocolSend(&pHandle->protocolHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_SETTINGS_ACTION, sbgStreamBufferGetLinkedBuffer(&outputStream), sbgStreamBufferGetLength(&outputStream));
 
 		//
@@ -69,14 +72,6 @@ SbgErrorCode sbgEComCmdSettingsAction(SbgEComHandle *pHandle, SbgEComSettingsAct
 	return errorCode;
 }
 
-/*!
- *	Send a complete set of settings to the device and store them into the FLASH memory.
- *	The device will reboot automatically to use the new settings.
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[in]	pBuffer						Read only buffer containing the settings.
- *	\param[in]	size						Size of the buffer.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
 SbgErrorCode sbgEComCmdImportSettings(SbgEComHandle *pHandle, const void *pBuffer, size_t size)
 {
 	//
@@ -85,14 +80,6 @@ SbgErrorCode sbgEComCmdImportSettings(SbgEComHandle *pHandle, const void *pBuffe
 	return sbgEComTransferSend(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_IMPORT_SETTINGS, pBuffer, size);
 }
 
-/*!
- *	Retrieve a complete set of settings from the device as a buffer.
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[in]	pBuffer						Allocated buffer that can hold the received settings.
- *	\param[out]	pSize						The number of bytes that have been stored into pBuffer.
- *	\param[in]	maxSize						The maximum buffer size in bytes that can be stored into pBuffer.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
 SbgErrorCode sbgEComCmdExportSettings(SbgEComHandle *pHandle, void *pBuffer, size_t *pSize, size_t maxSize)
 {
 	//
