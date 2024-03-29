@@ -86,19 +86,19 @@ private:
   bool                        configure_through_ros_;
 
   SbgEComInitConditionConf    init_condition_conf_;
-  SbgEComModelInfo            motion_profile_model_info_;
+  SbgEComMotionProfileStdIds  motion_profile_model_info_;
 
   SbgEComSensorAlignmentInfo  sensor_alignement_info_;
   SbgVector3<float>           sensor_lever_arm_;
 
   SbgEComAidingAssignConf     aiding_assignement_conf_;
 
-  SbgEComModelInfo            mag_model_info_;
+  SbgEComMagModelsStdId       mag_model_info_;
   SbgEComMagRejectionConf     mag_rejection_conf_;
   SbgEComMagCalibMode         mag_calib_mode_;
   SbgEComMagCalibBandwidth    mag_calib_bandwidth_;
 
-  SbgEComModelInfo            gnss_model_info_;
+  SbgEComGnssModelsStdIds     gnss_model_info_;
   SbgEComGnssInstallation     gnss_installation_;
   SbgEComGnssRejectionConf    gnss_rejection_conf_;
 
@@ -349,7 +349,7 @@ public:
    *
    * \return                                Motion profile configuration.
    */
-  const SbgEComModelInfo &getMotionProfile() const;
+  const SbgEComMotionProfileStdIds &getMotionProfile() const;
 
   /*!
    * Get the sensor alignement configuration.
@@ -377,7 +377,7 @@ public:
    *
    * \return                                Magnetometer model configuration.
    */
-  const SbgEComModelInfo &getMagnetometerModel() const;
+  const SbgEComMagModelsStdId &getMagnetometerModel() const;
 
   /*!
    * Get the magnetometer rejection configuration.
@@ -405,7 +405,7 @@ public:
    *
    * \return                                Gnss model configuration.
    */
-  const SbgEComModelInfo &getGnssModel() const;
+  const SbgEComGnssModelsStdIds &getGnssModel() const;
 
   /*!
    * Get the Gnss installation configuration.

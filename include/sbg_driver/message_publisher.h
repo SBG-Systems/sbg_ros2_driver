@@ -123,7 +123,7 @@ private:
    *
    * \param[in] ref_sbg_log             SBG log.
    */
-  void publishIMUData(const SbgBinaryLogData &ref_sbg_log);
+  void publishIMUData(const SbgEComLogUnion &ref_sbg_log);
 
   /*!
    * Process a ROS Velocity standard message.
@@ -145,28 +145,28 @@ private:
    *
    * \param[in] ref_sbg_log             SBG log.
    */
-  void publishMagData(const SbgBinaryLogData &ref_sbg_log);
+  void publishMagData(const SbgEComLogUnion &ref_sbg_log);
 
   /*!
    * Publish a received SBG Fluid pressure log.
    *
    * \param[in] ref_sbg_log             SBG log.
    */
-  void publishFluidPressureData(const SbgBinaryLogData &ref_sbg_log);
+  void publishFluidPressureData(const SbgEComLogUnion &ref_sbg_log);
 
   /*!
    * Publish a received SBG EkfNav log.
    *
    * \param[in] ref_sbg_log             SBG log.
    */
-  void publishEkfNavigationData(const SbgBinaryLogData &ref_sbg_log);
+  void publishEkfNavigationData(const SbgEComLogUnion &ref_sbg_log);
 
   /*!
    * Publish a received SBG UTC log.
    *
    * \param[in] ref_sbg_log             SBG log.
    */
-  void publishUtcData(const SbgBinaryLogData &ref_sbg_log);
+  void publishUtcData(const SbgEComLogUnion &ref_sbg_log);
 
   /*!
    * Publish a received SBG GpsPos log.
@@ -174,7 +174,7 @@ private:
    * \param[in] ref_sbg_log             SBG log.
    * \param[in] sbg_msg_id              Id of the SBG message.
    */
-  void publishGpsPosData(const SbgBinaryLogData &ref_sbg_log, SbgEComMsgId sbg_msg_id);
+  void publishGpsPosData(const SbgEComLogUnion &ref_sbg_log, SbgEComMsgId sbg_msg_id);
 
 public:
 
@@ -206,7 +206,7 @@ public:
    * \param[in] sbg_msg_id              Id of the SBG message.
    * \param[in] ref_sbg_log             SBG binary log.
    */
-  void publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgBinaryLogData &ref_sbg_log);
+  void publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgEComLogUnion &ref_sbg_log);
 };
 }
 

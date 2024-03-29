@@ -92,7 +92,7 @@ private:
    *
    * \param[in] ref_motion_profile          Motion profile configuration to apply.
    */
-  void configureMotionProfile(const SbgEComModelInfo& ref_motion_profile);
+  void configureMotionProfile(const SbgEComMotionProfileStdIds& ref_motion_profile);
 
   /*!
    * Configure the IMU alignement.
@@ -114,7 +114,7 @@ private:
    *
    * \param[in] ref_mag_model               Magnetometers model configuration to apply.
    */
-  void configureMagModel(const SbgEComModelInfo& ref_mag_model);
+  void configureMagModel(const SbgEComMagModelsStdId& ref_mag_model);
 
   /*!
    * Configure the magnetometers rejection.
@@ -128,7 +128,7 @@ private:
    *
    * \param[in] ref_gnss_model              Gnss model configuration to apply.
    */
-  void configureGnssModel(const SbgEComModelInfo& ref_gnss_model);
+  void configureGnssModel(const SbgEComGnssModelsStdIds& ref_gnss_model);
 
   /*!
    * Configure the Gnss installation.
