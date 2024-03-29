@@ -1,42 +1,50 @@
 /*!
- *	\file		sbgEComCmdCommon.h
- *  \author		SBG Systems (Maxime Renaudet)
- *	\date		11 June 2014
+ * \file			sbgEComCmdCommon.h
+ * \ingroup			commands
+ * \author			SBG Systems
+ * \date			11 June 2014
  *
- *	\brief		This file groups all common definitions required by all commands.
+ * \brief			Definitions and methods common to all commands.
  *
- *	\section CodeCopyright Copyright Notice 
- *  The MIT license
- *  
- *  Copyright (C) 2007-2020, SBG Systems SAS. All rights reserved.
+ * \copyright		Copyright (C) 2022, SBG Systems SAS. All rights reserved.
+ * \beginlicense	The MIT license
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *  
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * \endlicense
  */
 
+#ifndef SBG_ECOM_CMD_COMMON_H
+#define SBG_ECOM_CMD_COMMON_H
 
-#ifndef __SBG_ECOM_CMD_COMMON_H__
-#define __SBG_ECOM_CMD_COMMON_H__
+// sbgCommonLib headers
+#include <sbgCommon.h>
 
-#include "../sbgECom.h"
+// Project headers
+#include <sbgECom.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //----------------------------------------------------------------------//
-//- Defintions                                                         -//
+//- Definitions                                                        -//
 //----------------------------------------------------------------------//
 
 #define SBG_ECOM_DEFAULT_CMD_TIME_OUT	(500)	/*!< Default time out in ms for commands reception. */
@@ -64,57 +72,103 @@ typedef enum _SbgEComAxisDirection
 	SBG_ECOM_ALIGNMENT_DOWN			= 5			/*!< IMU/module Axis is turned in vehicle's down direction. */
 } SbgEComAxisDirection;
 
-/*!
- * Common model information structure.
- * This is used for motion profile or Magnetometer,Gps, or other aiding sensor error model.
- */
-typedef struct _SbgEComModelInfo
-{
-	uint32_t	id;									/*!< Identifier of the model */
-	uint32_t	revision;							/*!< Revision of the model */
-} SbgEComModelInfo;
-
 //----------------------------------------------------------------------//
 //- Common command reception operations                                -//
 //----------------------------------------------------------------------//
 
 /*!
- *	Wait until any command that is not a output log is recevied during a specific time out.
- *	All binary logs received during this time are handled trough the standard callback system.
- *	\param[in]	pHandle					A valid sbgECom handle.
- *	\param[out]	pMsgClass				Pointer used to hold the received command class.
- *	\param[out]	pMsg					Pointer used to hold the received command ID.
- *	\param[out]	pData					Allocated buffer used to hold received data field.
- *	\param[out]	pSize					Pointer used to hold the received data field size.
- *	\param[in]	maxSize					Max number of bytes that can be stored in the pData buffer.
- *	\param[in]	timeOut					Time out in ms during which we can receive the command.
- *	\return								SBG_NO_ERROR if we have received a valid frame.<br>
- *										SBG_NOT_READY if we haven't received a valid frame or if the serial buffer is empty.<br>
- *										SBG_INVALID_CRC if the received frame has an invalid CRC.<br>
- *										SBG_NULL_POINTER if an input parameter is NULL.<br>
- *										SBG_BUFFER_OVERFLOW if the received frame payload couldn't fit into the pData buffer.
- *										SBG_TIME_OUT if the command hasn't been received withint the specified time out.
+ * Receive a command message.
+ *
+ * All binary logs received are handled trough the standard callback system.
+ *
+ * \param[in]	pHandle					SbgECom handle.
+ * \param[out]	pMsgClass				Message class.
+ * \param[out]	pMsgId					Message ID.
+ * \param[out]	pData					Data buffer, may be NULL.
+ * \param[out]	pSize					Number of bytes received, in bytes, may be NULL.
+ * \param[in]	maxSize					Data buffer size, in bytes.
+ * \param[in]	timeOut					Time-out, in ms.
+ * \return								SBG_NO_ERROR if successful,
+ *										SBG_TIME_OUT if no command message was received within the specified time out (even if timeOut = 0).
+ *										SBG_NOT_READY to indicate the underlying interface is empty (only applicable when timeOut = 0).
+ *										SBG_BUFFER_OVERFLOW if the payload of the received frame couldn't fit into the buffer,
  */
-SbgErrorCode sbgEComReceiveAnyCmd(SbgEComHandle *pHandle, uint8_t *pMsgClass, uint8_t *pMsg, void *pData, size_t *pSize, size_t maxSize, uint32_t timeOut);
+SbgErrorCode sbgEComReceiveAnyCmd(SbgEComHandle *pHandle, uint8_t *pMsgClass, uint8_t *pMsgId, void *pData, size_t *pSize, size_t maxSize, uint32_t timeOut);
 
 /*!
- *	Wait for a specific command to be received given a time out.
- *	All binary logs received during this time are handled trough the standard callback system.
- *	\param[in]	pHandle					A valid sbgECom handle.
- *	\param[out]	msgClass				Command class we expect to receive
- *	\param[out]	msg						Message id we expect to receive
- *	\param[out]	pData					Allocated buffer used to hold received data field.
- *	\param[out]	pSize					Pointer used to hold the received data field size.
- *	\param[in]	maxSize					Max number of bytes that can be stored in the pData buffer.
- *	\param[in]	timeOut					Time out in ms during which we can receive the command.
- *	\return								SBG_NO_ERROR if we have received a valid frame.<br>
- *										SBG_NOT_READY if we haven't received a valid frame or if the serial buffer is empty.<br>
- *										SBG_INVALID_CRC if the received frame has an invalid CRC.<br>
- *										SBG_NULL_POINTER if an input parameter is NULL.<br>
- *										SBG_BUFFER_OVERFLOW if the received frame payload couldn't fit into the pData buffer.
- *										SBG_TIME_OUT if the command hasn't been received withint the specified time out.
+ * Receive a command message.
+ *
+ * All binary logs received are handled trough the standard callback system.
+ *
+ * This function is equivalent to sbgEComReceiveAnyCmd() with two exceptions :
+ *  - the use of a payload object allows handling payloads not limited by the size of a user-provided buffer
+ *  - the payload object allows direct access to the protocol work buffer to avoid an extra copy per call
+ *
+ * Any allocated resource associated with the given payload is released when calling this function.
+ *
+ * Because the payload buffer may directly refer to the protocol work buffer on return, it is only valid until
+ * the next attempt to receive a frame, with any of the receive functions.
+ *
+ * \param[in]	pHandle					SbgECom handle.
+ * \param[out]	pMsgClass				Message class.
+ * \param[out]	pMsgId					Message ID.
+ * \param[out]	pPayload				Payload.
+ * \param[in]	timeOut					Time-out, in ms.
+ * \return								SBG_NO_ERROR if successful.
+ *										SBG_TIME_OUT if no command message was received within the specified time out (even if timeOut = 0).
+ *										SBG_NOT_READY to indicate the underlying interface is empty (only applicable when timeOut = 0).
  */
-SbgErrorCode sbgEComReceiveCmd(SbgEComHandle *pHandle, uint8_t msgClass, uint8_t msg, void *pData, size_t *pSize, size_t maxSize, uint32_t timeOut);
+SbgErrorCode sbgEComReceiveAnyCmd2(SbgEComHandle *pHandle, uint8_t *pMsgClass, uint8_t *pMsgId, SbgEComProtocolPayload *pPayload, uint32_t timeOut);
+
+/*!
+ * Receive a specific command message.
+ *
+ * This function also processes ACK messages for the given class and ID.
+ *
+ * All binary logs received during this time are handled trough the standard callback system.
+ *
+ * \param[in]	pHandle					SbgECom handle.
+ * \param[in]	msgClass				Message class.
+ * \param[in]	msgId					Message ID.
+ * \param[out]	pData					Data buffer.
+ * \param[out]	pSize					Number of bytes received, in bytes.
+ * \param[in]	maxSize					Data buffer size, in bytes.
+ * \param[in]	timeOut					Time-out, in ms.
+ * \return								SBG_NO_ERROR if successful,
+ *										SBG_NOT_READY if no command message has been received,
+ *										SBG_BUFFER_OVERFLOW if the payload of the received frame couldn't fit into the buffer,
+ *										SBG_TIME_OUT if no command message was received within the specified time out,
+ *										any error code reported by an ACK message for the given class and ID.
+ */
+SbgErrorCode sbgEComReceiveCmd(SbgEComHandle *pHandle, uint8_t msgClass, uint8_t msgId, void *pData, size_t *pSize, size_t maxSize, uint32_t timeOut);
+
+/*!
+ * Receive a specific command message.
+ *
+ * This function also processes ACK messages for the given class and ID.
+ *
+ * All binary logs received during this time are handled trough the standard callback system.
+ *
+ * This function is equivalent to sbgEComReceiveCmd() with two exceptions :
+ *  - the use of a payload object allows handling payloads not limited by the size of a user-provided buffer
+ *  - the payload object allows direct access to the protocol work buffer to avoid an extra copy per call
+ *
+ * Any allocated resource associated with the given payload is released when calling this function.
+ *
+ * Because the payload buffer may directly refer to the protocol work buffer on return, it is only valid until
+ * the next attempt to receive a frame, with any of the receive functions.
+ *
+ * \param[in]	pHandle					SbgECom handle.
+ * \param[in]	msgClass				Message class.
+ * \param[in]	msgId					Message ID.
+ * \param[out]	pPayload				Payload.
+ * \param[in]	timeOut					Time-out, in ms.
+ * \return								SBG_NO_ERROR if successful,
+ *										SBG_NOT_READY if no command message has been received 
+ *										SBG_TIME_OUT if no command message was received within the specified time out,
+ *										any error code reported by an ACK message for the given class and ID.
+ */
+SbgErrorCode sbgEComReceiveCmd2(SbgEComHandle *pHandle, uint8_t msgClass, uint8_t msgId, SbgEComProtocolPayload *pPayload, uint32_t timeOut);
 
 //----------------------------------------------------------------------//
 //- ACK related commands  operations                                   -//
@@ -168,15 +222,8 @@ SbgErrorCode sbgEComCmdGenericSetModelId(SbgEComHandle *pHandle, uint8_t msgClas
  */
 SbgErrorCode sbgEComCmdGenericGetModelId(SbgEComHandle *pHandle, uint8_t msgClass, uint8_t msg, uint32_t *pModelId);
 
-/*!
- * Generic function to retrieve error model information.
- *
- * \param[in]	pHandle						A valid sbgECom handle.
- * \param[in]	msgClass					Original message class
- * \param[in]	msg							Original message ID
- * \param[out]	pMotionProfileInfo			Pointer to a SbgEComModelInfo to contain model info.
- * \return									SBG_NO_ERROR if the command has been executed successfully.
- */
-SbgErrorCode sbgEComCmdGenericGetModelInfo(SbgEComHandle *pHandle, uint8_t msgClass, uint8_t msg, SbgEComModelInfo *pModelInfo);
-
+#ifdef __cplusplus
+}
 #endif
+
+#endif // SBG_ECOM_CMD_COMMON_H

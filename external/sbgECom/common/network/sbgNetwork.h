@@ -1,65 +1,67 @@
-﻿/*!
- *	\file		sbgNetwork.h
- *  \author		SBG Systems (Raphael Siryani)
- *	\date		15 September 2015
+/*!
+ * \file		sbgNetwork.h
+ * \ingroup		common
+ * \author		SBG Systems
+ * \date		September 15, 2015
  *
- *	\brief		Useful methods for Network handling such as ip addresses.
+ * \brief		Network related tools
  *
- *	IP v4 address is stored in memory with a uint32_t.
- *	Each address component A.B.C.D is stored in 8 bits using the network
- *	endianess ie Big Endian.
+ * IP v4 address is stored in memory with a uint32_t.
+ * Each address component A.B.C.D is stored in 8 bits using the network
+ * endianess ie Big Endian.
  *
- *	We thus have the following memory organisation:
- *	
- *	In Little Endian:
- *		|LSB|   |   |MSB|
- *		| A | B | C | D |
+ * We thus have the following memory organisation:
  *
- *	In Big Endian:
- *		|MSB|   |   |LSB|
- *		| A | B | C | D |
+ * In Little Endian:
+ *     |LSB|   |   |MSB|
+ *     | A | B | C | D |
  *
- *	\section CodeCopyright Copyright Notice 
- *  The MIT license
- *  
- *  Copyright (C) 2007-2020, SBG Systems SAS. All rights reserved.
+ * In Big Endian:
+ *     |MSB|   |   |LSB|
+ *     | A | B | C | D |
  *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *  
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
+ * \copyright		Copyright (C) 2022, SBG Systems SAS. All rights reserved.
+ * \beginlicense	The MIT license
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * \endlicense
  */
 
 #ifndef SBG_NETWORK_H
 #define SBG_NETWORK_H
 
-//----------------------------------------------------------------------//
-//- Header (open extern C block)                                       -//
-//----------------------------------------------------------------------//
+// sbgCommonLib headers
+#include <sbgCommon.h>
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <sbgCommon.h>
 
 //----------------------------------------------------------------------//
 //- Common IPv4 definitions                                            -//
 //----------------------------------------------------------------------//
 #define SBG_IPV4_UNSPECIFIED_ADDR	sbgIpAddr(0, 0, 0, 0)				/*!< This represents an undefined IP address. */
 #define SBG_IPV4_BROADCAST_ADDR		sbgIpAddr(255, 255, 255, 255)		/*!< Broadcast IP address used to address all devices within the same network. */
+
+#define SBG_NETWORK_IPV4_STRING_SIZE	(16) /*!< String size for representation of an IPV4 */
 
 //----------------------------------------------------------------------//
 //- IP setters / getters                                               -//
@@ -277,11 +279,9 @@ SBG_INLINE bool sbgIpAddrIsSameNetwork(sbgIpAddress firstIpAddr, sbgIpAddress se
  */
 SBG_COMMON_LIB_API bool sbgIpNetMaskValid(sbgIpAddress netmask);
 
-//----------------------------------------------------------------------//
-//- Footer (close extern C block)                                      -//
-//----------------------------------------------------------------------//
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SBG_NETWORK_H */
+#endif // SBG_NETWORK_H

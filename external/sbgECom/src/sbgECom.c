@@ -1,99 +1,66 @@
-﻿#include "sbgECom.h"
+﻿// sbgCommonLib headers
+#include <sbgCommon.h>
+#include <interfaces/sbgInterface.h>
 #include <streamBuffer/sbgStreamBuffer.h>
+
+// Local headers
 #include "commands/sbgEComCmdCommon.h"
+#include "sbgECom.h"
 
 //----------------------------------------------------------------------//
-//- Private methods declarations                                       -//
+//- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
-//----------------------------------------------------------------------//
-//- Public methods declarations                                        -//
-//----------------------------------------------------------------------//
-
-/*!
- *	Initialize the protocol system used to communicate with the product and return the created handle.
- *	\param[out]	pHandle							Pointer used to store the allocated and initialized sbgECom handle.
- *	\param[in]	pInterface						Interface to use for read/write operations.
- *	\return										SBG_NO_ERROR if we have initialised the protocol system.
- */
 SbgErrorCode sbgEComInit(SbgEComHandle *pHandle, SbgInterface *pInterface)
 {
 	SbgErrorCode errorCode = SBG_NO_ERROR;
 	
+	assert(pHandle);
+	assert(pInterface);
+	
 	//
-	// Check input parameters
+	// Initialize the sbgECom handle
 	//
-	if ( (pInterface) && (pHandle) )
-	{
-		//
-		// Initialize the sbgECom handle
-		//
-		pHandle->pReceiveLogCallback	= NULL;
-		pHandle->pUserArg				= NULL;
+	pHandle->pReceiveLogCallback	= NULL;
+	pHandle->pUserArg				= NULL;
 
-		//
-		// Initialize the default number of trials and time out
-		//
-		pHandle->numTrials			= 3;
-		pHandle->cmdDefaultTimeOut	= SBG_ECOM_DEFAULT_CMD_TIME_OUT;
+	//
+	// Initialize the default number of trials and time out
+	//
+	pHandle->numTrials			= 3;
+	pHandle->cmdDefaultTimeOut	= SBG_ECOM_DEFAULT_CMD_TIME_OUT;
 
-		//
-		// Initialize the protocol 
-		//
-		errorCode = sbgEComProtocolInit(&pHandle->protocolHandle, pInterface);
-	}
-	else
-	{
-		errorCode = SBG_NULL_POINTER;
-	}
-
+	//
+	// Initialize the protocol 
+	//
+	errorCode = sbgEComProtocolInit(&pHandle->protocolHandle, pInterface);
+	
 	return errorCode;
 }
 
-/*!
- *	Close the protocol system and release associated memory.
- *	\param[in]	pHandle							A valid sbgECom handle to close.
- *	\return										SBG_NO_ERROR if we have closed and released the sbgECom system.
- */
 SbgErrorCode sbgEComClose(SbgEComHandle *pHandle)
 {
 	SbgErrorCode errorCode = SBG_NO_ERROR;
 
-	//
-	// Test that we have a valid protocol handle
-	//
-	if (pHandle)
-	{
-		//
-		// Close the protocol
-		//
-		errorCode = sbgEComProtocolClose(&pHandle->protocolHandle);
-	}
-	else
-	{
-		errorCode = SBG_NULL_POINTER;
-	}
+	assert(pHandle);
 
+	//
+	// Close the protocol
+	//
+	errorCode = sbgEComProtocolClose(&pHandle->protocolHandle);
+	
 	return errorCode;
 }
 
-/*!
- *	Try to parse one log from the input interface and then return.
- *	\param[in]	pHandle							A valid sbgECom handle.
- *	\return										SBG_NO_ERROR if no error occurs during incoming log parsing.
- */
 SbgErrorCode sbgEComHandleOneLog(SbgEComHandle *pHandle)
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	SbgBinaryLogData	logData;
+	SbgEComLogUnion		logData;
 	uint8_t				receivedMsg;
 	uint8_t				receivedMsgClass;
 	size_t				payloadSize;
 	uint8_t				payloadData[SBG_ECOM_MAX_PAYLOAD_SIZE];
 
-	//
-	// Check input arguments
-	//
 	assert(pHandle);
 
 	//
@@ -114,7 +81,7 @@ SbgErrorCode sbgEComHandleOneLog(SbgEComHandle *pHandle)
 			//
 			// The received frame is a binary log one
 			//
-			errorCode = sbgEComBinaryLogParse((SbgEComClass)receivedMsgClass, (SbgEComMsgId)receivedMsg, payloadData, payloadSize, &logData);
+			errorCode = sbgEComLogParse((SbgEComClass)receivedMsgClass, (SbgEComMsgId)receivedMsg, payloadData, payloadSize, &logData);
 
 			//
 			// Test if the incoming log has been parsed successfully
@@ -131,6 +98,11 @@ SbgErrorCode sbgEComHandleOneLog(SbgEComHandle *pHandle)
 					//
 					errorCode = pHandle->pReceiveLogCallback(pHandle, (SbgEComClass)receivedMsgClass, receivedMsg, &logData, pHandle->pUserArg);
 				}
+
+				//
+				// Clean up resources allocated during parsing, if any.
+				//
+				sbgEComLogCleanup(&logData, (SbgEComClass)receivedMsgClass, (SbgEComMsgId)receivedMsg);
 			}
 			else
 			{
@@ -157,18 +129,10 @@ SbgErrorCode sbgEComHandleOneLog(SbgEComHandle *pHandle)
 	return errorCode;
 }
 
-/*!
- *	Handle all incoming logs until no more log are available in the input interface.
- *	\param[in]	pHandle							A valid sbgECom handle.
- *	\return										SBG_NO_ERROR if no error occurs during incoming logs parsing.
- */
 SbgErrorCode sbgEComHandle(SbgEComHandle *pHandle)
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	
-	//
-	// Check input arguments
-	//
+
 	assert(pHandle);
 
 	//
@@ -185,47 +149,30 @@ SbgErrorCode sbgEComHandle(SbgEComHandle *pHandle)
 	return errorCode;
 }
 
-/*!
- *	Define the callback that should be called each time a new binary log is received.
- *	\param[in]	pHandle							A valid sbgECom handle.
- *	\param[in]	pReceiveLogCallback				Pointer on the callback to call when a new log is received.
- *	\param[in]	pUserArg						Optional user argument that will be passed to the callback method.
- *	\return										SBG_NO_ERROR if the callback and user argument have been defined successfully.
- */
-SbgErrorCode sbgEComSetReceiveLogCallback(SbgEComHandle *pHandle, SbgEComReceiveLogFunc pReceiveLogCallback, void *pUserArg)
+SbgErrorCode sbgEComPurgeIncoming(SbgEComHandle *pHandle)
 {
-	SbgErrorCode errorCode = SBG_NO_ERROR;
+	SbgErrorCode	errorCode = SBG_NO_ERROR;
 
-	//
-	// Test that we have a valid protocol handle
-	//
-	if (pHandle)
-	{
-		//
-		// Define the callback and the user argument
-		//
-		pHandle->pReceiveLogCallback = pReceiveLogCallback;
-		pHandle->pUserArg = pUserArg;
-	}
-	else
-	{
-		errorCode = SBG_NULL_POINTER;
-	}
+	assert(pHandle);
+
+	errorCode = sbgEComProtocolPurgeIncoming(&pHandle->protocolHandle);
 
 	return errorCode;
 }
 
-/*!
- * Define the default number of trials that should be done when a command is send to the device as well as the time out.
- * \param[in]	pHandle							A valid sbgECom handle.
- * \parma[in]	numTrials						Number of trials when a command is sent (starting at 1).
- * \param[in]	cmdDefaultTimeOut				Default time out in milliseconds to wait to receive an answer from the device.
- */
+void sbgEComSetReceiveLogCallback(SbgEComHandle *pHandle, SbgEComReceiveLogFunc pReceiveLogCallback, void *pUserArg)
+{
+	assert(pHandle);
+
+	//
+	// Define the callback and the user argument
+	//
+	pHandle->pReceiveLogCallback	= pReceiveLogCallback;
+	pHandle->pUserArg				= pUserArg;
+}
+
 void sbgEComSetCmdTrialsAndTimeOut(SbgEComHandle *pHandle, uint32_t numTrials, uint32_t cmdDefaultTimeOut)
 {
-	//
-	// Check input arguments
-	//
 	assert(pHandle);
 	assert(numTrials > 0);
 	assert(cmdDefaultTimeOut > 0);
@@ -237,11 +184,6 @@ void sbgEComSetCmdTrialsAndTimeOut(SbgEComHandle *pHandle, uint32_t numTrials, u
 	pHandle->cmdDefaultTimeOut	= cmdDefaultTimeOut;
 }
 
-/*!
- *	Convert an error code into a human readable string.
- *	\param[in]	errorCode						The errorCode to convert into a string.
- *	\param[out]	errorMsg						String buffer used to hold the error string.
- */
 void sbgEComErrorToString(SbgErrorCode errorCode, char errorMsg[256])
 {
 	if (errorMsg)
@@ -303,7 +245,7 @@ void sbgEComErrorToString(SbgErrorCode errorCode, char errorMsg[256])
 			strcpy(errorMsg, "SBG_DEVICE_NOT_FOUND: A device couldn't be founded or opened.");
 			break;
 		case SBG_OPERATION_CANCELLED:
-			strcpy(errorMsg, "SBG_OPERATION_CANCELLED: An operation has been cancelled by a user.");
+			strcpy(errorMsg, "SBG_OPERATION_CANCELLED: An operation has been canceled by a user.");
 			break;
 		case SBG_NOT_CONTINUOUS_FRAME:
 			strcpy(errorMsg, "SBG_NOT_CONTINUOUS_FRAME: We have received a frame that isn't a continuous one.");

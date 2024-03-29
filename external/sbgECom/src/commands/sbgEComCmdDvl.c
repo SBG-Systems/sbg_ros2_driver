@@ -1,10 +1,12 @@
-﻿/* sbgCommonLib headers */
+﻿// sbgCommonLib headers
+#include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 
-/* Project headers */
-#include "transfer/sbgEComTransfer.h"
+// Project headers
+#include <sbgECom.h>
 
-/* Local headers */
+// Local headers
+#include "sbgEComCmdCommon.h"
 #include "sbgEComCmdDvl.h"
 
 //----------------------------------------------------------------------//
@@ -36,13 +38,6 @@ SbgErrorCode sbgEComCmdDvlGetModelId(SbgEComHandle *pHandle, SbgEComDvlModelsIds
 	return errorCode;
 }
 
-/*!
- * Set the lever arm and alignment configuration of the DVL module.
- *
- * \param[in]	pHandle						A valid sbgECom handle.
- * \param[in]	pDvlInstallation			The DVL lever arm and alignment configuration to apply.
- * \return									SBG_NO_ERROR if the command has been executed successfully.
- */
 SbgErrorCode sbgEComCmdDvlInstallationSet(SbgEComHandle *pHandle, const SbgEComDvlInstallation *pDvlInstallation)
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
@@ -121,16 +116,17 @@ SbgErrorCode sbgEComCmdDvlInstallationSet(SbgEComHandle *pHandle, const SbgEComD
 	
 	return errorCode;
 }
+
 SbgErrorCode sbgEComCmdDvlInstallationGet(SbgEComHandle *pHandle, SbgEComDvlInstallation *pDvlInstallation)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[64];
-	SbgStreamBuffer		inputStream;
-
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
+	
 	assert(pHandle);
 	assert(pDvlInstallation);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -150,17 +146,19 @@ SbgErrorCode sbgEComCmdDvlInstallationGet(SbgEComHandle *pHandle, SbgEComDvlInst
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_DVL_INSTALLATION, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_DVL_INSTALLATION, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a SBG_ECOM_CMD_GNSS_1_LEVER_ARM_ALIGNMENT command
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to parse the payload
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				pDvlInstallation->leverArm[0]	= sbgStreamBufferReadFloatLE(&inputStream);
 				pDvlInstallation->leverArm[1] = sbgStreamBufferReadFloatLE(&inputStream);
@@ -188,6 +186,8 @@ SbgErrorCode sbgEComCmdDvlInstallationGet(SbgEComHandle *pHandle, SbgEComDvlInst
 		}
 	}
 	
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
+
 	return errorCode;
 }
 
@@ -265,14 +265,14 @@ SbgErrorCode sbgEComCmdDvlSetRejection(SbgEComHandle *pHandle, const SbgEComDvlR
 
 SbgErrorCode sbgEComCmdDvlGetRejection(SbgEComHandle *pHandle, SbgEComDvlRejectionConf *pRejectConf)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[2*sizeof(uint8_t)];
-	SbgStreamBuffer		inputStream;
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
 
 	assert(pHandle);
 	assert(pRejectConf);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -292,17 +292,19 @@ SbgErrorCode sbgEComCmdDvlGetRejection(SbgEComHandle *pHandle, SbgEComDvlRejecti
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_DVL_REJECT_MODES, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_DVL_REJECT_MODES, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a SBG_ECOM_CMD_GNSS_1_REJECT_MODES command
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to parse payload
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				//
 				// Parse the payload
@@ -325,6 +327,8 @@ SbgErrorCode sbgEComCmdDvlGetRejection(SbgEComHandle *pHandle, SbgEComDvlRejecti
 			break;
 		}
 	}
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
 	
 	return errorCode;
 }

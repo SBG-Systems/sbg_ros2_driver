@@ -1,4 +1,4 @@
-#include "sbgInterfaceSerial.h"
+// Standard headers
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -7,22 +7,33 @@
 #include <termios.h>
 #include <sys/ioctl.h>
 
+// sbgCommonLib headers
+#include <sbgCommon.h>
+#include <interfaces/sbgInterfaceSerial.h>
+
+//----------------------------------------------------------------------//
+//- Definitions                                                        -//
+//----------------------------------------------------------------------//
+#define SBG_IF_SERIAL_TX_BUFFER_SIZE			(4096u)					/*!< Define the transmission buffer size for the serial port. */
+#define SBG_IF_SERIAL_RX_BUFFER_SIZE			(4096u)					/*!< Define the reception buffer size for the serial port. */
+
 //----------------------------------------------------------------------//
 //- Private methods declarations                                       -//
 //----------------------------------------------------------------------//
 
 
 /*!
- *	Returns the right unix baud rate const according to a baud rate value.
+ *	Returns the right Unix baud rate const according to a baud rate value.
+ *
  *	\param[in] baudRate		The baud rate value (ie 115200).
  *	\return					The Unix baud rate constant.
  */
-uint32 sbgInterfaceSerialGetBaudRateConst(uint32 baudRate)
+static uint32_t sbgInterfaceSerialGetBaudRateConst(uint32_t baudRate)
 {
-	uint32 baudRateConst;
-	
+	uint32_t baudRateConst;
+
 	//
-	// Create the right baud rate value for unix platforms
+	// Create the right baud rate value for Unix platforms
 	//
 	switch (baudRate)
 	{
@@ -62,6 +73,46 @@ uint32 sbgInterfaceSerialGetBaudRateConst(uint32 baudRate)
 			baudRateConst = B921600;
 			break;
 #endif
+#ifdef B1000000
+		case 1000000:
+			baudRateConst = B1000000;
+			break;
+#endif
+#ifdef B1152000
+		case 1152000:
+			baudRateConst = B1152000;
+			break;
+#endif
+#ifdef B1500000
+		case 1500000:
+			baudRateConst = B1500000;
+			break;
+#endif
+#ifdef B2000000
+		case 2000000:
+			baudRateConst = B2000000;
+			break;
+#endif
+#ifdef B2500000
+		case 2500000:
+			baudRateConst = B2500000;
+			break;
+#endif
+#ifdef B3000000
+		case 3000000:
+			baudRateConst = B3000000;
+			break;
+#endif
+#ifdef B3500000
+		case 3500000:
+			baudRateConst = B3500000;
+			break;
+#endif
+#ifdef B4000000
+		case 4000000:
+			baudRateConst = B4000000;
+			break;
+#endif
 		default:
 			baudRateConst = baudRate;
 	}
@@ -69,182 +120,35 @@ uint32 sbgInterfaceSerialGetBaudRateConst(uint32 baudRate)
 	return baudRateConst;
 }
 
-//----------------------------------------------------------------------//
-//- Operations methods declarations                                    -//
-//----------------------------------------------------------------------//
-
-/*!
- *	Initialize a serial interface for read and write operations.
- *	\param[in]	pHandle							Pointer on an allocated interface instance to initialize.
- *	\param[in]	deviceName						Serial interface location (COM21 , /dev/ttys0, depending on platform).
- *	\param[in]	baudRate						Serial interface baud rate in bps.
- *	\return										SBG_NO_ERROR if the interface has been created.
- */
-SbgErrorCode sbgInterfaceSerialCreate(SbgInterface *pHandle, const char *deviceName, uint32 baudRate)
-{
-	int				*pSerialHandle;
-	struct termios	 options;
-	uint32			 baudRateConst;
-    
-	//
-	// First check if we have a valid pHandle
-	//
-	if (pHandle)
-	{
-		//
-		// Check if the device name is valid
-		//
-		if (deviceName)
-		{
-			//
-			// Get our baud rate const for our Unix platform
-			//
-			baudRateConst = sbgInterfaceSerialGetBaudRateConst(baudRate);
-			
-			//
-			//	Allocate the serial handle
-			//
-			pSerialHandle = (int*)malloc(sizeof(int));
-
-			//
-			// Init the com port
-			//
-			(*pSerialHandle) = open(deviceName, O_RDWR | O_NOCTTY | O_NDELAY);
-			
-			//
-			// Test that the port has been initialized
-			//
-			if ((*pSerialHandle) != -1)
-			{
-				//
-				// Don't block on read call if no data are available
-				//
-				if (fcntl((*pSerialHandle), F_SETFL, O_NONBLOCK) != -1)
-				{
-					//
-					// Retreive current options
-					//
-					if (tcgetattr((*pSerialHandle), &options) != -1)
-					{
-						//
-						// Define com port options
-						//
-						options.c_cflag |=  (CLOCAL | CREAD);		// Enable the receiver and set local mode...
-						options.c_cflag &= ~(PARENB|CSTOPB|CSIZE);	// No parity, 1 stop bit, mask character size bits
-						options.c_cflag |= CS8;						// Select 8 data bits
-						options.c_cflag &= ~CRTSCTS;				// Disable Hardware flow control
-
-						//
-						// Disable software flow control
-						//
-						options.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
-
-						//
-						// We would like raw input
-						//
-						options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG /*| IEXTEN | ECHONL*/);
-						options.c_oflag &= ~OPOST;
-
-						//
-						// Set our timeout to 0
-						//
-						options.c_cc[VMIN]     = 0;
-						options.c_cc[VTIME]    = 1;
-
-						//
-						// Set both input and output baud
-						//
-						if ( (cfsetispeed(&options, baudRateConst) != -1)  && (cfsetospeed(&options, baudRateConst) != -1) )
-						{
-							//
-							// Define options
-							//
-							if (tcsetattr((*pSerialHandle), TCSANOW, &options) != -1)
-							{								
-								//
-								// The serial port is ready so create a new serial interface
-								//
-								pHandle->handle = (void*)pSerialHandle;
-								pHandle->type = SBG_IF_TYPE_SERIAL;
-								pHandle->pReadFunc = sbgInterfaceSerialRead;
-								pHandle->pWriteFunc = sbgInterfaceSerialWrite;
-
-								//
-								// Purge the communication
-								//
-								return sbgInterfaceSerialFlush(pHandle);
-							}
-							else
-							{
-								fprintf(stderr, "sbgInterfaceSerialCreate: tcsetattr fails.\n");
-							}
-				        }
-				        else
-				        {
-				            fprintf(stderr, "sbgInterfaceSerialCreate: Unable to set speed.\n");
-				        }
-				    }
-				    else
-				    {
-				        fprintf(stderr, "sbgInterfaceSerialCreate: tcgetattr fails.\n");
-				    }
-				}
-				else
-				{
-					fprintf(stderr, "sbgInterfaceSerialCreate: fcntl fails\n");
-				}
-			}
-			else
-			{
-				fprintf(stderr, "sbgInterfaceSerialCreate: Unable to open the com port: %s\n", deviceName);
-			}
-			
-			//
-			//	Release the allocated serial handle
-			//
-			SBG_FREE(pSerialHandle);
-
-			return SBG_ERROR;
-		}
-		else
-		{
-			//
-			// Invalid device name
-			//
-			return SBG_INVALID_PARAMETER;
-		}
-	}
-	else
-	{
-		return SBG_NULL_POINTER;
-	}
-}
-
 /*!
  *	Destroy an interface initialized using sbgInterfaceSerialCreate.
+ * 
  *	\param[in]	pInterface						Valid handle on an initialized interface.
  *	\return										SBG_NO_ERROR if the interface has been closed and released.
  */
-SbgErrorCode sbgInterfaceSerialDestroy(SbgInterface *pHandle)
+static SbgErrorCode sbgInterfaceSerialDestroy(SbgInterface *pInterface)
 {
-    int *pSerialHandle;
-    
-    //
+	int *pSerialHandle;
+
+	assert(pInterface);
+	assert(pInterface->type == SBG_IF_TYPE_SERIAL);
+		
+	//
 	// Test that we have a valid interface
 	//
-	if (pHandle)
+	if (pInterface)
 	{
 		//
 		// Get the internal serial handle
 		//
-		pSerialHandle = (int*)pHandle->handle;
+		pSerialHandle = (int *)pInterface->handle;
 		
 		//
 		// Close the port com
 		//
 		close((*pSerialHandle));
 		SBG_FREE(pSerialHandle);
-		pHandle->handle = NULL;
+		sbgInterfaceZeroInit(pInterface);
 
 		return SBG_NO_ERROR;
 	}
@@ -255,105 +159,115 @@ SbgErrorCode sbgInterfaceSerialDestroy(SbgInterface *pHandle)
 }
 
 /*!
- * Flush the RX and TX buffers (remove all old data)
- * \param[in]	handle				Valid handle on an initialized interface.
- * \return							SBG_NO_ERROR if everything is OK
+ * Make an interface flush pending input and/or output data.
+ *
+ * If flags include SBG_IF_FLUSH_INPUT, all pending input data is discarded.
+ * If flags include SBG_IF_FLUSH_OUTPUT, the function blocks until all output data has been written out.
+ *
+ * \param[in]	pInterface								Interface instance.
+ * \param[in]	flags									Combination of the SBG_IF_FLUSH_INPUT and SBG_IF_FLUSH_OUTPUT flags.
+ * \return												SBG_NO_ERROR if successful.
  */
-SbgErrorCode sbgInterfaceSerialFlush(SbgInterface *pHandle)
+static SbgErrorCode sbgInterfaceSerialFlush(SbgInterface *pInterface, uint32_t flags)
 {
-	int hSerialHandle;
-	
-	//
-	// Test that we have a valid interface
-	//
-	if (pHandle)
+	SbgErrorCode					 errorCode;
+	int								 fd;
+	int								 result = 0;
+
+	assert(pInterface);
+	assert(pInterface->type == SBG_IF_TYPE_SERIAL);
+
+	fd = *((int *)pInterface->handle);
+
+	if ((result == 0) && (flags & SBG_IF_FLUSH_INPUT))
 	{
-		//
-		// Get the internal serial handle
-		//
-		hSerialHandle = *((int*)pHandle->handle);
-		
-		//
-		// Flush our port
-		//
-		if (tcflush(hSerialHandle, TCIOFLUSH) == 0)
+		result = tcflush(fd, TCIFLUSH);
+
+		if (result != 0)
 		{
-		  return SBG_NO_ERROR;
-        }
-        else
-        {
-            return SBG_ERROR;
-        }
+			SBG_LOG_ERROR(SBG_READ_ERROR, "unable to flush input, error:%s", strerror(errno));
+		}
+	}
+
+	if ((result == 0) && (flags & SBG_IF_FLUSH_OUTPUT))
+	{
+		result = tcdrain(fd);
+
+		if (result != 0)
+		{
+			SBG_LOG_ERROR(SBG_WRITE_ERROR, "unable to flush output, error:%s", strerror(errno));
+		}
+	}
+
+	if (result == 0)
+	{
+		errorCode = SBG_NO_ERROR;
 	}
 	else
 	{
-		return SBG_NULL_POINTER;
+		errorCode = SBG_ERROR;
 	}
+	
+	return errorCode;
 }
 
 /*!
- * Change the serial interface baud rate immediatly.
+ * Change the serial interface baud rate immediately.
+ * 
  * \param[in]	handle				Valid handle on an initialized interface.
  * \param[in]	baudRate			The new baudrate to apply in bps.
  * \return							SBG_NO_ERROR if everything is OK
  */
-SbgErrorCode sbgInterfaceSerialChangeBaudrate(SbgInterface *pHandle, uint32 baudRate)
+static SbgErrorCode sbgInterfaceSerialChangeBaudrate(SbgInterface *pInterface, uint32_t baudRate)
 {
-	int		   		hSerialHandle;
+	int				hSerialHandle;
 	struct termios	options;
-	uint32			baudRateConst;
-	
+	uint32_t		baudRateConst;
+
+	assert(pInterface);
+	assert(pInterface->type == SBG_IF_TYPE_SERIAL);
+
 	//
-	// Test that we have a valid interface
+	// Get the internal serial handle
 	//
-	if (pHandle)
-	{
-		//
-		// Get the internal serial handle
-		//
-		hSerialHandle = *((int*)pHandle->handle);
+	hSerialHandle = *((int*)pInterface->handle);
 		
-		//
-		// Get the baud rate const for our Unix platform
-		//
-		baudRateConst = sbgInterfaceSerialGetBaudRateConst(baudRate);
+	//
+	// Get the baud rate const for our Unix platform
+	//
+	baudRateConst = sbgInterfaceSerialGetBaudRateConst(baudRate);
 		
+	//
+	// Retrieve current options
+	//
+	if (tcgetattr(hSerialHandle, &options) != -1)
+	{	
 		//
-		// Retrieve current options
+		// Set both input and output baud
 		//
-		if (tcgetattr(hSerialHandle, &options) != -1)
-		{	
-			//
-			// Set both input and output baud
-			//
-			if ( (cfsetispeed(&options, baudRateConst) == -1)  || (cfsetospeed(&options, baudRateConst) == -1) )
-			{
-				fprintf(stderr, "sbgInterfaceSerialChangeBaudrate: Unable to set speed.\n");
-				return SBG_ERROR;
-			}
+		if ( (cfsetispeed(&options, baudRateConst) == -1)  || (cfsetospeed(&options, baudRateConst) == -1) )
+		{
+			fprintf(stderr, "sbgInterfaceSerialChangeBaudrate: Unable to set speed.\n");
+			return SBG_ERROR;
+		}
 			
-			//
-			// Define options
-			//
-			if (tcsetattr(hSerialHandle, TCSADRAIN, &options) != -1)
-			{
-				return SBG_NO_ERROR;
-			}
-			else
-			{
-				fprintf(stderr, "sbgInterfaceSerialChangeBaudrate: tcsetattr fails.\n");
-				return SBG_ERROR;
-			}
+		//
+		// Define options
+		//
+		if (tcsetattr(hSerialHandle, TCSADRAIN, &options) != -1)
+		{
+			return SBG_NO_ERROR;
 		}
 		else
 		{
-			fprintf(stderr, "sbgInterfaceSerialChangeBaudrate: tcgetattr fails.\n");
+			fprintf(stderr, "sbgInterfaceSerialChangeBaudrate: tcsetattr fails.\n");
 			return SBG_ERROR;
 		}
 	}
 	else
 	{
-		return SBG_NULL_POINTER;
+		fprintf(stderr, "sbgInterfaceSerialChangeBaudrate: tcgetattr fails.\n");
+		return SBG_ERROR;
 	}
 }
 
@@ -363,119 +277,265 @@ SbgErrorCode sbgInterfaceSerialChangeBaudrate(SbgInterface *pHandle, uint32 baud
 
 /*!
  * Try to write some data to an interface.
- * \param[in]	pHandle									Valid handle on an initialized interface.
+ * 
+ * \param[in]	pInterface								Valid handle on an initialized interface.
  * \param[in]	pBuffer									Pointer on an allocated buffer that contains the data to write
  * \param[in]	bytesToWrite							Number of bytes we would like to write.
  * \return												SBG_NO_ERROR if all bytes have been written successfully.
  */
-SbgErrorCode sbgInterfaceSerialWrite(SbgInterface *pHandle, const void *pBuffer, size_t bytesToWrite)
+static SbgErrorCode sbgInterfaceSerialWrite(SbgInterface *pInterface, const void *pBuffer, size_t bytesToWrite)
 {
 	size_t          numBytesLeftToWrite = bytesToWrite;
-	uint8          *pCurrentBuffer = (uint8*)pBuffer;
+	uint8_t        *pCurrentBuffer = (uint8_t*)pBuffer;
 	ssize_t         numBytesWritten;
 	int	            hSerialHandle;
+
+	assert(pInterface);
+	assert(pInterface->type == SBG_IF_TYPE_SERIAL);
+	assert(pBuffer);
 	
 	//
-	// Test input parameters
+	// Get the internal serial handle
 	//
-	if ( (pHandle) && (pBuffer) )
+	hSerialHandle = *((int*)pInterface->handle);
+
+	//
+	// Write the whole buffer
+	//
+	while (numBytesLeftToWrite > 0)
 	{
 		//
-		// Get the internal serial handle
+		// Write these bytes to the serial interface
 		//
-		hSerialHandle = *((int*)pHandle->handle);
-
-		//
-		// Write the whole buffer
-		//
-		while (numBytesLeftToWrite > 0)
-		{
-			//
-			// Write these bytes to the serial interface
-			//
-			numBytesWritten = write(hSerialHandle, pCurrentBuffer, numBytesLeftToWrite);
+		numBytesWritten = write(hSerialHandle, pCurrentBuffer, numBytesLeftToWrite);
 			
-			//
-			// Test the there is no error
-			//	
-            if (numBytesWritten == -1)
-            {
-                 //
-				// An error has occured during the write
+		//
+		// Test the there is no error
+		//	
+		if (numBytesWritten == -1)
+		{
+			if (errno == EAGAIN)
+			{
+				sbgSleep(1);
+			}
+			else
+			{
 				//
-                fprintf(stderr, "sbgDeviceWrite: Unable to write to our device: %s\n", strerror(errno));
-                return SBG_WRITE_ERROR;
-            }
-            
+				// An error has occurred during the write
+				//
+				fprintf(stderr, "sbgDeviceWrite: Unable to write to our device: %s\n", strerror(errno));
+				return SBG_WRITE_ERROR;
+			}
+		}
+		else
+		{
 			//
 			// Update the buffer pointer and the number of bytes to write
 			//
 			numBytesLeftToWrite -= (size_t)numBytesWritten;
 			pCurrentBuffer += (size_t)numBytesWritten;
 		}
+	}
 
-		return SBG_NO_ERROR;
-	}
-	else
-	{
-		return SBG_NULL_POINTER;
-	}
+	return SBG_NO_ERROR;
 }
 
 /*!
  * Try to read some data from an interface.
- * \param[in]	pHandle									Valid handle on an initialized interface.
+ * 
+ * \param[in]	pInterface								Valid handle on an initialized interface.
  * \param[in]	pBuffer									Pointer on an allocated buffer that can hold at least bytesToRead bytes of data.
  * \param[out]	pReadBytes								Pointer on an uint32 used to return the number of read bytes.
  * \param[in]	bytesToRead								Number of bytes we would like to read.
  * \return												SBG_NO_ERROR if no error occurs, please check the number of received bytes.
  */
-SbgErrorCode sbgInterfaceSerialRead(SbgInterface *pHandle, void *pBuffer, size_t *pReadBytes, size_t bytesToRead)
+static SbgErrorCode sbgInterfaceSerialRead(SbgInterface *pInterface, void *pBuffer, size_t *pReadBytes, size_t bytesToRead)
 {
-    SbgErrorCode    errorCode;
-    int				hSerialHandle;
-    ssize_t			numBytesRead;
-    
+	SbgErrorCode    errorCode;
+	int				hSerialHandle;
+	ssize_t			numBytesRead;
+
+	assert(pInterface);
+	assert(pInterface->type == SBG_IF_TYPE_SERIAL);
+	assert(pBuffer);
+	assert(pReadBytes);
+	
 	//
-	// Test input parameters
+	// Get the internal serial handle
 	//
-	if ( (pHandle) && (pBuffer) && (pReadBytes) )
-	{
-		//
-		// Get the internal serial handle
-		//
-		hSerialHandle = *((int*)pHandle->handle);
+	hSerialHandle = *((int*)pInterface->handle);
 		
-		//
-        // Read our buffer
-        //
-        numBytesRead = read(hSerialHandle, pBuffer, bytesToRead);
-        
-        //
-        // Check if we have read at least one byte
-        //
-        if (numBytesRead > 0)
-        {
-            errorCode = SBG_NO_ERROR;
-        }
-        else
-        {
-            errorCode = SBG_READ_ERROR;
-            numBytesRead = 0;
-        }
-        
-        //
-        // If we can, returns the number of read bytes
-        //
-        if (pReadBytes)
-        {
-            *pReadBytes = (size_t)numBytesRead;
-        }
+	//
+	// Read our buffer
+	//
+	numBytesRead = read(hSerialHandle, pBuffer, bytesToRead);
+		
+	//
+	// Check if the read operation was successful
+	//
+	if (numBytesRead >= 0)
+	{
+		errorCode = SBG_NO_ERROR;
 	}
 	else
 	{
-		errorCode = SBG_NULL_POINTER;
+		if (errno == EAGAIN)
+		{
+			errorCode = SBG_NO_ERROR;
+		}
+		else
+		{
+			errorCode = SBG_READ_ERROR;
+		}
+
+		numBytesRead = 0;
 	}
-	
+		
+	//
+	// If we can, returns the number of read bytes
+	//
+	*pReadBytes = (size_t)numBytesRead;
+		
 	return errorCode;
+}
+
+//----------------------------------------------------------------------//
+//- Public methods                                                     -//
+//----------------------------------------------------------------------//
+
+SbgErrorCode sbgInterfaceSerialCreate(SbgInterface *pInterface, const char *deviceName, uint32_t baudRate)
+{
+	int				*pSerialHandle;
+	struct termios	 options;
+	uint32_t		 baudRateConst;
+
+	assert(pInterface);
+	assert(deviceName);
+
+	//
+	// Always call the underlying zero init method to make sure we can correctly handle SbgInterface evolutions
+	//
+	sbgInterfaceZeroInit(pInterface);
+
+	//
+	// Get our baud rate const for our Unix platform
+	//
+	baudRateConst = sbgInterfaceSerialGetBaudRateConst(baudRate);
+			
+	//
+	//	Allocate the serial handle
+	//
+	pSerialHandle = (int*)malloc(sizeof(int));
+
+	//
+	// Init the com port
+	//
+	(*pSerialHandle) = open(deviceName, O_RDWR | O_NOCTTY | O_NDELAY);
+			
+	//
+	// Test that the port has been initialized
+	//
+	if ((*pSerialHandle) != -1)
+	{
+		//
+		// Don't block on read call if no data are available
+		//
+		if (fcntl((*pSerialHandle), F_SETFL, O_NONBLOCK) != -1)
+		{
+			//
+			// Retrieve current options
+			//
+			if (tcgetattr((*pSerialHandle), &options) != -1)
+			{
+				//
+				// Define com port options
+				//
+				options.c_cflag |=  (CLOCAL | CREAD);		// Enable the receiver and set local mode...
+				options.c_cflag &= ~(PARENB|CSTOPB|CSIZE);	// No parity, 1 stop bit, mask character size bits
+				options.c_cflag |= CS8;						// Select 8 data bits
+				options.c_cflag &= ~CRTSCTS;				// Disable Hardware flow control
+
+				//
+				// Disable software flow control
+				//
+				options.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
+
+				//
+				// We would like raw input
+				//
+				options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG /*| IEXTEN | ECHONL*/);
+				options.c_oflag &= ~OPOST;
+
+				//
+				// Set our timeout to 0
+				//
+				options.c_cc[VMIN]     = 0;
+				options.c_cc[VTIME]    = 1;
+
+				//
+				// Set both input and output baud
+				//
+				if ( (cfsetispeed(&options, baudRateConst) != -1)  && (cfsetospeed(&options, baudRateConst) != -1) )
+				{
+					//
+					// Define options
+					//
+					if (tcsetattr((*pSerialHandle), TCSANOW, &options) != -1)
+					{								
+						//
+						// The serial port is ready so create a new serial interface
+						//
+						pInterface->handle = (void*)pSerialHandle;
+						pInterface->type = SBG_IF_TYPE_SERIAL;
+
+						//
+						// Define the interface name
+						//
+						sbgInterfaceNameSet(pInterface, deviceName);
+
+						//
+						// Define all overloaded members
+						//
+						pInterface->pDestroyFunc	= sbgInterfaceSerialDestroy;
+						pInterface->pReadFunc		= sbgInterfaceSerialRead;
+						pInterface->pWriteFunc		= sbgInterfaceSerialWrite;
+						pInterface->pFlushFunc		= sbgInterfaceSerialFlush;
+						pInterface->pSetSpeedFunc	= sbgInterfaceSerialChangeBaudrate;
+
+						//
+						// Purge the communication
+						//
+						return sbgInterfaceSerialFlush(pInterface, SBG_IF_FLUSH_ALL);
+					}
+					else
+					{
+						fprintf(stderr, "sbgInterfaceSerialCreate: tcsetattr fails.\n");
+					}
+				}
+				else
+				{
+					fprintf(stderr, "sbgInterfaceSerialCreate: Unable to set speed.\n");
+				}
+			}
+			else
+			{
+				fprintf(stderr, "sbgInterfaceSerialCreate: tcgetattr fails.\n");
+			}
+		}
+		else
+		{
+			fprintf(stderr, "sbgInterfaceSerialCreate: fcntl fails\n");
+		}
+	}
+	else
+	{
+		fprintf(stderr, "sbgInterfaceSerialCreate: Unable to open the com port: %s\n", deviceName);
+	}
+			
+	//
+	//	Release the allocated serial handle
+	//
+	SBG_FREE(pSerialHandle);
+
+	return SBG_ERROR;
 }

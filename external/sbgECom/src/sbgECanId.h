@@ -1,42 +1,41 @@
 /*!
- *	\file		sbgECanIds.h
- *  \author		SBG Systems (Maxime Renaudet)
- *	\date		10 October 2014
+ * \file			sbgECanId.h
+ * \ingroup			main
+ * \author			SBG Systems
+ * \date			10 October 2014
  *
- *	\brief		Defines all sbgECom commands identifiers.
+ * \brief			Defines all sbgECom commands identifiers.
  *
- *	\section CodeCopyright Copyright Notice 
- *  The MIT license
- *  
- *  Copyright (C) 2007-2020, SBG Systems SAS. All rights reserved.
+ * \copyright		Copyright (C) 2022, SBG Systems SAS. All rights reserved.
+ * \beginlicense	The MIT license
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *  
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * \endlicense
  */
 
-/*!
- *	\mainpage SBG Systems Enhanced Communication library documentation
- *	Welcome to the sbgECom library documentation.<br>
- *	This documentation describes all functions implemented in the sbgECom library.
- */
+#ifndef SBG_ECAN_ID_H
+#define SBG_ECAN_ID_H
 
-#ifndef __SBG_ECAN_IDS_H__
-#define __SBG_ECAN_IDS_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //----------------------------------------------------------------------//
 //- Definition of all messages id for sbgECan                          -//
@@ -73,7 +72,7 @@ typedef enum _SbgECanMessageId
 	SBG_ECAN_MSG_EKF_VEL_NED			= 0x137,
 	SBG_ECAN_MSG_EKF_VEL_NED_ACC		= 0x138,
 	SBG_ECAN_MSG_EKF_VEL_BODY			= 0x139,
-	
+
 	SBG_ECAN_MSG_SHIP_MOTION_INFO		= 0x140,
 	SBG_ECAN_MSG_SHIP_MOTION_0			= 0x141,
 	SBG_ECAN_MSG_SHIP_MOTION_1			= 0x145,
@@ -94,9 +93,9 @@ typedef enum _SbgECanMessageId
 	SBG_ECAN_MSG_AIR_DATA_INFO			= 0x162,
 	SBG_ECAN_MSG_AIR_DATA_ALTITUDE		= 0x163,
 	SBG_ECAN_MSG_AIR_DATA_AIRSPEED		= 0x164,
-	
+
 	SBG_ECAN_MSG_DEPTH_INFO				= 0x166,
-	SBG_ECAN_MSG_DEPTH_ALTITUDE			= 0x167,	
+	SBG_ECAN_MSG_DEPTH_ALTITUDE			= 0x167,
 
 	SBG_ECAN_MSG_GPS1_VEL_INFO			= 0x170,
 	SBG_ECAN_MSG_GPS1_VEL				= 0x171,
@@ -130,7 +129,7 @@ typedef enum _SbgECanMessageId
 	SBG_ECAN_MSG_EVENT_TIME_D			= 0x207,
 	SBG_ECAN_MSG_EVENT_INFO_E			= 0x208,			/*!< Only for Ekinox, Apogee, Navsight & Quanta */
 	SBG_ECAN_MSG_EVENT_TIME_E			= 0x209,			/*!< Only for Ekinox, Apogee, Navsight & Quanta */
-	
+
 	//
 	// Proprietary CASS logs
 	//
@@ -153,7 +152,11 @@ typedef enum _SbgECanMessageId
 	//
 	// Automotive specific CAN output
 	//
-	SBG_ECAN_MSG_TRACK_SLIP_CURVATURE	= 0x220
+	SBG_ECAN_MSG_AUTO_TRACK_SLIP_CURV	= 0x220,
 } SbgECanMessageId;
 
-#endif	/* __SBG_ECOM_CMDS_H__ */
+#ifdef __cplusplus
+}
+#endif
+
+#endif	// SBG_ECAN_ID_H

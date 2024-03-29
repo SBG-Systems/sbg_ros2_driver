@@ -1,4 +1,4 @@
-﻿/* sbgCommonLib headers */
+/* sbgCommonLib headers */
 #include <sbgCommon.h>
 
 /* Local headers */
@@ -21,26 +21,25 @@ static const char *gInterfaceType[] =
 //- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
-void sbgInterfaceZeroInit(SbgInterface *pHandle)
+void sbgInterfaceZeroInit(SbgInterface *pInterface)
 {
-	assert(pHandle);
+	assert(pInterface);
 
-	//
-	// Make sure the whole struct is zero init
-	//
-	memset(pHandle, 0x00, sizeof(*pHandle));
+	memset(pInterface, 0x00, sizeof(*pInterface));
+}
 
-	//
-	// Initialize all fields to default values
-	//
-	pHandle->handle			= NULL;
-	pHandle->type			= SBG_IF_TYPE_UNKNOW;
-	pHandle->name[0]		= '\0';
+SBG_COMMON_LIB_API SbgErrorCode sbgInterfaceDestroy(SbgInterface *pInterface)
+{
+	SbgErrorCode	errorCode = SBG_NO_ERROR;
 
-	pHandle->pWriteFunc		= NULL;
-	pHandle->pReadFunc		= NULL;
-	pHandle->pFlushFunc		= NULL;
-	pHandle->pDelayFunc		= NULL;
+	assert(pInterface);
+
+	if (pInterface->pDestroyFunc)
+	{
+		errorCode = pInterface->pDestroyFunc(pInterface);
+	}
+	
+	return errorCode;
 }
 
 const char *sbgInterfaceTypeGetAsString(const SbgInterface *pInterface)
@@ -53,7 +52,7 @@ const char *sbgInterfaceTypeGetAsString(const SbgInterface *pInterface)
 	}
 	else
 	{
-		SBG_LOG_ERROR(SBG_INVALID_PARAMETER, "Unknown interface type: %u", pInterface->type);
+		SBG_LOG_ERROR(SBG_INVALID_PARAMETER, "Unknown interface type: %" PRIu32, pInterface->type);
 		return gInterfaceType[SBG_IF_TYPE_UNKNOW];
 	}
 }

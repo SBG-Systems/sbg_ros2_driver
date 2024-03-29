@@ -1,49 +1,28 @@
-/*!
- *	\file		sbgEComCmdOdo.c
- *  \author		SBG Systems
- *
- *	\brief		This file implements SbgECom commands related to Odometer module.
- *
- *	\section CodeCopyright Copyright Notice 
- *  The MIT license
- *  
- *  Copyright (C) 2007-2020, SBG Systems SAS. All rights reserved.
- *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *  
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
- *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
- */
-#include "sbgEComCmdOdo.h"
+// sbgCommonLib headers
+#include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 
+// Project headers
+#include <sbgECom.h>
+
+// Local headers
+#include "sbgEComCmdCommon.h"
+#include "sbgEComCmdOdo.h"
+
 //----------------------------------------------------------------------//
-//- Odometer commands                                                  -//
+//- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
 SbgErrorCode sbgEComCmdOdoGetConf(SbgEComHandle *pHandle, SbgEComOdoConf *pOdometerConf)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
-
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
+	
 	assert(pHandle);
 	assert(pOdometerConf);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -63,17 +42,19 @@ SbgErrorCode sbgEComCmdOdoGetConf(SbgEComHandle *pHandle, SbgEComOdoConf *pOdome
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ODO_CONF, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ODO_CONF, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a SBG_ECOM_CMD_ODO_CONF command
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to read parameters
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				//
 				// Read parameters
@@ -96,7 +77,9 @@ SbgErrorCode sbgEComCmdOdoGetConf(SbgEComHandle *pHandle, SbgEComOdoConf *pOdome
 			break;
 		}
 	}
-	
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
+
 	return errorCode;
 }
 
@@ -104,7 +87,7 @@ SbgErrorCode sbgEComCmdOdoSetConf(SbgEComHandle *pHandle, const SbgEComOdoConf *
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
 	uint32_t			trial;
-	uint8_t				outputBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	uint8_t				outputBuffer[64];
 	SbgStreamBuffer		outputStream;
 
 	assert(pHandle);
@@ -161,20 +144,20 @@ SbgErrorCode sbgEComCmdOdoSetConf(SbgEComHandle *pHandle, const SbgEComOdoConf *
 			break;
 		}
 	}
-	
+
 	return errorCode;
 }
 
-SbgErrorCode sbgEComCmdOdoGetLeverArm(SbgEComHandle *pHandle, float leverArm[3])
+SbgErrorCode sbgEComCmdOdoGetLeverArm(SbgEComHandle *pHandle, float *pLeverArm)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
-
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
+	
 	assert(pHandle);
-	assert(leverArm);
+	assert(pLeverArm);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -194,24 +177,26 @@ SbgErrorCode sbgEComCmdOdoGetLeverArm(SbgEComHandle *pHandle, float leverArm[3])
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ODO_LEVER_ARM, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ODO_LEVER_ARM, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a correct answer
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to read parameters
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				//
 				// Read parameters
 				//
-				leverArm[0] = sbgStreamBufferReadFloatLE(&inputStream);
-				leverArm[1] = sbgStreamBufferReadFloatLE(&inputStream);
-				leverArm[2] = sbgStreamBufferReadFloatLE(&inputStream);
+				pLeverArm[0] = sbgStreamBufferReadFloatLE(&inputStream);
+				pLeverArm[1] = sbgStreamBufferReadFloatLE(&inputStream);
+				pLeverArm[2] = sbgStreamBufferReadFloatLE(&inputStream);
 
 				//
 				// The command has been executed successfully so return
@@ -227,19 +212,21 @@ SbgErrorCode sbgEComCmdOdoGetLeverArm(SbgEComHandle *pHandle, float leverArm[3])
 			break;
 		}
 	}
-	
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
+
 	return errorCode;
 }
 
-SbgErrorCode sbgEComCmdOdoSetLeverArm(SbgEComHandle *pHandle, const float leverArm[3])
+SbgErrorCode sbgEComCmdOdoSetLeverArm(SbgEComHandle *pHandle, const float *pLeverArm)
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
 	uint32_t			trial;
-	uint8_t				outputBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	uint8_t				outputBuffer[64];
 	SbgStreamBuffer		outputStream;
 
 	assert(pHandle);
-	assert(leverArm);
+	assert(pLeverArm);
 
 	//
 	// Send the command three times
@@ -254,9 +241,9 @@ SbgErrorCode sbgEComCmdOdoSetLeverArm(SbgEComHandle *pHandle, const float leverA
 		//
 		// Build payload
 		//
-		sbgStreamBufferWriteFloatLE(&outputStream, leverArm[0]);
-		sbgStreamBufferWriteFloatLE(&outputStream, leverArm[1]);
-		sbgStreamBufferWriteFloatLE(&outputStream, leverArm[2]);
+		sbgStreamBufferWriteFloatLE(&outputStream, pLeverArm[0]);
+		sbgStreamBufferWriteFloatLE(&outputStream, pLeverArm[1]);
+		sbgStreamBufferWriteFloatLE(&outputStream, pLeverArm[2]);
 
 		//
 		// Send the payload over ECom
@@ -292,20 +279,20 @@ SbgErrorCode sbgEComCmdOdoSetLeverArm(SbgEComHandle *pHandle, const float leverA
 			break;
 		}
 	}
-	
+
 	return errorCode;
 }
 
 SbgErrorCode sbgEComCmdOdoGetRejection(SbgEComHandle *pHandle, SbgEComOdoRejectionConf *pRejectConf)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
 
 	assert(pHandle);
 	assert(pRejectConf);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -325,17 +312,19 @@ SbgErrorCode sbgEComCmdOdoGetRejection(SbgEComHandle *pHandle, SbgEComOdoRejecti
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ODO_REJECT_MODE, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ODO_REJECT_MODE, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a correct answer
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to read parameters
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				//
 				// Read parameters
@@ -356,7 +345,9 @@ SbgErrorCode sbgEComCmdOdoGetRejection(SbgEComHandle *pHandle, SbgEComOdoRejecti
 			break;
 		}
 	}
-	
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
+
 	return errorCode;
 }
 
@@ -364,7 +355,7 @@ SbgErrorCode sbgEComCmdOdoSetRejection(SbgEComHandle *pHandle, const SbgEComOdoR
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
 	uint32_t			trial;
-	uint8_t				outputBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	uint8_t				outputBuffer[64];
 	SbgStreamBuffer		outputStream;
 
 	assert(pHandle);
@@ -426,21 +417,21 @@ SbgErrorCode sbgEComCmdOdoSetRejection(SbgEComHandle *pHandle, const SbgEComOdoR
 SbgErrorCode sbgEComCmdOdoCanGetConf(SbgEComHandle *pHandle, SbgEComCmdOdoCanChannel canChannel, SbgEComCmdOdoCanConf *pOdoCanConf)
 {
 	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
 	uint32_t				trial;
-	uint8_t					cmdPayload[16];
-	size_t					receivedSize;	
-	uint8_t					receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	uint8_t					outputBuffer[16];
 	SbgStreamBuffer			outputStream;
-	SbgStreamBuffer			inputStream;
-
+	
 	assert(pHandle);
 	assert(pOdoCanConf);
 	assert(canChannel <= UCHAR_MAX);
 
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
+
 	//
 	// Build the command payload used to ask the CAN odometer configuration for a specific channel
 	//
-	sbgStreamBufferInitForWrite(&outputStream, cmdPayload, sizeof(cmdPayload));
+	sbgStreamBufferInitForWrite(&outputStream, outputBuffer, sizeof(outputBuffer));
 	sbgStreamBufferWriteUint8LE(&outputStream, canChannel);
 
 	//
@@ -452,7 +443,7 @@ SbgErrorCode sbgEComCmdOdoCanGetConf(SbgEComHandle *pHandle, SbgEComCmdOdoCanCha
 		// Send the command only since this is a no-payload command
 		//
 		errorCode = sbgEComProtocolSend(&pHandle->protocolHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ODO_CAN_CONF, sbgStreamBufferGetLinkedBuffer(&outputStream), sbgStreamBufferGetLength(&outputStream));
-		
+
 		//
 		// Make sure that the command has been sent
 		//
@@ -461,17 +452,19 @@ SbgErrorCode sbgEComCmdOdoCanGetConf(SbgEComHandle *pHandle, SbgEComCmdOdoCanCha
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ODO_CAN_CONF, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ODO_CAN_CONF, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a SBG_ECOM_CMD_ODO_CAN_SPEED_CONF command
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer			inputStream;
+
 				//
 				// Initialize stream buffer to read parameters
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				//
 				// Read fields from payload
@@ -480,7 +473,7 @@ SbgErrorCode sbgEComCmdOdoCanGetConf(SbgEComHandle *pHandle, SbgEComCmdOdoCanCha
 
 				pOdoCanConf->options 		= sbgStreamBufferReadUint16LE(&inputStream);
 				pOdoCanConf->canId 			= sbgStreamBufferReadUint32LE(&inputStream);
-				
+
 				pOdoCanConf->startBit	 	= sbgStreamBufferReadUint8LE(&inputStream);
 				pOdoCanConf->dataSize		= sbgStreamBufferReadUint8LE(&inputStream);
 
@@ -504,6 +497,8 @@ SbgErrorCode sbgEComCmdOdoCanGetConf(SbgEComHandle *pHandle, SbgEComCmdOdoCanCha
 		}
 	}
 
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
+
 	return errorCode;
 }
 
@@ -511,7 +506,7 @@ SbgErrorCode sbgEComCmdOdoCanSetConf(SbgEComHandle *pHandle, SbgEComCmdOdoCanCha
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
 	uint32_t			trial;
-	uint8_t				outputBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	uint8_t				outputBuffer[64];
 	SbgStreamBuffer		outputStream;
 
 	assert(pHandle);
@@ -529,7 +524,7 @@ SbgErrorCode sbgEComCmdOdoCanSetConf(SbgEComHandle *pHandle, SbgEComCmdOdoCanCha
 	// Build the command payload
 	//
 	sbgStreamBufferInitForWrite(&outputStream, outputBuffer, sizeof(outputBuffer));
-	
+
 	sbgStreamBufferWriteUint8LE(&outputStream, (uint8_t)canChannel);
 
 	sbgStreamBufferWriteUint16LE(&outputStream, pOdoCanConf->options);
@@ -537,12 +532,12 @@ SbgErrorCode sbgEComCmdOdoCanSetConf(SbgEComHandle *pHandle, SbgEComCmdOdoCanCha
 
 	sbgStreamBufferWriteUint8LE(&outputStream, (uint8_t)pOdoCanConf->startBit);
 	sbgStreamBufferWriteUint8LE(&outputStream, (uint8_t)pOdoCanConf->dataSize);
-	
+
 	sbgStreamBufferWriteFloatLE(&outputStream, pOdoCanConf->scale);
 	sbgStreamBufferWriteFloatLE(&outputStream, pOdoCanConf->offset);
 	sbgStreamBufferWriteFloatLE(&outputStream, pOdoCanConf->minValue);
 	sbgStreamBufferWriteFloatLE(&outputStream, pOdoCanConf->maxValue);
-	
+
 	//
 	// Send the command three times
 	//
@@ -582,6 +577,6 @@ SbgErrorCode sbgEComCmdOdoCanSetConf(SbgEComHandle *pHandle, SbgEComCmdOdoCanCha
 			break;
 		}
 	}
-	
+
 	return errorCode;
 }

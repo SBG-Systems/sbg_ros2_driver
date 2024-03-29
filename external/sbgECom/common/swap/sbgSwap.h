@@ -1,32 +1,33 @@
-﻿/*!
- *	\file		sbgSwap.h
- *  \author		SBG Systems (Raphael Siryani)
- *	\date		14 January 2013
+/*!
+ * \file           sbgSwap.h
+ * \ingroup        common
+ * \author         SBG Systems
+ * \date           14 January 2013
  *
- *	\brief		Set of functions used to swap numbers.
+ * \brief          Set of functions used to swap numbers.
  *
- *	\section CodeCopyright Copyright Notice
- *  The MIT license
- *  
- *  Copyright (C) 2007-2020, SBG Systems SAS. All rights reserved.
+ * \copyright		Copyright (C) 2022, SBG Systems SAS. All rights reserved.
+ * \beginlicense	The MIT license
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *  
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * \endlicense
  */
 
 #ifndef SBG_SWAP_H
@@ -38,7 +39,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	
+
 #include <sbgCommon.h>
 
 //----------------------------------------------------------------------//
@@ -47,6 +48,7 @@ extern "C" {
 
 /*!
  *	Swap a uint16_t number.
+ * 
  *	\param[in]	x					The uint16_t to swap.
  *	\return							The swapped value.
  */
@@ -67,6 +69,7 @@ SBG_INLINE uint32_t sbgSwap32(uint32_t x)
 
 /*!
  *	Swap a uint64_t number.
+ * 
  *	\param[in]	x					The uint64_t to swap.
  *	\return							The swapped value.
  */
@@ -93,12 +96,13 @@ SBG_INLINE uint64_t sbgSwap64(uint64_t x)
 
 /*!
  * Swap a float number.
+ * 
  * \param[in]	val					The float to swap.
  * \return							The swapped value.
  */
 SBG_INLINE float sbgSwapFloat(float val)
 {
-	FloatNint	tmpFloat;
+	SbgFloatNint	tmpFloat;
 
 	//
 	// We use a union to do the type punning
@@ -114,12 +118,13 @@ SBG_INLINE float sbgSwapFloat(float val)
 
 /*!
  * Swap a double number.
+ * 
  * \param[in]	val					The double to swap.
  * \return							The swapped value.
  */
 SBG_INLINE double sbgSwapDouble(double val)
 {
-	DoubleNint	tmpDouble;
+	SbgDoubleNint	tmpDouble;
 
 	//
 	// We use a union to do the type punning

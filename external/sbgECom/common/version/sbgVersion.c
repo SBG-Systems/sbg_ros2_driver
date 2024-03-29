@@ -1,19 +1,67 @@
+// Project headers
+#include <sbgCommon.h>
+
+
+// Local headers
 #include "sbgVersion.h"
+
+//----------------------------------------------------------------------//
+//- Constructor                                                        -//
+//----------------------------------------------------------------------//
+
+SBG_COMMON_LIB_API void sbgVersionCreateBasic(SbgVersion *pVersion, uint8_t major, uint8_t minor, uint8_t revision, uint8_t build)
+{
+	assert(pVersion);
+	assert(major < 128);
+
+	pVersion->softwareScheme	= false;
+
+	pVersion->major				= major;
+	pVersion->minor				= minor;
+	pVersion->rev				= revision;
+	pVersion->build				= build;
+
+	pVersion->qualifier			= SBG_VERSION_QUALIFIER_DEV;
+}
+
+SBG_COMMON_LIB_API void sbgVersionCreateSoftware(SbgVersion *pVersion, uint8_t major, uint8_t minor, uint16_t build, SbgVersionQualifier qualifier)
+{
+	assert(pVersion);
+	assert(major < 64);
+	assert(minor < 64);
+
+	pVersion->softwareScheme	= true;
+
+	pVersion->major				= major;
+	pVersion->minor				= minor;
+	pVersion->build				= build;
+	pVersion->qualifier			= qualifier;
+
+	pVersion->rev				= 0;
+}
+
+SBG_COMMON_LIB_API void sbgVersionConstructCopy(SbgVersion *pVersion, const SbgVersion *pOtherVersion)
+{
+	assert(pVersion);
+	assert(pOtherVersion);
+
+	//
+	// Copy each member individually to avoid warnings about reading uninitialized bytes.
+	//
+	pVersion->softwareScheme	= pOtherVersion->softwareScheme;
+	pVersion->qualifier			= pOtherVersion->qualifier;
+	pVersion->major				= pOtherVersion->major;
+	pVersion->minor				= pOtherVersion->minor;
+	pVersion->rev				= pOtherVersion->rev;
+	pVersion->build				= pOtherVersion->build;
+}
 
 //----------------------------------------------------------------------//
 //- Version encoding / decoding methods                                -//
 //----------------------------------------------------------------------//
 
-/*!
- *	Fill a SbgVersion structure based on an uint32_t that stores the 'compiled' version information.
- *	\param[in]	encodedVersion											The version information stored within a uint32_t.
- *	\param[out]	pVersionInfo											Pointer on an allocated SbgVersion structure to fill.
- */
 SBG_COMMON_LIB_API void sbgVersionDecode(uint32_t encodedVersion, SbgVersion *pVersionInfo)
 {
-	//
-	// Check input parameters
-	//
 	assert(pVersionInfo);
 
 	//
@@ -61,18 +109,10 @@ SBG_COMMON_LIB_API void sbgVersionDecode(uint32_t encodedVersion, SbgVersion *pV
 	}
 }
 
-/*!
- *	Construct a uint32_t containing a version information based on a SbgVersion structure.
- *	\param[in]	pVersionInfo											Pointer on a read only version structure to encode.
- *	\return																The encoded version information on an uint32_t or 0 if an error has occurred.
- */
 SBG_COMMON_LIB_API uint32_t sbgVersionEncode(const SbgVersion *pVersionInfo)
 {
 	uint32_t	encodedVersion = 0;
 
-	//
-	// Check input parameter
-	//
 	assert(pVersionInfo);
 
 	//
@@ -93,7 +133,7 @@ SBG_COMMON_LIB_API uint32_t sbgVersionEncode(const SbgVersion *pVersionInfo)
 	else
 	{
 		//
-		// We have a basic version scheme so check parameter validty
+		// We have a basic version scheme so check parameter validity
 		//
 		assert(pVersionInfo->major <= 127);
 
@@ -110,24 +150,12 @@ SBG_COMMON_LIB_API uint32_t sbgVersionEncode(const SbgVersion *pVersionInfo)
 //- Version comparaison methods                                        -//
 //----------------------------------------------------------------------//
 
-/*!
- *	Compare two version information structures and return if the version A is greater, less or equal than the version B.
- *	The computation is roughly result = version A - version B
- *	We can define how far we will check if the version A is greater than the version B.
- *	For example, we can only check the major or major and minor fields.
- *	\param[in]	pVersionA					The first version to compare.
- *	\param[in]	pVersionB					The second version to compare.
- *	\param[in]	thresold					The comparaison thresold to know if we are checking the major, minor, revision, build, ...
- *	\return									A positive value if the version A is greater than B, a negative one if version A is less than B and 0 if the two versions are the same (according to the thresold).
- */
-SBG_COMMON_LIB_API int32_t sbgVersionCompare(const SbgVersion *pVersionA, const SbgVersion *pVersionB, SbgVersionCmpThresold thresold)
+SBG_COMMON_LIB_API int32_t sbgVersionCompare(const SbgVersion *pVersionA, const SbgVersion *pVersionB, SbgVersionCmpThreshold threshold)
 {
 	int32_t	result;
 
-	//
-	// Check input parameter
-	//
-	assert((pVersionA) && (pVersionB));
+	assert(pVersionA);
+	assert(pVersionB);
 
 	//
 	// Check that the two versions are using the same scheme
@@ -135,7 +163,7 @@ SBG_COMMON_LIB_API int32_t sbgVersionCompare(const SbgVersion *pVersionA, const 
 	assert(pVersionA->softwareScheme == pVersionB->softwareScheme);
 
 	//
-	// Do the comparaison according to the selected thresold
+	// Do the comparaison according to the selected threshold
 	// Start by compairing the major field
 	//
 	result = pVersionA->major - pVersionB->major;
@@ -143,7 +171,7 @@ SBG_COMMON_LIB_API int32_t sbgVersionCompare(const SbgVersion *pVersionA, const 
 	//
 	// Test if we have to also compare the minor field
 	//
-	if ( (result == 0) &&  ((thresold == SBG_VERSION_CMP_THRESOLD_MINOR) || (thresold == SBG_VERSION_CMP_THRESOLD_REVISION) || (thresold == SBG_VERSION_CMP_THRESOLD_BUILD) || (thresold == SBG_VERSION_CMP_THRESOLD_QUALIFIER)) )
+	if ( (result == 0) &&  ((threshold == SBG_VERSION_CMP_THRESHOLD_MINOR) || (threshold == SBG_VERSION_CMP_THRESHOLD_REVISION) || (threshold == SBG_VERSION_CMP_THRESHOLD_BUILD) || (threshold == SBG_VERSION_CMP_THRESHOLD_QUALIFIER)) )
 	{
 		//
 		// Update the result using the minor indication
@@ -153,7 +181,7 @@ SBG_COMMON_LIB_API int32_t sbgVersionCompare(const SbgVersion *pVersionA, const 
 		//
 		// Test if we have to also compare the revision field (for basic version only)
 		//
-		if ( (result == 0) &&  ((thresold == SBG_VERSION_CMP_THRESOLD_REVISION) || (thresold == SBG_VERSION_CMP_THRESOLD_BUILD) || (thresold == SBG_VERSION_CMP_THRESOLD_QUALIFIER)) )
+		if ( (result == 0) &&  ((threshold == SBG_VERSION_CMP_THRESHOLD_REVISION) || (threshold == SBG_VERSION_CMP_THRESHOLD_BUILD) || (threshold == SBG_VERSION_CMP_THRESHOLD_QUALIFIER)) )
 		{
 			//
 			// Test if we have a software scheme or a basic scheme version
@@ -176,7 +204,7 @@ SBG_COMMON_LIB_API int32_t sbgVersionCompare(const SbgVersion *pVersionA, const 
 			//
 			// Test if we have to also compare the build field
 			//
-			if ( (result == 0) &&  ((thresold == SBG_VERSION_CMP_THRESOLD_BUILD) || (thresold == SBG_VERSION_CMP_THRESOLD_QUALIFIER)) )
+			if ( (result == 0) &&  ((threshold == SBG_VERSION_CMP_THRESHOLD_BUILD) || (threshold == SBG_VERSION_CMP_THRESHOLD_QUALIFIER)) )
 			{
 				//
 				// Compare the build field
@@ -186,7 +214,7 @@ SBG_COMMON_LIB_API int32_t sbgVersionCompare(const SbgVersion *pVersionA, const 
 				//
 				// Test if we have to also compare the qualifier field
 				//
-				if ( (result == 0) && (thresold == SBG_VERSION_CMP_THRESOLD_QUALIFIER) )
+				if ( (result == 0) && (threshold == SBG_VERSION_CMP_THRESHOLD_QUALIFIER) )
 				{
 					//
 					// Test if we have a software scheme
@@ -213,17 +241,7 @@ SBG_COMMON_LIB_API int32_t sbgVersionCompare(const SbgVersion *pVersionA, const 
 	return result;
 }
 
-/*!
- *	Compare two encoded versions and return if the version A is greater, less or equal than the version B.
- *	The computation is roughly result = version A - version B
- *	We can define how far we will check if the version A is greater than the version B.
- *	For example, we can only check the major or major and minor fields.
- *	\param[in]	versionA					The first compiled version to compare.
- *	\param[in]	versionB					The second compiled version to compare.
- *	\param[in]	thresold					The comparaison thresold to know if we are checking the major, minor, revision, build, ...
- *	\return									A positive value if the version A is greater than B, a negative one if version A is less than B and 0 if the two versions are the same (according to the thresold).
- */
-SBG_COMMON_LIB_API int32_t sbgVersionCompareEncoded(uint32_t versionA, uint32_t versionB, SbgVersionCmpThresold thresold)
+SBG_COMMON_LIB_API int32_t sbgVersionCompareEncoded(uint32_t versionA, uint32_t versionB, SbgVersionCmpThreshold threshold)
 {
 	SbgVersion	versionAInfo;
 	SbgVersion	versionBInfo;
@@ -237,20 +255,9 @@ SBG_COMMON_LIB_API int32_t sbgVersionCompareEncoded(uint32_t versionA, uint32_t 
 	//
 	// Do the comparaison
 	//
-	return sbgVersionCompare(&versionAInfo, &versionBInfo, thresold);
+	return sbgVersionCompare(&versionAInfo, &versionBInfo, threshold);
 }
 
-/*!
- * Check if the provided version is between the provided version interval.
- * All versions should have the same scheme.
- *
- * \param[in]	pLowerVersion				The lower version bound of the interval.
- * \param[in]	pHigherVersion				The hiver version bound of the interval.
- * \param[in]	pVersion					The version to check.
- * \return									A negative value if the version is stricly below the lower version bound
- *											Zero if the version if equal or greater than lower version and equal or smaller than higer version
- *											A positive value if the version is strictly above the higher version bound
- */
 SBG_COMMON_LIB_API int32_t sbgVersionIsWithinRange(const SbgVersion *pLowerVersion, const SbgVersion *pHigherVersion, const SbgVersion *pVersion)
 {
 	assert(pLowerVersion);
@@ -263,17 +270,6 @@ SBG_COMMON_LIB_API int32_t sbgVersionIsWithinRange(const SbgVersion *pLowerVersi
 	return sbgVersionIsWithinRangeEncoded(sbgVersionEncode(pLowerVersion), sbgVersionEncode(pHigherVersion), sbgVersionEncode(pVersion));
 }
 
-/*!
- * Check if the provided encoded version is between the provided version interval.
- * All versions should have the same scheme.
- *
- * \param[in]	lowerVersion				The lower version bound of the interval.
- * \param[in]	higherVersion				The hiver version bound of the interval.
- * \param[in]	version						The version to check.
- * \return									A negative value if the version is stricly below the lower version bound
- *											Zero if the version if equal or greater than lower version and equal or smaller than higer version
- *											A positive value if the version is strictly above the higher version bound
- */
 SBG_COMMON_LIB_API int32_t sbgVersionIsWithinRangeEncoded(uint32_t lowerVersion, uint32_t higherVersion, uint32_t version)
 {
 	//
@@ -284,7 +280,7 @@ SBG_COMMON_LIB_API int32_t sbgVersionIsWithinRangeEncoded(uint32_t lowerVersion,
 				(sbgVersionIsUsingSoftwareScheme(lowerVersion) == sbgVersionIsUsingSoftwareScheme(version))) ||
 			(	(sbgVersionIsUsingSoftwareScheme(lowerVersion) != sbgVersionIsUsingSoftwareScheme(higherVersion)) &&
 				(sbgVersionIsUsingSoftwareScheme(lowerVersion) != sbgVersionIsUsingSoftwareScheme(version))));
-	
+
 	//
 	// We can compare safely the encoded version directly
 	//
@@ -306,22 +302,13 @@ SBG_COMMON_LIB_API int32_t sbgVersionIsWithinRangeEncoded(uint32_t lowerVersion,
 //- Version to string methods                                          -//
 //----------------------------------------------------------------------//
 
-/*!
- *	Convert a version information to a human readable string.
- *	\param[in]	pVersionInfo											Pointer on a read only version structure to convert to a human readable string.
- *	\param[out]	pBuffer													Buffer to store the version as a human readable null terminated string.
- *	\param[in]	sizeOfBuffer											Maximum buffer size including the null terminated char.
- *	\return																SBG_NO_ERROR if the version information has been converted to a string.
- *																		SBG_BUFFER_OVERFLOW is the buffer isn't big enough to store the converted version string.
- */
-SBG_COMMON_LIB_API SbgErrorCode sbgVersionToString(const SbgVersion *pVersionInfo, char *pBuffer, uint32_t sizeOfBuffer)
+SBG_COMMON_LIB_API SbgErrorCode sbgVersionToString(const SbgVersion *pVersionInfo, char *pBuffer, size_t sizeOfBuffer)
 {
 	SbgErrorCode	errorCode = SBG_NO_ERROR;
 
-	//
-	// Check input parameters
-	//
-	assert((pVersionInfo) && (pBuffer) && (sizeOfBuffer>0));
+	assert(pVersionInfo);
+	assert(pBuffer);
+	assert(sizeOfBuffer>0);
 
 	//
 	// Test if we have a basic or software version scheme
@@ -403,15 +390,7 @@ SBG_COMMON_LIB_API SbgErrorCode sbgVersionToString(const SbgVersion *pVersionInf
 	return errorCode;
 }
 
-/*!
- *	Convert an encoded version number to a human readable string.
- *	\param[in]	version													Encoded version value to to convert to a human readable string.
- *	\param[out]	pBuffer													Buffer to store the version as a human readable null terminated string.
- *	\param[in]	sizeOfBuffer											Maximum buffer size including the null terminated char.
- *	\return																SBG_NO_ERROR if the version information has been converted to a string.
- *																		SBG_BUFFER_OVERFLOW is the buffer isn't big enough to store the converted version string.
- */
-SBG_COMMON_LIB_API SbgErrorCode sbgVersionToStringEncoded(uint32_t version, char *pBuffer, uint32_t sizeOfBuffer)
+SBG_COMMON_LIB_API SbgErrorCode sbgVersionToStringEncoded(uint32_t version, char *pBuffer, size_t sizeOfBuffer)
 {
 	SbgVersion	versionInfo;
 
@@ -430,25 +409,17 @@ SBG_COMMON_LIB_API SbgErrorCode sbgVersionToStringEncoded(uint32_t version, char
 //- String to version methods                                          -//
 //----------------------------------------------------------------------//
 
-/*!
- *	Convert a human readable string to a version structure.
- *	\param[in]	pVersionStr												The string containing the version to convert.
- *	\param[out]	pVersionInfo											Pointer to a version structure to store the parsed version info.
- *	\return																SBG_NO_ERROR if the version information has been converted from a string.
- */
 SBG_COMMON_LIB_API SbgErrorCode sbgVersionFromString(const char *pVersionStr, SbgVersion *pVersionInfo)
 {
 	SbgErrorCode	errorCode = SBG_NO_ERROR;
 	char			qualifierStr[32];
-	uint32_t			major;
-	uint32_t			minor;
-	uint32_t			rev;
-	uint32_t			build;
+	unsigned int	major;
+	unsigned int	minor;
+	unsigned int	rev;
+	unsigned int	build;
 
-	//
-	// Check input parameters
-	//
-	assert((pVersionStr) && (pVersionInfo));
+	assert(pVersionStr);
+	assert(pVersionInfo);
 
 	//
 	// Zero init the returned version struct
@@ -547,25 +518,17 @@ SBG_COMMON_LIB_API SbgErrorCode sbgVersionFromString(const char *pVersionStr, Sb
 		//
 		errorCode = SBG_INVALID_PARAMETER;
 	}
-	
+
 	return errorCode;
 }
 
-/*!
- *	Convert an encoded version number to a human readable string.
- *	\param[in]	pVersionStr												The string containing the version to convert.
- *	\param[out]	pVersion												Returned encoded version value parsed from the string.
- *	\return																SBG_NO_ERROR if the version information has been converted from a string.
- */
 SBG_COMMON_LIB_API SbgErrorCode sbgVersionFromStringEncoded(const char *pVersionStr, uint32_t *pVersion)
 {
 	SbgErrorCode	errorCode = SBG_NO_ERROR;
 	SbgVersion		versionInfo;
 
-	//
-	// Check input parameters
-	//
-	assert((pVersionStr) && (pVersion));
+	assert(pVersionStr);
+	assert(pVersion);
 
 	//
 	// Parse the version from a string
@@ -595,3 +558,4 @@ SBG_COMMON_LIB_API SbgErrorCode sbgVersionFromStringEncoded(const char *pVersion
 	//
 	return errorCode;
 }
+

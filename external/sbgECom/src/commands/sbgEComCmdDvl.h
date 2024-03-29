@@ -1,41 +1,50 @@
 /*!
- *	\file		sbgEComCmdDvl.h
- *  \author		SBG Systems
- *	\date		13 December 2018
+ * \file			sbgEComCmdDvl.h
+ * \ingroup			commands
+ * \author			SBG Systems
+ * \date			13 December 2018
  *
- *	\brief		This file implements sbgECom commands related to DVL module.
+ * \brief			DVL (Doppler Velocity Logger) aiding module configuration commands.
  *
- *	\section CodeCopyright Copyright Notice 
- *  The MIT license
- *  
- *  Copyright (C) 2007-2020, SBG Systems SAS. All rights reserved.
+ * \copyright		Copyright (C) 2022, SBG Systems SAS. All rights reserved.
+ * \beginlicense	The MIT license
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *  
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * \endlicense
  */
+
 #ifndef SBG_ECOM_CMD_DVL_H
 #define SBG_ECOM_CMD_DVL_H
 
-/* sbgCommonLib headers */
+// sbgCommonLib headers
 #include <sbgCommon.h>
 
-/* Local headers */
+// Project headers
+#include <sbgECom.h>
+
+// Local headers
 #include "sbgEComCmdCommon.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //----------------------------------------------------------------------//
 //- Public definitions                                                 -//
@@ -47,6 +56,7 @@
 typedef enum _SbgEComDvlModelsIds
 {
 	SBG_ECOM_DVL_MODEL_GENERIC_PD6	= 202,		/*!< Generic DVL using PD6 protocol format. */
+	SBG_ECOM_DVL_MODEL_WAYFINDER	= 203		/*!< Teledyne Wayfinder DVL using proprietary protocol. */
 } SbgEComDvlModelsIds;
 
 /*!
@@ -126,4 +136,8 @@ SbgErrorCode sbgEComCmdDvlSetRejection(SbgEComHandle *pHandle, const SbgEComDvlR
  */
 SbgErrorCode sbgEComCmdDvlGetRejection(SbgEComHandle *pHandle, SbgEComDvlRejectionConf *pRejectConf);
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif // SBG_ECOM_CMD_DVL_H
