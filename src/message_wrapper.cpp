@@ -577,6 +577,7 @@ const sbg_driver::msg::SbgGpsPos MessageWrapper::createSbgGpsPosMessage(const Sb
   gps_pos_message.status              = createGpsPosStatusMessage(ref_log_gps_pos);
   gps_pos_message.gps_tow             = ref_log_gps_pos.timeOfWeek;
   gps_pos_message.undulation          = ref_log_gps_pos.undulation;
+  gps_pos_message.num_sv_tracked      = ref_log_gps_pos.numSvTracked;
   gps_pos_message.num_sv_used         = ref_log_gps_pos.numSvUsed;
   gps_pos_message.base_station_id     = ref_log_gps_pos.baseStationId;
   gps_pos_message.diff_age            = ref_log_gps_pos.differentialAge;
