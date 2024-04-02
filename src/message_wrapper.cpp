@@ -816,15 +816,18 @@ const sbg_driver::msg::SbgUtcTime MessageWrapper::createSbgUtcTimeMessage(const 
   utc_time_message.header     = createRosHeader(ref_log_utc.timeStamp);
   utc_time_message.time_stamp = ref_log_utc.timeStamp;
 
-  utc_time_message.clock_status = createUtcStatusMessage(ref_log_utc);
-  utc_time_message.year         = ref_log_utc.year;
-  utc_time_message.month        = ref_log_utc.month;
-  utc_time_message.day          = ref_log_utc.day;
-  utc_time_message.hour         = ref_log_utc.hour;
-  utc_time_message.min          = ref_log_utc.minute;
-  utc_time_message.sec          = ref_log_utc.second;
-  utc_time_message.nanosec      = ref_log_utc.nanoSecond;
-  utc_time_message.gps_tow      = ref_log_utc.gpsTimeOfWeek;
+  utc_time_message.clock_status       = createUtcStatusMessage(ref_log_utc);
+  utc_time_message.year               = ref_log_utc.year;
+  utc_time_message.month              = ref_log_utc.month;
+  utc_time_message.day                = ref_log_utc.day;
+  utc_time_message.hour               = ref_log_utc.hour;
+  utc_time_message.min                = ref_log_utc.minute;
+  utc_time_message.sec                = ref_log_utc.second;
+  utc_time_message.nanosec            = ref_log_utc.nanoSecond;
+  utc_time_message.gps_tow            = ref_log_utc.gpsTimeOfWeek;
+  utc_time_message.clk_bias_std       = ref_log_utc.clkBiasStd;
+  utc_time_message.clk_sf_error_std   = ref_log_utc.clkSfErrorStd;
+  utc_time_message.clk_residual_error = ref_log_utc.clkResidualError;
 
   if (!first_valid_utc_)
   {
