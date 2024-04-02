@@ -169,6 +169,21 @@ const sbg_driver::msg::SbgGpsPosStatus MessageWrapper::createGpsPosStatusMessage
 
   gps_pos_status_message.glo_l1_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GLO_L1_USED) != 0;
   gps_pos_status_message.glo_l2_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GLO_L2_USED) != 0;
+  gps_pos_status_message.glo_l3_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GLO_L3_USED) != 0;
+
+  gps_pos_status_message.gal_e1_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GAL_E1_USED) != 0;
+  gps_pos_status_message.gal_e5a_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GAL_E5A_USED) != 0;
+  gps_pos_status_message.gal_e5b_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GAL_E5B_USED) != 0;
+  gps_pos_status_message.gal_e5alt_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GAL_E5ALT_USED) != 0;
+  gps_pos_status_message.gal_e6_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GAL_E6_USED) != 0;
+
+  gps_pos_status_message.bds_b1_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_BDS_B1_USED) != 0;
+  gps_pos_status_message.bds_b2_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_BDS_B2_USED) != 0;
+  gps_pos_status_message.bds_b3_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_BDS_B3_USED) != 0;
+
+  gps_pos_status_message.qzss_l1_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_QZSS_L1_USED) != 0;
+  gps_pos_status_message.qzss_l2_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_QZSS_L2_USED) != 0;
+  gps_pos_status_message.qzss_l5_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_QZSS_L5_USED) != 0;
 
   return gps_pos_status_message;
 }

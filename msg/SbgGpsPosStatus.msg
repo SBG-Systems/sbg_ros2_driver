@@ -62,3 +62,39 @@ bool glo_l1_used
 
 # True if GLONASS L2 is used in the solution
 bool glo_l2_used
+
+# True if GLONASS L3 is used in the solution
+bool glo_l3_used
+
+# True if GALILEO E1 is used in the solution
+bool gal_e1_used
+
+# True if GALILEO E5a is used in the solution
+bool gal_e5a_used
+
+# True if GALILEO E5b is used in the solution
+bool gal_e5b_used
+
+# True if GALILEO E5 AltBoc is used in the solution
+bool gal_e5alt_used
+
+# True if GALILEO E6 is used in the solution
+bool gal_e6_used
+
+# True if BeiDou B1 is used in the solution
+bool bds_b1_used
+
+# True if BeiDou B2 is used in the solution
+bool bds_b2_used
+
+# True if BeiDou B3 is used in the solution
+bool bds_b3_used
+
+# True if QZSS L1CA is used in the solution
+bool qzss_l1_used
+
+# True if QZSS L2C is used in the solution
+bool qzss_l2_used
+
+# True if QZSS L5 is used in the solution
+bool qzss_l5_used
