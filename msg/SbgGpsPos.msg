@@ -34,6 +34,9 @@ float32 undulation
 #   z: Vertical
 geometry_msgs/Vector3 position_accuracy
 
+# Number of space vehicles tracked by the GNSS
+uint8 num_sv_tracked
+
 # Number of space vehicles used in GNSS solution
 uint8 num_sv_used
 
