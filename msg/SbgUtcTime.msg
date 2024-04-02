@@ -30,3 +30,12 @@ uint32 nanosec
 
 # GPS Time of week (ms)
 uint32 gps_tow
+
+# Estimated internal clock bias standard deviation in seconds.
+float32 clk_bias_std
+
+# Estimated internal clock scale factor error standard deviation.
+float32 clk_sf_error_std
+
+# Latest residual clock error from the GNSS PPS signal in seconds.
+float32 clk_residual_error
