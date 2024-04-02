@@ -258,9 +258,21 @@ const sbg_driver::msg::SbgStatusAiding MessageWrapper::createStatusAidingMessage
   status_aiding_message.gps1_hdt_recv = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_GPS1_HDT_RECV) != 0;
   status_aiding_message.gps1_utc_recv = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_GPS1_UTC_RECV) != 0;
 
-  status_aiding_message.mag_recv = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_MAG_RECV) != 0;
-  status_aiding_message.odo_recv = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_ODO_RECV) != 0;
-  status_aiding_message.dvl_recv = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_DVL_RECV) != 0;
+  status_aiding_message.gps2_pos_recv = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_GPS2_POS_RECV) != 0;
+  status_aiding_message.gps2_vel_recv = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_GPS2_VEL_RECV) != 0;
+  status_aiding_message.gps2_hdt_recv = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_GPS2_HDT_RECV) != 0;
+  status_aiding_message.gps2_utc_recv = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_GPS2_UTC_RECV) != 0;
+
+  status_aiding_message.mag_recv      = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_MAG_RECV) != 0;
+  status_aiding_message.odo_recv      = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_ODO_RECV) != 0;
+  status_aiding_message.dvl_recv      = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_DVL_RECV) != 0;
+  status_aiding_message.usbl_recv     = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_USBL_RECV) != 0;
+  status_aiding_message.depth_recv    = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_DEPTH_RECV) != 0;
+  status_aiding_message.air_data_recv = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_AIR_DATA_RECV) != 0;
+
+  status_aiding_message.user_pos_recv     = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_USER_POS_RECV) != 0;
+  status_aiding_message.user_vel_recv     = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_USER_VEL_RECV) != 0;
+  status_aiding_message.user_heading_recv = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_USER_HEADING_RECV) != 0;
 
   return status_aiding_message;
 }
