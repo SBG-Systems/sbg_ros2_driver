@@ -287,6 +287,8 @@ const sbg_driver::msg::SbgStatusGeneral MessageWrapper::createStatusGeneralMessa
   status_general_message.gps_power    = (ref_log_status.generalStatus & SBG_ECOM_GENERAL_GPS_POWER_OK) != 0;
   status_general_message.settings     = (ref_log_status.generalStatus & SBG_ECOM_GENERAL_SETTINGS_OK) != 0;
   status_general_message.temperature  = (ref_log_status.generalStatus & SBG_ECOM_GENERAL_TEMPERATURE_OK) != 0;
+  status_general_message.datalogger   = (ref_log_status.generalStatus & SBG_ECOM_GENERAL_DATALOGGER_OK) != 0;
+  status_general_message.cpu          = (ref_log_status.generalStatus & SBG_ECOM_GENERAL_CPU_OK) != 0;
 
   return status_general_message;
 }
