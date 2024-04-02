@@ -142,6 +142,9 @@ const sbg_driver::msg::SbgGpsPosStatus MessageWrapper::createGpsPosStatusMessage
 
   gps_pos_status_message.status       = sbgEComLogGnssPosGetStatus(&ref_log_gps_pos);
   gps_pos_status_message.type         = sbgEComLogGnssPosGetType(&ref_log_gps_pos);
+  gps_pos_status_message.ifm          = sbgEComLogGnssPosGetIfmStatus(&ref_log_gps_pos);
+  gps_pos_status_message.spoofing     = sbgEComLogGnssPosGetSpoofingStatus(&ref_log_gps_pos);
+  gps_pos_status_message.osnma        = sbgEComLogGnssPosGetOsnmaStatus(&ref_log_gps_pos);
 
   gps_pos_status_message.gps_l1_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GPS_L1_USED) != 0;
   gps_pos_status_message.gps_l2_used  = (ref_log_gps_pos.status & SBG_ECOM_GNSS_POS_GPS_L2_USED) != 0;

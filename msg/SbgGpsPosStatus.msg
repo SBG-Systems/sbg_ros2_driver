@@ -23,6 +23,31 @@ uint8 status
 # 10 FIXED			Fixed location solution position
 uint8 type
 
+# The ifm status
+# 0	ERROR		    Interference monitoring system is in error and doesn't work.
+# 1	UNKNOWN		    Interference monitoring is either disabled or not available.
+# 2 CLEAN		    Interference are monitored and the environment is clean.
+# 3 MITIGATED       Interference are detected and mitigated, the PVT is OK.
+# 4 CRITICAL        Interference are detected and couldn't be mitigated, the PVT is invalid.
+uint8 ifm
+
+# The spoofing status
+# 0	ERROR			Spoofing detection system is in error and doesn't work.
+# 1	UNKNOWN			Spoofing detection is either disabled or not available.
+# 2 CLEAN			Spoofing detection is enabled and no spoofer is detected.
+# 3 SINGLE			Probable spoofing identified by one method only.
+# 4 MULTIPLE		Confirmed spoofing identified by several methods such as Galileo OSNMA + Built In.
+uint8 spoofing
+
+# The OSNMA status
+# 0 ERROR		    No valid solution available.
+# 1 DISABLED	    An unknown solution type has been computed.
+# 2 INITIALIZING	Single point solution position.
+# 3 WAITING_NTP		Standard Pseudorange Differential Solution (DGPS).
+# 4 VALID			SBAS satellite used for differential corrections.
+# 5 SPOOFED		    Omnistar VBS Position (L1 sub-meter).
+uint8 osnma
+
 # True if GPS L1 is used in the solution
 bool gps_l1_used
 
