@@ -552,6 +552,8 @@ const sbg_driver::msg::SbgGpsHdt MessageWrapper::createSbgGpsHdtMessage(const Sb
   gps_hdt_message.true_heading_acc = ref_log_gps_hdt.headingAccuracy;
   gps_hdt_message.pitch_acc        = ref_log_gps_hdt.pitchAccuracy;
   gps_hdt_message.baseline         = ref_log_gps_hdt.baseline;
+  gps_hdt_message.num_sv_tracked   = ref_log_gps_hdt.numSvTracked;
+  gps_hdt_message.num_sv_used      = ref_log_gps_hdt.numSvUsed;
 
   if (use_enu_)
   {

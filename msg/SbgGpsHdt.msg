@@ -37,3 +37,9 @@ float32 pitch_acc
 
 # The distance between the main and aux antenna in meters.
 float32 baseline
+
+# Number of space vehicles tracked by the secondary GNSS antenna
+uint8 num_sv_tracked
+
+# Number of space vehicles used to compute the dual antenna solution
+uint8 num_sv_used
