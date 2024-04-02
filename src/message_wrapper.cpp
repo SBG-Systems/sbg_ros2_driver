@@ -254,6 +254,23 @@ const sbg_driver::msg::SbgStatusCom MessageWrapper::createStatusComMessage(const
   status_com_message.port_e_rx = (ref_log_status.comStatus & SBG_ECOM_PORTE_RX_OK) != 0;
   status_com_message.port_e_tx = (ref_log_status.comStatus & SBG_ECOM_PORTE_TX_OK) != 0;
 
+  status_com_message.eth_0     = (ref_log_status.comStatus & SBG_ECOM_ETH0_VALID) != 0;
+  status_com_message.eth_1     = (ref_log_status.comStatus & SBG_ECOM_ETH1_VALID) != 0;
+  status_com_message.eth_2     = (ref_log_status.comStatus & SBG_ECOM_ETH2_VALID) != 0;
+  status_com_message.eth_3     = (ref_log_status.comStatus & SBG_ECOM_ETH3_VALID) != 0;
+  status_com_message.eth_4     = (ref_log_status.comStatus & SBG_ECOM_ETH4_VALID) != 0;
+
+  status_com_message.eth_0_rx  = (ref_log_status.comStatus2 & SBG_ECOM_COM2_ETH0_RX_OK) != 0;
+  status_com_message.eth_0_tx  = (ref_log_status.comStatus2 & SBG_ECOM_COM2_ETH0_TX_OK) != 0;
+  status_com_message.eth_1_rx  = (ref_log_status.comStatus2 & SBG_ECOM_COM2_ETH1_RX_OK) != 0;
+  status_com_message.eth_1_tx  = (ref_log_status.comStatus2 & SBG_ECOM_COM2_ETH1_TX_OK) != 0;
+  status_com_message.eth_2_rx  = (ref_log_status.comStatus2 & SBG_ECOM_COM2_ETH2_RX_OK) != 0;
+  status_com_message.eth_2_tx  = (ref_log_status.comStatus2 & SBG_ECOM_COM2_ETH2_TX_OK) != 0;
+  status_com_message.eth_3_rx  = (ref_log_status.comStatus2 & SBG_ECOM_COM2_ETH3_RX_OK) != 0;
+  status_com_message.eth_3_tx  = (ref_log_status.comStatus2 & SBG_ECOM_COM2_ETH3_TX_OK) != 0;
+  status_com_message.eth_4_rx  = (ref_log_status.comStatus2 & SBG_ECOM_COM2_ETH4_RX_OK) != 0;
+  status_com_message.eth_4_tx  = (ref_log_status.comStatus2 & SBG_ECOM_COM2_ETH4_TX_OK) != 0;
+
   status_com_message.can_rx     = (ref_log_status.comStatus & SBG_ECOM_CAN_RX_OK) != 0;
   status_com_message.can_tx     = (ref_log_status.comStatus & SBG_ECOM_CAN_TX_OK) != 0;
   status_com_message.can_status = (ref_log_status.comStatus & SBG_ECOM_CAN_VALID) != 0;
