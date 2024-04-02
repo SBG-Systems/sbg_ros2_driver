@@ -112,26 +112,43 @@ const sbg_driver::msg::SbgEkfStatus MessageWrapper::createEkfStatusMessage(uint3
 {
   sbg_driver::msg::SbgEkfStatus ekf_status_message;
 
-  ekf_status_message.solution_mode    = sbgEComLogEkfGetSolutionMode(ekf_status);
-  ekf_status_message.attitude_valid   = (ekf_status & SBG_ECOM_SOL_ATTITUDE_VALID) != 0;
-  ekf_status_message.heading_valid    = (ekf_status & SBG_ECOM_SOL_HEADING_VALID) != 0;
-  ekf_status_message.velocity_valid   = (ekf_status & SBG_ECOM_SOL_VELOCITY_VALID) != 0;
-  ekf_status_message.position_valid   = (ekf_status & SBG_ECOM_SOL_POSITION_VALID) != 0;
+  ekf_status_message.solution_mode      = sbgEComLogEkfGetSolutionMode(ekf_status);
+  ekf_status_message.attitude_valid     = (ekf_status & SBG_ECOM_SOL_ATTITUDE_VALID) != 0;
+  ekf_status_message.heading_valid      = (ekf_status & SBG_ECOM_SOL_HEADING_VALID) != 0;
+  ekf_status_message.velocity_valid     = (ekf_status & SBG_ECOM_SOL_VELOCITY_VALID) != 0;
+  ekf_status_message.position_valid     = (ekf_status & SBG_ECOM_SOL_POSITION_VALID) != 0;
 
-  ekf_status_message.vert_ref_used    = (ekf_status & SBG_ECOM_SOL_VERT_REF_USED) != 0;
-  ekf_status_message.mag_ref_used     = (ekf_status & SBG_ECOM_SOL_MAG_REF_USED) != 0;
+  ekf_status_message.vert_ref_used      = (ekf_status & SBG_ECOM_SOL_VERT_REF_USED) != 0;
+  ekf_status_message.mag_ref_used       = (ekf_status & SBG_ECOM_SOL_MAG_REF_USED) != 0;
 
-  ekf_status_message.gps1_vel_used    = (ekf_status & SBG_ECOM_SOL_GPS1_VEL_USED) != 0;
-  ekf_status_message.gps1_pos_used    = (ekf_status & SBG_ECOM_SOL_GPS1_POS_USED) != 0;
-  ekf_status_message.gps1_course_used = (ekf_status & SBG_ECOM_SOL_GPS1_HDT_USED) != 0;
-  ekf_status_message.gps1_hdt_used    = (ekf_status & SBG_ECOM_SOL_GPS1_HDT_USED) != 0;
+  ekf_status_message.gps1_vel_used      = (ekf_status & SBG_ECOM_SOL_GPS1_VEL_USED) != 0;
+  ekf_status_message.gps1_pos_used      = (ekf_status & SBG_ECOM_SOL_GPS1_POS_USED) != 0;
+  ekf_status_message.gps1_course_used   = (ekf_status & SBG_ECOM_SOL_GPS1_HDT_USED) != 0;
+  ekf_status_message.gps1_hdt_used      = (ekf_status & SBG_ECOM_SOL_GPS1_HDT_USED) != 0;
 
-  ekf_status_message.gps2_vel_used    = (ekf_status & SBG_ECOM_SOL_GPS2_VEL_USED) != 0;
-  ekf_status_message.gps2_pos_used    = (ekf_status & SBG_ECOM_SOL_GPS2_POS_USED) != 0;
-  ekf_status_message.gps2_course_used = (ekf_status & SBG_ECOM_SOL_GPS2_POS_USED) != 0;
-  ekf_status_message.gps2_hdt_used    = (ekf_status & SBG_ECOM_SOL_GPS2_HDT_USED) != 0;
+  ekf_status_message.gps2_vel_used      = (ekf_status & SBG_ECOM_SOL_GPS2_VEL_USED) != 0;
+  ekf_status_message.gps2_pos_used      = (ekf_status & SBG_ECOM_SOL_GPS2_POS_USED) != 0;
+  ekf_status_message.gps2_course_used   = (ekf_status & SBG_ECOM_SOL_GPS2_POS_USED) != 0;
+  ekf_status_message.gps2_hdt_used      = (ekf_status & SBG_ECOM_SOL_GPS2_HDT_USED) != 0;
 
-  ekf_status_message.odo_used         = (ekf_status & SBG_ECOM_SOL_ODO_USED) != 0;
+  ekf_status_message.odo_used           = (ekf_status & SBG_ECOM_SOL_ODO_USED) != 0;
+
+  ekf_status_message.dvl_bt_used        = (ekf_status & SBG_ECOM_SOL_DVL_BT_USED) != 0;
+  ekf_status_message.dvl_wt_used        = (ekf_status & SBG_ECOM_SOL_DVL_WT_USED) != 0;
+
+  ekf_status_message.user_pos_used      = (ekf_status & SBG_ECOM_SOL_USER_POS_USED) != 0;
+  ekf_status_message.user_vel_used      = (ekf_status & SBG_ECOM_SOL_USER_VEL_USED) != 0;
+  ekf_status_message.user_heading_used  = (ekf_status & SBG_ECOM_SOL_USER_HEADING_USED) != 0;
+
+  ekf_status_message.usbl_used          = (ekf_status & SBG_ECOM_SOL_USBL_USED) != 0;
+
+  ekf_status_message.air_data_used      = (ekf_status & SBG_ECOM_SOL_AIR_DATA_USED) != 0;
+
+  ekf_status_message.zupt_used          = (ekf_status & SBG_ECOM_SOL_ZUPT_USED) != 0;
+
+  ekf_status_message.align_valid        = (ekf_status & SBG_ECOM_SOL_ALIGN_VALID) != 0;
+
+  ekf_status_message.depth_used         = (ekf_status & SBG_ECOM_SOL_DEPTH_USED) != 0;
 
   return ekf_status_message;
 }
