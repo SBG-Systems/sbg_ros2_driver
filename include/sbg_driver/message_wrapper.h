@@ -348,18 +348,18 @@ public:
   const sbg_driver::msg::SbgEkfQuat createSbgEkfQuatMessage(const SbgEComLogEkfQuat& ref_log_ekf_quat) const;
 
   /*!
-   * Create a SBG-ROS Ekf Navigation message.
+   * Create a SBG-ROS Ekf Velocity Body message.
    *
-   * \param[in] ref_log_ekf_nav     SBG Ekf Navigation log.
-   * \return                        Ekf Navigation message.
+   * \param[in] ref_log_ekf_vel_body        SBG Ekf Velocity Body log.
+   * \return                                Ekf Velocity body message.
    */
   const sbg_driver::msg::SbgEkfVelBody createSbgEkfVelBodyMessage(const SbgEComLogEkfVelBody& ref_log_ekf_vel_body) const;
 
   /*!
-   * Create a SBG-ROS Ekf Rot Accel message.
+   * Create a SBG-ROS Ekf Rotation Acceleration message.
    *
-   * \param[in] ref_log_ekf_rot_accel       SBG Ekf Rot Accel log.
-   * \return                                Ekf Rot Accel message.
+   * \param[in] ref_log_ekf_rot_accel       SBG Ekf Rotation Acceleration log.
+   * \return                                Ekf Rotation Acceleration message.
    */
   const sbg_driver::msg::SbgEkfRotAccel createSbgEkfRotAccelMessage(const SbgEComLogEkfRotAccel& ref_log_ekf_rot_accel) const;
 
