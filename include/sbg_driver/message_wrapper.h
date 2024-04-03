@@ -66,6 +66,7 @@
 #include "sbg_driver/msg/sbg_ekf_euler.hpp"
 #include "sbg_driver/msg/sbg_ekf_quat.hpp"
 #include "sbg_driver/msg/sbg_ekf_nav.hpp"
+#include "sbg_driver/msg/sbg_ekf_vel_body.hpp"
 #include "sbg_driver/msg/sbg_ship_motion.hpp"
 #include "sbg_driver/msg/sbg_mag.hpp"
 #include "sbg_driver/msg/sbg_mag_calib.hpp"
@@ -344,6 +345,14 @@ public:
    * \return                        Ekf Quaternion message.
    */
   const sbg_driver::msg::SbgEkfQuat createSbgEkfQuatMessage(const SbgEComLogEkfQuat& ref_log_ekf_quat) const;
+
+  /*!
+   * Create a SBG-ROS Ekf Navigation message.
+   *
+   * \param[in] ref_log_ekf_nav     SBG Ekf Navigation log.
+   * \return                        Ekf Navigation message.
+   */
+  const sbg_driver::msg::SbgEkfVelBody createSbgEkfVelBodyMessage(const SbgEComLogEkfVelBody& ref_log_ekf_vel_body) const;
 
   /*!
    * Create a SBG-ROS event message.

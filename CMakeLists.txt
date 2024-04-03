@@ -65,6 +65,7 @@ set (msg_files
   "msg/SbgMagCalib.msg"
   "msg/SbgStatusAiding.msg"
   "msg/SbgEkfStatus.msg"
+  "msg/SbgEkfVelBody.msg"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
