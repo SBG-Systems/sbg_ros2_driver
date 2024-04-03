@@ -33,9 +33,6 @@ bool gps1_vel_used
 # True if GPS Position is used in solution (data used and valid since 3s)
 bool gps1_pos_used
 
-# True if GPS Course is used in solution (data used and valid since 3s)
-bool gps1_course_used
-
 # True if GPS True Heading is used in solution (data used and valid since 3s)
 bool gps1_hdt_used
 
@@ -44,9 +41,6 @@ bool gps2_vel_used
 
 # True if GPS2 Position is used in solution (data used and valid since 3s)
 bool gps2_pos_used
-
-# True if GPS2 Course is used in solution (data used and valid since 3s)
-bool gps2_course_used
 
 # True if GPS2 True Heading is used in solution (data used and valid since 3s)
 bool gps2_hdt_used
