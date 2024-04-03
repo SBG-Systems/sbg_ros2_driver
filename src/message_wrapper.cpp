@@ -241,10 +241,12 @@ const sbg_driver::msg::SbgShipMotionStatus MessageWrapper::createShipMotionStatu
 {
   sbg_driver::msg::SbgShipMotionStatus ship_motion_status_message;
 
-  ship_motion_status_message.heave_valid      = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_VALID) != 0;
-  ship_motion_status_message.heave_vel_aided  = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_VEL_AIDED) != 0;
-  ship_motion_status_message.period_available = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_PERIOD_INCLUDED) != 0;
-  ship_motion_status_message.period_valid     = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_PERIOD_VALID) != 0;
+  ship_motion_status_message.heave_valid          = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_VALID) != 0;
+  ship_motion_status_message.heave_vel_aided      = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_VEL_AIDED) != 0;
+  ship_motion_status_message.surge_sway_included  = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_SURGE_SWAY_INCLUDED) != 0;
+  ship_motion_status_message.period_available     = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_PERIOD_INCLUDED) != 0;
+  ship_motion_status_message.period_valid         = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_PERIOD_VALID) != 0;
+  ship_motion_status_message.swell_mode           = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_SWELL_MODE) != 0;
 
   return ship_motion_status_message;
 }
