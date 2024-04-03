@@ -486,6 +486,37 @@ const sbg_driver::msg::SbgEkfVelBody MessageWrapper::createSbgEkfVelBodyMessage(
   return ekf_vel_body_message;
 }
 
+const sbg_driver::msg::SbgEkfRotAccel MessageWrapper::createSbgEkfRotAccelMessage(const SbgEComLogEkfRotAccel& ref_log_ekf_rot_accel) const
+{
+  sbg_driver::msg::SbgEkfRotAccel ekf_vel_rot_accel_message;
+
+  ekf_vel_rot_accel_message.header            = createRosHeader(ref_log_ekf_rot_accel.timeStamp);
+  ekf_vel_rot_accel_message.time_stamp        = ref_log_ekf_rot_accel.timeStamp;
+
+  if (use_enu_)
+  {
+    ekf_vel_rot_accel_message.rate.x = ref_log_ekf_rot_accel.rate[1];
+    ekf_vel_rot_accel_message.rate.y = ref_log_ekf_rot_accel.rate[0];
+    ekf_vel_rot_accel_message.rate.z = -ref_log_ekf_rot_accel.rate[2];
+
+    ekf_vel_rot_accel_message.acceleration.x = ref_log_ekf_rot_accel.acceleration[1];
+    ekf_vel_rot_accel_message.acceleration.y = ref_log_ekf_rot_accel.acceleration[0];
+    ekf_vel_rot_accel_message.acceleration.z = -ref_log_ekf_rot_accel.acceleration[2];
+  }
+  else
+  {
+    ekf_vel_rot_accel_message.rate.x = ref_log_ekf_rot_accel.rate[0];
+    ekf_vel_rot_accel_message.rate.y = ref_log_ekf_rot_accel.rate[1];
+    ekf_vel_rot_accel_message.rate.z = ref_log_ekf_rot_accel.rate[2];
+
+    ekf_vel_rot_accel_message.acceleration.x = ref_log_ekf_rot_accel.acceleration[0];
+    ekf_vel_rot_accel_message.acceleration.y = ref_log_ekf_rot_accel.acceleration[1];
+    ekf_vel_rot_accel_message.acceleration.z = ref_log_ekf_rot_accel.acceleration[2];
+  }
+
+  return ekf_vel_rot_accel_message;
+}
+
 const sbg_driver::msg::SbgEvent MessageWrapper::createSbgEventMessage(const SbgEComLogEvent& ref_log_event) const
 {
   sbg_driver::msg::SbgEvent event_message;
