@@ -46,6 +46,9 @@ std::string MessagePublisher::getOutputTopicName(SbgEComMsgId sbg_message_id) co
     case SBG_ECOM_LOG_EKF_NAV:
       return "sbg/ekf_nav";
 
+    case SBG_ECOM_LOG_EKF_VEL_BODY:
+      return "sbg/ekf_vel_body";
+
     case SBG_ECOM_LOG_SHIP_MOTION:
       return "sbg/ship_motion";
 
@@ -129,6 +132,10 @@ void MessagePublisher::initPublisher(rclcpp::Node& ref_ros_node_handle, SbgEComM
 
       case SBG_ECOM_LOG_EKF_NAV:
         sbg_ekf_nav_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfNav>(ref_output_topic, max_messages_);
+        break;
+
+      case SBG_ECOM_LOG_EKF_VEL_BODY:
+        sbg_ekf_vel_body_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfVelBody>(ref_output_topic, max_messages_);
         break;
 
       case SBG_ECOM_LOG_SHIP_MOTION:
@@ -553,6 +560,13 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
       case SBG_ECOM_LOG_EKF_NAV:
         publishEkfNavigationData(ref_sbg_log);
         processRosOdoMessage();
+        break;
+
+      case SBG_ECOM_LOG_EKF_VEL_BODY:
+        if (sbg_ekf_vel_body_pub_)
+        {
+          sbg_ekf_vel_body_pub_->publish(message_wrapper_.createSbgEkfVelBodyMessage(ref_sbg_log.ekfVelBody));
+        }
         break;
 
       case SBG_ECOM_LOG_SHIP_MOTION:
