@@ -52,6 +52,8 @@ private:
   rclcpp::Publisher<sbg_driver::msg::SbgEkfQuat, std::allocator<void>>::SharedPtr       sbg_ekf_quat_pub_;
   rclcpp::Publisher<sbg_driver::msg::SbgEkfNav, std::allocator<void>>::SharedPtr        sbg_ekf_nav_pub_;
   rclcpp::Publisher<sbg_driver::msg::SbgEkfVelBody, std::allocator<void>>::SharedPtr    sbg_ekf_vel_body_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEkfRotAccel, std::allocator<void>>::SharedPtr   sbg_ekf_rot_accel_body_pub_;
+  rclcpp::Publisher<sbg_driver::msg::SbgEkfRotAccel, std::allocator<void>>::SharedPtr   sbg_ekf_rot_accel_ned_pub_;
   rclcpp::Publisher<sbg_driver::msg::SbgShipMotion, std::allocator<void>>::SharedPtr    sbg_ship_motion_pub_;
   rclcpp::Publisher<sbg_driver::msg::SbgMag, std::allocator<void>>::SharedPtr           sbg_mag_pub_;
   rclcpp::Publisher<sbg_driver::msg::SbgMagCalib, std::allocator<void>>::SharedPtr      sbg_mag_calib_pub_;

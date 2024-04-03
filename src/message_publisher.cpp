@@ -138,6 +138,14 @@ void MessagePublisher::initPublisher(rclcpp::Node& ref_ros_node_handle, SbgEComM
         sbg_ekf_vel_body_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfVelBody>(ref_output_topic, max_messages_);
         break;
 
+      case SBG_ECOM_LOG_EKF_ROT_ACCEL_BODY:
+        sbg_ekf_rot_accel_body_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfRotAccel>(ref_output_topic, max_messages_);
+        break;
+
+      case SBG_ECOM_LOG_EKF_ROT_ACCEL_NED:
+        sbg_ekf_rot_accel_ned_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgEkfRotAccel>(ref_output_topic, max_messages_);
+        break;
+
       case SBG_ECOM_LOG_SHIP_MOTION:
         sbg_ship_motion_pub_ = ref_ros_node_handle.create_publisher<sbg_driver::msg::SbgShipMotion>(ref_output_topic, max_messages_);
         break;
@@ -566,6 +574,20 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         if (sbg_ekf_vel_body_pub_)
         {
           sbg_ekf_vel_body_pub_->publish(message_wrapper_.createSbgEkfVelBodyMessage(ref_sbg_log.ekfVelBody));
+        }
+        break;
+
+      case SBG_ECOM_LOG_EKF_ROT_ACCEL_BODY:
+        if (sbg_ekf_rot_accel_body_pub_)
+        {
+          sbg_ekf_rot_accel_body_pub_->publish(message_wrapper_.createSbgEkfRotAccelMessage(ref_sbg_log.ekfRotAccel));
+        }
+        break;
+
+      case SBG_ECOM_LOG_EKF_ROT_ACCEL_NED:
+        if (sbg_ekf_rot_accel_ned_pub_)
+        {
+          sbg_ekf_rot_accel_ned_pub_->publish(message_wrapper_.createSbgEkfRotAccelMessage(ref_sbg_log.ekfRotAccel));
         }
         break;
 

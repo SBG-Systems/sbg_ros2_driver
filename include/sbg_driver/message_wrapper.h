@@ -67,6 +67,7 @@
 #include "sbg_driver/msg/sbg_ekf_quat.hpp"
 #include "sbg_driver/msg/sbg_ekf_nav.hpp"
 #include "sbg_driver/msg/sbg_ekf_vel_body.hpp"
+#include "sbg_driver/msg/sbg_ekf_rot_accel.hpp"
 #include "sbg_driver/msg/sbg_ship_motion.hpp"
 #include "sbg_driver/msg/sbg_mag.hpp"
 #include "sbg_driver/msg/sbg_mag_calib.hpp"
@@ -353,6 +354,14 @@ public:
    * \return                        Ekf Navigation message.
    */
   const sbg_driver::msg::SbgEkfVelBody createSbgEkfVelBodyMessage(const SbgEComLogEkfVelBody& ref_log_ekf_vel_body) const;
+
+  /*!
+   * Create a SBG-ROS Ekf Rot Accel message.
+   *
+   * \param[in] ref_log_ekf_rot_accel       SBG Ekf Rot Accel log.
+   * \return                                Ekf Rot Accel message.
+   */
+  const sbg_driver::msg::SbgEkfRotAccel createSbgEkfRotAccelMessage(const SbgEComLogEkfRotAccel& ref_log_ekf_rot_accel) const;
 
   /*!
    * Create a SBG-ROS event message.
