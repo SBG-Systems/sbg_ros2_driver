@@ -123,12 +123,10 @@ const sbg_driver::msg::SbgEkfStatus MessageWrapper::createEkfStatusMessage(uint3
 
   ekf_status_message.gps1_vel_used      = (ekf_status & SBG_ECOM_SOL_GPS1_VEL_USED) != 0;
   ekf_status_message.gps1_pos_used      = (ekf_status & SBG_ECOM_SOL_GPS1_POS_USED) != 0;
-  ekf_status_message.gps1_course_used   = (ekf_status & SBG_ECOM_SOL_GPS1_HDT_USED) != 0;
   ekf_status_message.gps1_hdt_used      = (ekf_status & SBG_ECOM_SOL_GPS1_HDT_USED) != 0;
 
   ekf_status_message.gps2_vel_used      = (ekf_status & SBG_ECOM_SOL_GPS2_VEL_USED) != 0;
   ekf_status_message.gps2_pos_used      = (ekf_status & SBG_ECOM_SOL_GPS2_POS_USED) != 0;
-  ekf_status_message.gps2_course_used   = (ekf_status & SBG_ECOM_SOL_GPS2_POS_USED) != 0;
   ekf_status_message.gps2_hdt_used      = (ekf_status & SBG_ECOM_SOL_GPS2_HDT_USED) != 0;
 
   ekf_status_message.odo_used           = (ekf_status & SBG_ECOM_SOL_ODO_USED) != 0;
