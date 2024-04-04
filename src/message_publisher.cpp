@@ -49,6 +49,12 @@ std::string MessagePublisher::getOutputTopicName(SbgEComMsgId sbg_message_id) co
     case SBG_ECOM_LOG_EKF_VEL_BODY:
       return "sbg/ekf_vel_body";
 
+    case SBG_ECOM_LOG_EKF_ROT_ACCEL_BODY:
+      return "sbg/ekf_rot_accel_body";
+
+    case SBG_ECOM_LOG_EKF_ROT_ACCEL_NED:
+      return "sbg/ekf_rot_accel_ned";
+
     case SBG_ECOM_LOG_SHIP_MOTION:
       return "sbg/ship_motion";
 
