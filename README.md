@@ -28,8 +28,7 @@ User can install the sbg_ros2_driver through the standard ROS installation syste
 ### Building from sources
 #### Dependencies
 * [Robot Operating System (ROS)](http://wiki.ros.org/)
-* [sbgECom C Library](https://github.com/SBG-Systems/sbgECom) (embeds v1.11.920-stable - compatible with ELLIPSE firmware above 1.7)
-* [Boost C++ Library](https://www.boost.org/)
+* [sbgECom C Library](https://github.com/SBG-Systems/sbgECom) (embeds v4.0.1987-stable - compatible with ELLIPSE firmware 2.5 and above)
 
 #### Building
 1. Clone the repository (use a Release version)
