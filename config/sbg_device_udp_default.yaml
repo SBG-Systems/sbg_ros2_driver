@@ -265,6 +265,12 @@
       log_ekf_quat: 8
       # Position and velocities in NED coordinates with the accuracies on each axis
       log_ekf_nav: 0
+      # Velocity expressed in the INS body/vehicle frame
+      log_ekf_vel_body: 0
+      # Rotations rate and accelerations in the INS body/vehicle frame
+      log_ekf_rot_accel_body: 0
+      # Rotations rate and accelerations in North, East, Down (NED) navigation frame
+      log_ekf_rot_accel_ned: 0
       # Heave, surge and sway and accelerations on each axis for up to 4 points
       log_ship_motion: 0
       # Provides UTC time reference
