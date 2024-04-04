@@ -133,6 +133,18 @@ These messages try to match as much as possible the sbgECom logs as they are out
 
   Computed navigation data.
   
+* **`/sbg/ekf_vel_body`** [sbg_driver/SbgEkfVelBody](http://docs.ros.org/api/sbg_driver/html/msg/SbgEkfVelBody.html)
+
+  Computed velocity expressed in the INS body/vehicle frame.
+  
+* **`/sbg/ekf_rot_accel_body`** [sbg_driver/SbgEkfRotAccel](http://docs.ros.org/api/sbg_driver/html/msg/SbgEkfRotAccel.html)
+
+  Computed rotations rate and accelerations in the INS body/vehicle frame.
+  
+* **`/sbg/ekf_rot_accel_ned`** [sbg_driver/SbgEkfRotAccel](http://docs.ros.org/api/sbg_driver/html/msg/SbgEkfRotAccel.html)
+
+  Computed rotations rate and accelerations in North, East, Down (NED) navigation frame.
+  
 * **`/sbg/mag`** [sbg_driver/SbgMag](http://docs.ros.org/api/sbg_driver/html/msg/SbgMag.html)
 
   Calibrated magnetic field measurement.
