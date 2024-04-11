@@ -34,10 +34,10 @@ float32 undulation
 #   z: Vertical
 geometry_msgs/Vector3 position_accuracy
 
-# Number of space vehicles tracked by the GNSS
+# Number of space vehicles tracked by the GNSS. 0xFF if N/A
 uint8 num_sv_tracked
 
-# Number of space vehicles used in GNSS solution
+# Number of space vehicles used in GNSS solution. 0xFF if N/A
 uint8 num_sv_used
 
 # ID of the DGPS/RTK base station in use
