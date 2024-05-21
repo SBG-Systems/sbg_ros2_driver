@@ -16,6 +16,7 @@ int main(int argc, char **argv)
 
     RCLCPP_INFO(node_handle->get_logger(), "SBG DRIVER - Initialize device for mag calibration");
     sbg_device.initDeviceForMagCalibration();
+    sbg_device.initDeviceForReceivingData();
 
     loopFrequency = sbg_device.getUpdateFrequency();
     RCLCPP_INFO(node_handle->get_logger(), "SBG DRIVER - ROS Node frequency : %u Hz", loopFrequency);
