@@ -107,30 +107,30 @@ void ConfigApplier::configureMotionProfile(const SbgEComModelInfo& ref_motion_pr
   }
 }
 
-void ConfigApplier::configureImuAlignement(const SbgEComSensorAlignmentInfo& ref_sensor_align, const sbg::SbgVector3<float>& ref_level_arms)
+void ConfigApplier::configureImuAlignement(const SbgEComSensorAlignmentInfo& ref_sensor_align, const sbg::SbgVector3<float>& ref_lever_arm)
 {
   //
-  // Get the IMU alignement and level arms, and compare with the parameters.
+  // Get the IMU alignement and lever arm, and compare with the parameters.
   // If the alignement are differents, update the device with the loaded parameters.
   //
   SbgErrorCode                error_code;
   SbgEComSensorAlignmentInfo  sensor_alignement;
-  float                       level_arms_device[3];
+  float                       lever_arm_device[3];
 
-  error_code = sbgEComCmdSensorGetAlignmentAndLeverArm(&ref_sbg_com_handle_, &sensor_alignement, level_arms_device);
+  error_code = sbgEComCmdSensorGetAlignmentAndLeverArm(&ref_sbg_com_handle_, &sensor_alignement, lever_arm_device);
 
   checkConfigurationGet(error_code, std::string("IMU alignement"));
 
-  SbgVector3<float> level_arms_vector = SbgVector3<float>(level_arms_device, 3);
+  SbgVector3<float> lever_arm_vector = SbgVector3<float>(lever_arm_device, 3);
 
-  if ((level_arms_vector != ref_level_arms)
+  if ((lever_arm_vector != ref_lever_arm)
   ||  (sensor_alignement.axisDirectionX != ref_sensor_align.axisDirectionX)
   ||  (sensor_alignement.axisDirectionY != ref_sensor_align.axisDirectionY)
   || !areEquals(sensor_alignement.misRoll, ref_sensor_align.misRoll)
   || !areEquals(sensor_alignement.misPitch, ref_sensor_align.misPitch)
   || !areEquals(sensor_alignement.misYaw, ref_sensor_align.misYaw))
   {
-    error_code = sbgEComCmdSensorSetAlignmentAndLeverArm(&ref_sbg_com_handle_, &ref_sensor_align, level_arms_vector.data());
+    error_code = sbgEComCmdSensorSetAlignmentAndLeverArm(&ref_sbg_com_handle_, &ref_sensor_align, ref_lever_arm.data());
 
     checkConfigurationApplied(error_code, std::string("IMU alignement"));
   }
@@ -154,7 +154,7 @@ void ConfigApplier::configureAidingAssignement(const SbgEComAidingAssignConf& re
   ||  (aiding_assign.odometerPinsConf != ref_aiding_assign.odometerPinsConf)
   ||  (aiding_assign.rtcmPort != ref_aiding_assign.rtcmPort))
   {
-    error_code = sbgEComCmdSensorSetAidingAssignment(&ref_sbg_com_handle_, &aiding_assign);
+    error_code = sbgEComCmdSensorSetAidingAssignment(&ref_sbg_com_handle_, &ref_aiding_assign);
 
     checkConfigurationApplied(error_code, std::string("Aiding assignement"));
   }
@@ -302,26 +302,26 @@ void ConfigApplier::configureOdometer(const SbgEComOdoConf& ref_odometer)
   }
 }
 
-void ConfigApplier::configureOdometerLevelArm(const SbgVector3<float>& odometer_level_arms)
+void ConfigApplier::configureOdometerLeverArm(const SbgVector3<float>& ref_odometer_lever_arm)
 {
   //
-  // Get the odometer level arm, and compare with the loaded parameters.
-  // If the level arms are different, update the device with the loaded parameters.
+  // Get the odometer lever arm, and compare with the loaded parameters.
+  // If the lever arms are different, update the device with the loaded parameters.
   //
-  float         lever_arm[3];
+  float         odometer_lever_arm_device[3];
   SbgErrorCode  error_code;
 
-  error_code = sbgEComCmdOdoGetLeverArm(&ref_sbg_com_handle_, lever_arm);
+  error_code = sbgEComCmdOdoGetLeverArm(&ref_sbg_com_handle_, odometer_lever_arm_device);
 
-  checkConfigurationGet(error_code, std::string("Odometer level arms"));
+  checkConfigurationGet(error_code, std::string("Odometer lever arm"));
 
-  SbgVector3<float> lever_arm_device = SbgVector3<float>(lever_arm, 3);
+  SbgVector3<float> odometer_lever_arm_vector = SbgVector3<float>(odometer_lever_arm_device, 3);
 
-  if (lever_arm_device != odometer_level_arms)
+  if (odometer_lever_arm_vector != ref_odometer_lever_arm)
   {
-    error_code = sbgEComCmdOdoSetLeverArm(&ref_sbg_com_handle_, lever_arm_device.data());
+    error_code = sbgEComCmdOdoSetLeverArm(&ref_sbg_com_handle_, ref_odometer_lever_arm.data());
 
-    checkConfigurationApplied(error_code, std::string("Odometer level arms"));
+    checkConfigurationApplied(error_code, std::string("Odometer lever arm"));
   }
 }
 
@@ -417,7 +417,7 @@ void ConfigApplier::applyConfiguration(const ConfigStore& ref_config_store)
   configureGnssInstallation(ref_config_store.getGnssInstallation());
   configureGnssRejection(ref_config_store.getGnssRejection());
   configureOdometer(ref_config_store.getOdometerConf());
-  configureOdometerLevelArm(ref_config_store.getOdometerLevelArms());
+  configureOdometerLeverArm(ref_config_store.getOdometerLevelArms());
   configureOdometerRejection(ref_config_store.getOdometerRejection());
 
   //

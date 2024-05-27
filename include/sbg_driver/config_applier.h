@@ -98,9 +98,9 @@ private:
    * Configure the IMU alignement.
    *
    * \param[in] ref_sensor_align            Sensor IMU alignement configuration to apply.
-   * \param[in] ref_level_arms              X, Y, Z level arms to apply.
+   * \param[in] ref_lever_arm               X, Y, Z lever arm to apply.
    */
-  void configureImuAlignement(const SbgEComSensorAlignmentInfo& ref_sensor_align, const SbgVector3<float>& ref_level_arms);
+  void configureImuAlignement(const SbgEComSensorAlignmentInfo& ref_sensor_align, const SbgVector3<float>& ref_lever_arm);
 
   /*!
    * Configure the aiding assignement.
@@ -152,11 +152,11 @@ private:
   void configureOdometer(const SbgEComOdoConf& ref_odometer);
 
   /*!
-   * Configure the odometer level arm.
+   * Configure the odometer lever arm.
    *
-   * \param[in] odometer_level_arms         X,Y,Z odometer level arms to apply.
+   * \param[in] ref_odometer_lever_arm      X,Y,Z odometer lever arm to apply.
    */
-  void configureOdometerLevelArm(const SbgVector3<float>& odometer_level_arms);
+  void configureOdometerLeverArm(const SbgVector3<float>& ref_odometer_lever_arm);
 
   /*!
    * Configure the odometer rejection.
