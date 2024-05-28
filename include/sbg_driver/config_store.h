@@ -103,7 +103,7 @@ private:
   SbgEComGnssRejectionConf    gnss_rejection_conf_;
 
   SbgEComOdoConf              odometer_conf_;
-  SbgVector3<float>           odometer_level_arm_;
+  SbgVector3<float>           odometer_lever_arm_;
   SbgEComOdoRejectionConf     odometer_rejection_conf_;
 
   std::vector<SbgLogOutput>   output_modes_;
@@ -359,11 +359,11 @@ public:
   const SbgEComSensorAlignmentInfo &getSensorAlignement() const;
 
   /*!
-   * Get the sensor level arms.
+   * Get the sensor lever arm.
    *
-   * \return                                Sensor level arms vector (in meters).
+   * \return                                Sensor lever arm vector (in meters).
    */
-  const SbgVector3<float> &getSensorLevelArms() const;
+  const SbgVector3<float> &getSensorLeverArm() const;
 
   /*!
    * Get the aiding assignement configuration.
@@ -429,11 +429,11 @@ public:
   const SbgEComOdoConf &getOdometerConf() const;
 
   /*!
-   * Get the odometer level arms.
+   * Get the odometer lever arm.
    *
-   * \return                                Odometer level arms vector (in meters).
+   * \return                                Odometer lever arm vector (in meters).
    */
-  const SbgVector3<float> &getOdometerLevelArms() const;
+  const SbgVector3<float> &getOdometerLeverArm() const;
 
   /*!
    * Get the odometer rejection.
