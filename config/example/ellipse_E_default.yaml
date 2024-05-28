@@ -139,7 +139,7 @@
       # 2 Measurement is always accepted
       magnetometerRejectMode: 1
     
-      # Theses parameters are only used for a calibration run
+      # These parameters are only used for a calibration run
       calibration:
         # 1 2D Tell the device that the magnetic calibration will be performed with limited motions. 
         #     This calibration mode is only designed to be used when roll and pitch motions are less than ± 5°. 
@@ -156,7 +156,7 @@
     
     
     # GNSS configuration
-    # Note: Secondary level arms should only be considered in case of dual antenna GNSS receiver. It can be left to 0 otherwise.
+    # Note: Secondary lever arm should only be considered in case of dual antenna GNSS receiver. It can be left to 0 otherwise.
     gnss:
       # Gnss Model Id
       # 101 Used on Ellipse-N to setup the internal GNSS in GPS+GLONASS

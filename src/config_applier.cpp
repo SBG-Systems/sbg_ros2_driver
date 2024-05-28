@@ -226,8 +226,8 @@ void ConfigApplier::configureGnssModel(const SbgEComModelInfo& ref_gnss_model)
 void ConfigApplier::configureGnssInstallation(const SbgEComGnssInstallation& ref_gnss_installation)
 {
   //
-  // Get the Gnss level arm, and compare with the loaded parameters.
-  // If the level arms are different, update the device with the loaded parameters.
+  // Get the Gnss lever arm, and compare with the loaded parameters.
+  // If the lever arms are different, update the device with the loaded parameters.
   //
   SbgEComGnssInstallation gnss_installation;
   SbgErrorCode            error_code;
@@ -238,7 +238,7 @@ void ConfigApplier::configureGnssInstallation(const SbgEComGnssInstallation& ref
 
   error_code = sbgEComCmdGnss1InstallationGet(&ref_sbg_com_handle_, &gnss_installation);
 
-  checkConfigurationGet(error_code, std::string("Gnss level arms"));
+  checkConfigurationGet(error_code, std::string("Gnss lever arm"));
 
   gnss_device_primary   = SbgVector3<float>(gnss_installation.leverArmPrimary, 3);
   gnss_device_secondary = SbgVector3<float>(gnss_installation.leverArmSecondary, 3);
@@ -252,7 +252,7 @@ void ConfigApplier::configureGnssInstallation(const SbgEComGnssInstallation& ref
   {
     error_code = sbgEComCmdGnss1InstallationSet(&ref_sbg_com_handle_, &ref_gnss_installation);
 
-    checkConfigurationApplied(error_code, std::string("Gnss level arms"));
+    checkConfigurationApplied(error_code, std::string("Gnss lever arm"));
   }
 }
 
@@ -409,7 +409,7 @@ void ConfigApplier::applyConfiguration(const ConfigStore& ref_config_store)
   //
   configureInitCondition(ref_config_store.getInitialConditions());
   configureMotionProfile(ref_config_store.getMotionProfile());
-  configureImuAlignement(ref_config_store.getSensorAlignement(), ref_config_store.getSensorLevelArms());
+  configureImuAlignement(ref_config_store.getSensorAlignement(), ref_config_store.getSensorLeverArm());
   configureAidingAssignement(ref_config_store.getAidingAssignement());
   configureMagModel(ref_config_store.getMagnetometerModel());
   configureMagRejection(ref_config_store.getMagnetometerRejection());
@@ -417,7 +417,7 @@ void ConfigApplier::applyConfiguration(const ConfigStore& ref_config_store)
   configureGnssInstallation(ref_config_store.getGnssInstallation());
   configureGnssRejection(ref_config_store.getGnssRejection());
   configureOdometer(ref_config_store.getOdometerConf());
-  configureOdometerLeverArm(ref_config_store.getOdometerLevelArms());
+  configureOdometerLeverArm(ref_config_store.getOdometerLeverArm());
   configureOdometerRejection(ref_config_store.getOdometerRejection());
 
   //
