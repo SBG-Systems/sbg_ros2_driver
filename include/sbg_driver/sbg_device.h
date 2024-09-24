@@ -127,9 +127,24 @@ private:
   /*!
    * Read the device informations.
    *
+   * \return                      SBG_NO_ERROR if reading device info succeeded.
+   */
+  SbgErrorCode readDeviceInfo();
+
+  /*!
+   * Find the baudrate currently configured on the device.
+   *
+   * \return                      SBG_NO_ERROR if the current device baudrate was found.
    * \throw                       Unable to read the device information.
    */
-  void readDeviceInfo();
+  SbgErrorCode findCurrentDeviceBaudrate();
+
+  /*!
+   * Use the current baudrate to set the baudrate configured in the config file.
+   *
+   * \throw                       Unable to read the device information.
+   */
+  void setDeviceBaudrate();
 
   /*!
    * Get the SBG version as a string.
