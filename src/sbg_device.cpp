@@ -8,6 +8,7 @@
 
 // SbgECom headers
 #include <version/sbgVersion.h>
+#include <commands/sbgEComCmdInterface.h>
 
 using namespace std;
 using sbg::SbgDevice;
@@ -217,7 +218,23 @@ SbgErrorCode SbgDevice::findCurrentDeviceBaudrate()
 void SbgDevice::setDeviceBaudrate()
 {
   SbgErrorCode error_code;
-  error_code = sbgInterfaceSerialChangeBaudrate(&sbg_interface_, config_store_.getBaudRate());
+  SbgEComInterfaceConf com_conf;
+  error_code = sbgEComCmdInterfaceGetUartConf(&com_handle_, SBG_ECOM_IF_COM_A, &com_conf);
+  if (error_code != SBG_NO_ERROR) {
+    rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Reconfig] Unable to get config of device - " + std::string(sbgErrorCodeToString(error_code)));
+  }
+
+  com_conf.baudRate = config_store_.getBaudRate();
+  error_code = sbgEComCmdInterfaceSetUartConf(&com_handle_, SBG_ECOM_IF_COM_A, &com_conf);
+  if (error_code != SBG_NO_ERROR) {
+    rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Reconfig] Unable to set new baudrate of device - " + std::string(sbgErrorCodeToString(error_code)));
+  }
+
+  error_code = sbgEComCmdSettingsAction(&com_handle_, SBG_ECOM_SAVE_SETTINGS);
+  if (error_code != SBG_NO_ERROR) {
+    rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Reconfig] Unable to save settings on device - " + std::string(sbgErrorCodeToString(error_code)));
+  }
+
   sbgEComClose(&com_handle_);
   sbgInterfaceSerialDestroy(&sbg_interface_);
 
