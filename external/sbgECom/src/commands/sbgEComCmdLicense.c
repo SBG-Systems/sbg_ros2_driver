@@ -1,18 +1,20 @@
-﻿#include "sbgEComCmdLicense.h"
-#include "transfer/sbgEComTransfer.h"
+﻿// sbgCommonLib headers
+#include <sbgCommon.h>
+#include <streamBuffer/sbgStreamBuffer.h>
+
+// Project headers
+#include <sbgECom.h>
+#include <transfer/sbgEComTransfer.h>
+
+// Local headers
+#include "sbgEComCmdCommon.h"
+#include "sbgEComCmdLicense.h"
+
 
 //----------------------------------------------------------------------//
-//- License commands                                                   -//
+//- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
-/*!
- *	Upload and apply a new license to a device.
- *	The device will reboot automatically to use the new license.
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[in]	pBuffer						Read only buffer containing the license.
- *	\param[in]	size						Size of the buffer.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
 SbgErrorCode sbgEComCmdLicenseApply(SbgEComHandle *pHandle, const void *pBuffer, size_t size)
 {
 	SbgErrorCode	errorCode;

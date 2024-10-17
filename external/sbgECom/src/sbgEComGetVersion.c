@@ -9,7 +9,7 @@
 #include "sbgEComGetVersion.h"
 
 //----------------------------------------------------------------------//
-//- Public functions                                                   -//
+//- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
 uint32_t sbgEComGetVersion(void)

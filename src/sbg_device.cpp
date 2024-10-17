@@ -68,14 +68,7 @@ SbgDevice::~SbgDevice()
     RCLCPP_ERROR(ref_node_.get_logger(), "Unable to close the SBG communication handle - %s.", sbgErrorCodeToString(error_code));
   }
 
-  if (config_store_.isInterfaceSerial())
-  {
-    error_code = sbgInterfaceSerialDestroy(&sbg_interface_);
-  }
-  else if (config_store_.isInterfaceUdp())
-  {
-    error_code = sbgInterfaceUdpDestroy(&sbg_interface_);
-  }
+  error_code = sbgInterfaceDestroy(&sbg_interface_);
 
   if (error_code != SBG_NO_ERROR)
   {
@@ -87,7 +80,7 @@ SbgDevice::~SbgDevice()
 //- Private  methods                                                  -//
 //---------------------------------------------------------------------//
 
-SbgErrorCode SbgDevice::onLogReceivedCallback(SbgEComHandle* p_handle, SbgEComClass msg_class, SbgEComMsgId msg, const SbgBinaryLogData* p_log_data, void* p_user_arg)
+SbgErrorCode SbgDevice::onLogReceivedCallback(SbgEComHandle* p_handle, SbgEComClass msg_class, SbgEComMsgId msg, const SbgEComLogUnion* p_log_data, void* p_user_arg)
 {
   assert(p_user_arg);
 
@@ -101,7 +94,7 @@ SbgErrorCode SbgDevice::onLogReceivedCallback(SbgEComHandle* p_handle, SbgEComCl
   return SBG_NO_ERROR;
 }
 
-void SbgDevice::onLogReceived(SbgEComClass msg_class, SbgEComMsgId msg, const SbgBinaryLogData& ref_sbg_data)
+void SbgDevice::onLogReceived(SbgEComClass msg_class, SbgEComMsgId msg, const SbgEComLogUnion& ref_sbg_data)
 {
   //
   // Publish the received SBG log.
@@ -184,7 +177,7 @@ void SbgDevice::readDeviceInfo()
   }
 }
 
-std::string SbgDevice::getVersionAsString(uint32 sbg_version_enc) const
+std::string SbgDevice::getVersionAsString(uint32_t sbg_version_enc) const
 {
   char version[32];
   sbgVersionToStringEncoded(sbg_version_enc, version, 32);
@@ -438,7 +431,7 @@ void SbgDevice::exportMagCalibrationResults() const
   mag_results_stream << "* Mean, Std, Max" << endl;
   mag_results_stream << "[Before]\t" << mag_calib_results_.beforeMeanError << "\t" << mag_calib_results_.beforeStdError << "\t" << mag_calib_results_.beforeMaxError << endl;
   mag_results_stream << "[After]\t" << mag_calib_results_.afterMeanError << "\t" << mag_calib_results_.afterStdError << "\t" << mag_calib_results_.afterMaxError << endl;
-  mag_results_stream << "[Accuracy]\t" << sbgRadToDegF(mag_calib_results_.meanAccuracy) << "\t" << sbgRadToDegF(mag_calib_results_.stdAccuracy) << "\t" << sbgRadToDegF(mag_calib_results_.maxAccuracy) << endl;
+  mag_results_stream << "[Accuracy]\t" << sbgRadToDegf(mag_calib_results_.meanAccuracy) << "\t" << sbgRadToDegf(mag_calib_results_.stdAccuracy) << "\t" << sbgRadToDegf(mag_calib_results_.maxAccuracy) << endl;
   mag_results_stream << "* Offset\t" << mag_calib_results_.offset[0] << "\t" << mag_calib_results_.offset[1] << "\t" << mag_calib_results_.offset[2] << endl;
 
   mag_results_stream << "* Matrix" << endl;
@@ -484,16 +477,10 @@ uint32_t SbgDevice::getUpdateFrequency() const
 
 void SbgDevice::initDeviceForReceivingData()
 {
-  SbgErrorCode error_code;
   initPublishers();
   configure();
 
-  error_code = sbgEComSetReceiveLogCallback(&com_handle_, onLogReceivedCallback, this);
-
-  if (error_code != SBG_NO_ERROR)
-  {
-    rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Init] Unable to set the callback function - " + std::string(sbgErrorCodeToString(error_code)));
-  }
+  sbgEComSetReceiveLogCallback(&com_handle_, onLogReceivedCallback, this);
 
   initSubscribers();
 }

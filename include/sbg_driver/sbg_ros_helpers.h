@@ -121,7 +121,7 @@ namespace sbg::helpers
    * \param[in] sbg_gps_type            SbgECom GPS type
    * \return                            NMEA GPS type
    */
-  NmeaGGAQuality convertSbgGpsTypeToNmeaGpsType(SbgEComGpsPosType sbg_gps_type);
+  NmeaGGAQuality convertSbgGpsTypeToNmeaGpsType(SbgEComGnssPosType sbg_gps_type);
 
   /*
    * Convert latitude, longitude, altitude to ECEF coordinates.

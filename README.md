@@ -28,8 +28,7 @@ User can install the sbg_ros2_driver through the standard ROS installation syste
 ### Building from sources
 #### Dependencies
 * [Robot Operating System (ROS)](http://wiki.ros.org/)
-* [sbgECom C Library](https://github.com/SBG-Systems/sbgECom) (embeds v1.11.920-stable - compatible with ELLIPSE firmware above 1.7)
-* [Boost C++ Library](https://www.boost.org/)
+* [sbgECom C Library](https://github.com/SBG-Systems/sbgECom) (embeds v4.0.1987-stable - compatible with ELLIPSE firmware 2.5 and above)
 
 #### Building
 1. Clone the repository (use a Release version)
@@ -133,6 +132,18 @@ These messages try to match as much as possible the sbgECom logs as they are out
 * **`/sbg/ekf_nav`** [sbg_driver/SbgEkfNav](http://docs.ros.org/api/sbg_driver/html/msg/SbgEkfNav.html)
 
   Computed navigation data.
+  
+* **`/sbg/ekf_vel_body`** [sbg_driver/SbgEkfVelBody](http://docs.ros.org/api/sbg_driver/html/msg/SbgEkfVelBody.html)
+
+  Computed velocity expressed in the INS body/vehicle frame.
+  
+* **`/sbg/ekf_rot_accel_body`** [sbg_driver/SbgEkfRotAccel](http://docs.ros.org/api/sbg_driver/html/msg/SbgEkfRotAccel.html)
+
+  Computed rotations rate and accelerations in the INS body/vehicle frame.
+  
+* **`/sbg/ekf_rot_accel_ned`** [sbg_driver/SbgEkfRotAccel](http://docs.ros.org/api/sbg_driver/html/msg/SbgEkfRotAccel.html)
+
+  Computed rotations rate and accelerations in North, East, Down (NED) navigation frame.
   
 * **`/sbg/mag`** [sbg_driver/SbgMag](http://docs.ros.org/api/sbg_driver/html/msg/SbgMag.html)
 

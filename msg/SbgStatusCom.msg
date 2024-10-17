@@ -46,6 +46,51 @@ bool port_e_rx
 # PORT E TX: False in case of saturation on PORT E output
 bool port_e_tx
 
+# ETH 0: False in case of low level communication error.
+bool eth_0
+
+# ETH 1: False in case of low level communication error.
+bool eth_1
+
+# ETH 2: False in case of low level communication error.
+bool eth_2
+
+# ETH 3: False in case of low level communication error.
+bool eth_3
+
+# ETH 4: False in case of low level communication error.
+bool eth_4
+
+# ETH 0 RX: False in case of error on ETH0 input.
+bool eth_0_rx
+
+# ETH 0 TX: False in case of error on ETH0 output.
+bool eth_0_tx
+
+# ETH 1 RX: False in case of error on ETH1 input.
+bool eth_1_rx
+
+# ETH 1 TX: False in case of error on ETH1 output.
+bool eth_1_tx
+
+# ETH 2 RX: False in case of error on ETH2 input.
+bool eth_2_rx
+
+# ETH 2 TX: False in case of error on ETH2 output.
+bool eth_2_tx
+
+# ETH 3 RX: False in case of error on ETH3 input.
+bool eth_3_rx
+
+# ETH 3 TX: False in case of error on ETH3 output.
+bool eth_3_tx
+
+# ETH 4 RX: False in case of error on ETH4 input.
+bool eth_4_rx
+
+# ETH 4 TX: False in case of error on ETH4 output.
+bool eth_4_tx
+
 # CAN RX: False in case of saturation on CAN Bus output buffer
 bool can_rx
 

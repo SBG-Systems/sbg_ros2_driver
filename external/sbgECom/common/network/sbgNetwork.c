@@ -1,5 +1,10 @@
-#include "sbgNetwork.h"
+// Project headers
+#include <sbgCommon.h>
 #include <swap/sbgSwap.h>
+
+
+// Local headers
+#include "sbgNetwork.h"
 
 //----------------------------------------------------------------------//
 //- IP manipulation methods                                            -//
@@ -24,7 +29,7 @@ SBG_COMMON_LIB_API void sbgNetworkIpToString(sbgIpAddress ipAddr, char *pBuffer,
 	//
 	// Write the IP address
 	//
-	sprintf(pBuffer, "%u.%u.%u.%u", sbgIpAddrGetA(ipAddr), sbgIpAddrGetB(ipAddr), sbgIpAddrGetC(ipAddr), sbgIpAddrGetD(ipAddr));
+	snprintf(pBuffer, maxSize, "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8, sbgIpAddrGetA(ipAddr), sbgIpAddrGetB(ipAddr), sbgIpAddrGetC(ipAddr), sbgIpAddrGetD(ipAddr));
 }
 
 /*!
@@ -34,39 +39,34 @@ SBG_COMMON_LIB_API void sbgNetworkIpToString(sbgIpAddress ipAddr, char *pBuffer,
  */
 SBG_COMMON_LIB_API sbgIpAddress sbgNetworkIpFromString(const char *pBuffer)
 {
-	int32_t	ipAddrA;
-	int32_t	ipAddrB;
-	int32_t	ipAddrC;
-	int32_t	ipAddrD;
-	int32_t	numReadParams;
+	int					 ipAddrA;
+	int					 ipAddrB;
+	int					 ipAddrC;
+	int					 ipAddrD;
+	int					 numReadParams;
+	sbgIpAddress		 ip;
+	sbgIpAddress		 ret;
+	char				 checkBuffer[SBG_NETWORK_IPV4_STRING_SIZE];
 
-	//
-	// Check input arguments
-	//
 	assert(pBuffer);
 
-	//
-	// Parse input arguments
-	//
+	ret = SBG_IPV4_UNSPECIFIED_ADDR;
+
 	numReadParams = sscanf(pBuffer, "%d.%d.%d.%d", &ipAddrA, &ipAddrB, &ipAddrC, &ipAddrD);
 
-	//
-	// Make sure the parsed IP is normal
-	//
 	if ((numReadParams == 4) && (ipAddrA >= 0) && (ipAddrA <= 255) && (ipAddrB >= 0) && (ipAddrB <= 255) && (ipAddrC >= 0) && (ipAddrC <= 255) && (ipAddrD >= 0) && (ipAddrD <= 255))
 	{
-		//
-		// Ip address correctly parsed, return it
-		//
-		return sbgIpAddr((uint8_t)ipAddrA, (uint8_t)ipAddrB, (uint8_t)ipAddrC, (uint8_t)ipAddrD);
+		ip = sbgIpAddr((uint8_t)ipAddrA, (uint8_t)ipAddrB, (uint8_t)ipAddrC, (uint8_t)ipAddrD);
+
+		sbgNetworkIpToString(ip, checkBuffer, SBG_ARRAY_SIZE(checkBuffer));
+
+		if (strcmp(pBuffer, checkBuffer) == 0)
+		{
+			ret = ip;
+		}
 	}
-	else
-	{
-		//
-		// The IP address couldn't be parsed correctly, return a null ip address
-		//
-		return sbgIpAddr(0, 0, 0, 0);
-	}
+
+	return ret;
 }
 
 //----------------------------------------------------------------------//
@@ -124,3 +124,4 @@ SBG_COMMON_LIB_API bool sbgIpNetMaskValid(sbgIpAddress netmask)
 
 	return true;
 }
+

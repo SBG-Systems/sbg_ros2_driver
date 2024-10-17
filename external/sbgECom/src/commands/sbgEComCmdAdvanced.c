@@ -1,26 +1,28 @@
-﻿#include "sbgEComCmdAdvanced.h"
+﻿// sbgCommonLib headers
+#include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 
+// Project headers
+#include <sbgECom.h>
+
+// Local headers
+#include "sbgEComCmdAdvanced.h"
+#include "sbgEComCmdCommon.h"
+
 //----------------------------------------------------------------------//
-//- Event commands		                                               -//
+//- Public methods                                                     -//
 //----------------------------------------------------------------------//
 
-/*!
- *	Retrieve the advanced configurations.
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[out]	pConf						Pointer to a SbgEComAdvancedConf to contain the current configuration.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
 SbgErrorCode sbgEComCmdAdvancedGetConf(SbgEComHandle *pHandle, SbgEComAdvancedConf *pConf)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
+	SbgErrorCode			errorCode = SBG_NO_ERROR;	
+	SbgEComProtocolPayload	receivedPayload;	
+	uint32_t				trial;
 
 	assert(pHandle);
 	assert(pConf);
+
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
 
 	//
 	// Send the command three times
@@ -40,22 +42,56 @@ SbgErrorCode sbgEComCmdAdvancedGetConf(SbgEComHandle *pHandle, SbgEComAdvancedCo
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ADVANCED_CONF, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_ADVANCED_CONF, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a SBG_ECOM_CMD_ADVANCED_CONF command
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer			inputStream;
+
 				//
 				// Initialize stream buffer to read parameters
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
 
 				//
-				// Read parameters
+				// Read the mandatory time reference parameter
 				//
-				pConf->timeReference = (SbgEComTimeReferenceSrc)sbgStreamBufferReadUint8LE(&inputStream);
+				pConf->timeReference	= (SbgEComTimeReferenceSrc)sbgStreamBufferReadUint8LE(&inputStream);
+				errorCode				= sbgStreamBufferGetLastError(&inputStream);
+
+				if (errorCode == SBG_NO_ERROR)
+				{
+					//
+					// The GNSS options parameter has been introduced in ELLIPSE firmware v2.2
+					// We shouldn't report it as an error for older firmware
+					//
+					pConf->gnssOptions	= sbgStreamBufferReadUint32LE(&inputStream);					
+					
+					if (sbgStreamBufferGetLastError(&inputStream) == SBG_NO_ERROR)
+					{
+						//
+						// The NMEA options parameter has been introduced in ELLIPSE firmware v2.3
+						// We shouldn't report it as an error for older firmware
+						//
+						pConf->nmeaOptions	= sbgStreamBufferReadUint32LE(&inputStream);
+						
+						if (sbgStreamBufferGetLastError(&inputStream) == SBG_NO_ERROR)
+						{
+							errorCode = SBG_NO_ERROR;
+						}
+						else
+						{
+							pConf->nmeaOptions = 0;
+						}
+					}
+					else
+					{
+						pConf->gnssOptions = 0;
+					}
+				}
 
 				//
 				// The command has been executed successfully so return
@@ -71,21 +107,17 @@ SbgErrorCode sbgEComCmdAdvancedGetConf(SbgEComHandle *pHandle, SbgEComAdvancedCo
 			break;
 		}
 	}
-	
+
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
+
 	return errorCode;
 }
 
-/*!
- *	Set the advanced configurations.
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[in]	pConf						Pointer to a SbgEComAdvancedConf that contains the new configuration.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
 SbgErrorCode sbgEComCmdAdvancedSetConf(SbgEComHandle *pHandle, const SbgEComAdvancedConf *pConf)
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
 	uint32_t			trial;
-	uint8_t				outputBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	uint8_t				outputBuffer[9];
 	SbgStreamBuffer		outputStream;
 
 	assert(pHandle);
@@ -105,6 +137,8 @@ SbgErrorCode sbgEComCmdAdvancedSetConf(SbgEComHandle *pHandle, const SbgEComAdva
 		// Build payload
 		//
 		sbgStreamBufferWriteUint8LE(&outputStream, (uint8_t)pConf->timeReference);
+		sbgStreamBufferWriteUint32LE(&outputStream, pConf->gnssOptions);
+		sbgStreamBufferWriteUint32LE(&outputStream, pConf->nmeaOptions);
 
 		//
 		// Send the payload over ECom
@@ -144,24 +178,17 @@ SbgErrorCode sbgEComCmdAdvancedSetConf(SbgEComHandle *pHandle, const SbgEComAdva
 	return errorCode;
 }
 
-/*!
- *	Retrieve the current validity thresholds
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[out]	pConf						Pointer to a SbgEComValidityThresholds to contain the current configuration.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
-
 SbgErrorCode sbgEComCmdAdvancedGetThresholds(SbgEComHandle *pHandle, SbgEComValidityThresholds *pConf)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint32_t			trial;
-	size_t				receivedSize;
-	uint8_t				receivedBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		inputStream;
-
+	SbgErrorCode			errorCode = SBG_NO_ERROR;
+	SbgEComProtocolPayload	receivedPayload;
+	uint32_t				trial;
+	
 	assert(pHandle);
 	assert(pConf);
-		
+	
+	sbgEComProtocolPayloadConstruct(&receivedPayload);
+
 	//
 	// Send the command three times
 	//
@@ -180,18 +207,20 @@ SbgErrorCode sbgEComCmdAdvancedGetThresholds(SbgEComHandle *pHandle, SbgEComVali
 			//
 			// Try to read the device answer for 500 ms
 			//
-			errorCode = sbgEComReceiveCmd(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_VALIDITY_THRESHOLDS, receivedBuffer, &receivedSize, sizeof(receivedBuffer), pHandle->cmdDefaultTimeOut);
+			errorCode = sbgEComReceiveCmd2(pHandle, SBG_ECOM_CLASS_LOG_CMD_0, SBG_ECOM_CMD_VALIDITY_THRESHOLDS, &receivedPayload, pHandle->cmdDefaultTimeOut);
 
 			//
 			// Test if we have received a SBG_ECOM_CMD_VALIDITY_THRESHOLDS command
 			//
 			if (errorCode == SBG_NO_ERROR)
 			{
+				SbgStreamBuffer		inputStream;
+
 				//
 				// Initialize stream buffer to read parameters
 				//
-				sbgStreamBufferInitForRead(&inputStream, receivedBuffer, receivedSize);
-
+				sbgStreamBufferInitForRead(&inputStream, sbgEComProtocolPayloadGetBuffer(&receivedPayload), sbgEComProtocolPayloadGetSize(&receivedPayload));
+				
 				//
 				// Read parameters and check payload consistency
 				//
@@ -217,19 +246,16 @@ SbgErrorCode sbgEComCmdAdvancedGetThresholds(SbgEComHandle *pHandle, SbgEComVali
 		}
 	}
 	
+	sbgEComProtocolPayloadDestroy(&receivedPayload);
+
 	return errorCode;
 }
-/*!
- *	Set the validity thresholds
- *	\param[in]	pHandle						A valid sbgECom handle.
- *	\param[in]	pConf						Pointer to a SbgEComValidityThresholds that contains the new configuration.
- *	\return									SBG_NO_ERROR if the command has been executed successfully.
- */
+
 SbgErrorCode sbgEComCmdAdvancedSetThresholds(SbgEComHandle *pHandle, const SbgEComValidityThresholds *pConf)
 {
 	SbgErrorCode		errorCode = SBG_NO_ERROR;
 	uint32_t			trial;
-	uint8_t				outputBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	uint8_t				outputBuffer[4*sizeof(float)];
 	SbgStreamBuffer		outputStream;
 
 	assert(pHandle);

@@ -1,466 +1,1117 @@
-﻿#include "sbgEComProtocol.h"
+﻿// sbgCommonLib headers
+#include <sbgCommon.h>
 #include <crc/sbgCrc.h>
+#include <interfaces/sbgInterface.h>
+#include <streamBuffer/sbgStreamBuffer.h>
+
+// Local headers
+#include "sbgEComProtocol.h"
 
 //----------------------------------------------------------------------//
-//- Communication protocol operations                                  -//
+//- Constant definitions                                               -//
 //----------------------------------------------------------------------//
 
 /*!
- * Initialize the protocol system used to communicate with the product and return the created handle.
- * \param[in]	pHandle					Pointer on an allocated protocol structure to initialize.
- * \param[in]	pInterface				Interface to use for read/write operations.
- * \return								SBG_NO_ERROR if we have initialised the protocol system.
+ * Delay before another send attempt when sending a large payload, in milliseconds.
  */
-SbgErrorCode sbgEComProtocolInit(SbgEComProtocol *pHandle, SbgInterface *pInterface)
+#define SBG_ECOM_PROTOCOL_EXT_SEND_DELAY					(50)
+
+//----------------------------------------------------------------------//
+//- Private functions                                                  -//
+//----------------------------------------------------------------------//
+
+/*!
+ * Clear the content of a payload.
+ *
+ * Any allocated resource is released, and the payload returns to its constructed state.
+ *
+ * \param[in]	pPayload					Payload.
+ */
+static void sbgEComProtocolPayloadClear(SbgEComProtocolPayload *pPayload)
 {
-	SbgErrorCode	errorCode = SBG_NO_ERROR;
-	
-	assert(pHandle);
-	assert(pInterface);
-		
-	//
-	// Initialize the created protocol handle
-	//
-	pHandle->pLinkedInterface = pInterface;
-	pHandle->rxBufferSize = 0;
-	
-	return errorCode;
+	assert(pPayload);
+
+	if (pPayload->allocated)
+	{
+		free(pPayload->pBuffer);
+
+		pPayload->allocated = false;
+	}
+
+	pPayload->pBuffer	= NULL;
+	pPayload->size		= 0;
 }
 
 /*!
- * Close the protocol system.
- * \param[in]	pHandle					A valid protocol handle to close.
- * \return								SBG_NO_ERROR if we have closed and released the protocol system.
+ * Set the properties of a payload.
+ *
+ * \param[in]	pPayload					Payload.
+ * \param[in]	allocated					True if the given buffer is allocated with malloc().
+ * \param[in]	pBuffer						Buffer.
+ * \param[in]	size						Buffer size, in bytes.
  */
-SbgErrorCode sbgEComProtocolClose(SbgEComProtocol *pHandle)
+static void sbgEComProtocolPayloadSet(SbgEComProtocolPayload *pPayload, bool allocated, void *pBuffer, size_t size)
 {
-	assert(pHandle);
+	assert(pPayload);
+	assert(pBuffer);
 
-	//
-	// Reset all members to zero
-	//
-	pHandle->pLinkedInterface = NULL;
-	pHandle->rxBufferSize = 0;
-	
-	//
-	// Don't have to do anything
-	//
-	return SBG_NO_ERROR;
+	pPayload->allocated	= allocated;
+	pPayload->pBuffer	= pBuffer;
+	pPayload->size		= size;
 }
 
 /*!
- * Send a frame to the device (size should be less than 4086 bytes).
- * \param[in]	pHandle					A valid protocol handle.
- * \param[in]	msgClass				Message class (0-255)
- * \param[in]	msg						Message id (0-255)
- * \param[in]	pData					Pointer on the data payload to send or NULL if no payload.
- * \param[in]	size					Size in bytes of the data payload (less than 4086).
- * \return								SBG_NO_ERROR if the frame has been sent.
+ * Discard unused bytes from the work buffer of a protocol.
+ *
+ * \param[in]	pProtocol					Protocol.
  */
-SbgErrorCode sbgEComProtocolSend(SbgEComProtocol *pHandle, uint8_t msgClass, uint8_t msg, const void *pData, size_t size)
+static void sbgEComProtocolDiscardUnusedBytes(SbgEComProtocol *pProtocol)
 {
-	SbgErrorCode		errorCode = SBG_NO_ERROR;
-	uint8_t				outputBuffer[SBG_ECOM_MAX_BUFFER_SIZE];
-	SbgStreamBuffer		outputStream;
-	uint16_t			frameCrc;
+	assert(pProtocol);
 
-	assert(pHandle);
-
-	if ( (size <= SBG_ECOM_MAX_PAYLOAD_SIZE) && ( ((size > 0) && (pData)) || (size == 0) ) )
+	if (pProtocol->discardSize != 0)
 	{
-		//
-		// Create a stream buffer to write the frame
-		//
-		sbgStreamBufferInitForWrite(&outputStream, outputBuffer, sizeof(outputBuffer));
+		assert(pProtocol->discardSize <= pProtocol->rxBufferSize);
 
-		//
-		// Write the header
-		//
-		sbgStreamBufferWriteUint8LE(&outputStream, SBG_ECOM_SYNC_1);
-		sbgStreamBufferWriteUint8LE(&outputStream, SBG_ECOM_SYNC_2);
+		memmove(pProtocol->rxBuffer, &pProtocol->rxBuffer[pProtocol->discardSize], pProtocol->rxBufferSize - pProtocol->discardSize);
 
-		//
-		// Write the message ID and class
-		//
-		sbgStreamBufferWriteUint8LE(&outputStream, msg);
-		sbgStreamBufferWriteUint8LE(&outputStream, msgClass);
-
-		//
-		// Write the length field
-		//
-		sbgStreamBufferWriteUint16LE(&outputStream, (uint16_t)size);
-
-		//
-		// Write the payload part
-		//
-		sbgStreamBufferWriteBuffer(&outputStream, pData, size);
-
-		//
-		// Compute the CRC, we skip the two sync chars
-		//
-		frameCrc = sbgCrc16Compute(((uint8_t*)sbgStreamBufferGetLinkedBuffer(&outputStream)) + 2, sbgStreamBufferGetLength(&outputStream) - 2);
-
-		//
-		// Write the CRC
-		//
-		sbgStreamBufferWriteUint16LE(&outputStream, frameCrc);
-
-		//
-		// Write ETX char
-		//
-		sbgStreamBufferWriteUint8LE(&outputStream, SBG_ECOM_ETX);
-
-		//
-		// The frame has been generated so send it
-		//
-		errorCode = sbgInterfaceWrite(pHandle->pLinkedInterface, sbgStreamBufferGetLinkedBuffer(&outputStream), sbgStreamBufferGetLength(&outputStream));
+		pProtocol->rxBufferSize	-= pProtocol->discardSize;
+		pProtocol->discardSize	= 0;
 	}
-	else
-	{
-		//
-		// Invalid input parameters
-		//
-		errorCode = SBG_INVALID_PARAMETER;
-	}
-
-	return errorCode;
 }
 
 /*!
- *	Try to receive a frame from the device and returns the cmd, data and size of data field.
- *	\param[in]	pHandle					A valid protocol handle.
- *	\param[out]	pMsgClass				Pointer to hold the returned message class
- *	\param[out]	pMsg					Pointer to hold the returned message id
- *	\param[out]	pData					Allocated buffer used to hold received data field.
- *	\param[out]	pSize					Pointer used to hold the received data field size.
- *	\param[in]	maxSize					Max number of bytes that can be stored in the pData buffer.
- *	\return								SBG_NO_ERROR if we have received a valid frame.<br>
- *										SBG_NOT_READY if we haven't received a valid frame or if the serial buffer is empty.<br>
- *										SBG_INVALID_CRC if the received frame has an invalid CRC.<br>
- *										SBG_NULL_POINTER if an input parameter is NULL.<br>
- *										SBG_BUFFER_OVERFLOW if the received frame payload couldn't fit into the pData buffer.
+ * Read data from the underlying interface into the work buffer of a protocol.
+ *
+ * \param[in]	pProtocol					Protocol.
  */
-SbgErrorCode sbgEComProtocolReceive(SbgEComProtocol *pHandle, uint8_t *pMsgClass, uint8_t *pMsg, void *pData, size_t *pSize, size_t maxSize)
+static void sbgEComProtocolRead(SbgEComProtocol *pProtocol)
 {
-	SbgErrorCode		errorCode = SBG_NOT_READY;
-	SbgStreamBuffer		inputStream;
-	bool				syncFound;
-	size_t				payloadSize = 0;
-	uint16_t			frameCrc;
-	uint16_t			computedCrc;
-	size_t				i;
-	size_t				numBytesRead;
-	uint8_t				receivedMsgClass;
-	uint8_t				receivedMsg;
-	size_t				payloadOffset;
+	SbgErrorCode						 errorCode;
 
-	assert(pHandle);
-	
-	// 
-	// Set the return size to 0 in order to avoid possible bugs
-	//
-	if (pSize)
-	{
-		*pSize = 0;
-	}
+	assert(pProtocol);
 
-	//
-	// Check if we can receive some new data (the receive buffer isn't full)
-	//
-	if (pHandle->rxBufferSize < SBG_ECOM_MAX_BUFFER_SIZE)
+	if (pProtocol->rxBufferSize < sizeof(pProtocol->rxBuffer))
 	{
-		//
-		// First try to read as much data as we can
-		//
-		if (sbgInterfaceRead(pHandle->pLinkedInterface, pHandle->rxBuffer + pHandle->rxBufferSize, &numBytesRead, SBG_ECOM_MAX_BUFFER_SIZE - pHandle->rxBufferSize) == SBG_NO_ERROR)
+		size_t							 nrBytesRead;
+
+		errorCode = sbgInterfaceRead(pProtocol->pLinkedInterface, &pProtocol->rxBuffer[pProtocol->rxBufferSize], &nrBytesRead, sizeof(pProtocol->rxBuffer) - pProtocol->rxBufferSize);
+
+		if (errorCode == SBG_NO_ERROR)
 		{
-			//
-			// No error during reading so increment the number of bytes stored in the rx buffer
-			//
-			pHandle->rxBufferSize += numBytesRead;
+			pProtocol->rxBufferSize += nrBytesRead;
+		}
+	}
+}
+
+/*!
+ * Find SYNC bytes in the work buffer of a protocol.
+ *
+ * The output offset is set if either SBG_NO_ERROR or SBG_NOT_CONTINUOUS_FRAME is returned.
+ *
+ * \param[in]	pProtocol					Protocol.
+ * \param[in]	startOffset					Start offset, in bytes.
+ * \param[out]	pOffset						Offset, in bytes.
+ * \return									SBG_NO_ERROR if successful,
+ *											SBG_NOT_CONTINUOUS_FRAME if only the first SYNC byte was found,
+ *											SBG_NOT_READY otherwise.
+ */
+static SbgErrorCode sbgEComProtocolFindSyncBytes(SbgEComProtocol *pProtocol, size_t startOffset, size_t *pOffset)
+{
+	SbgErrorCode						 errorCode;
+
+	assert(pProtocol);
+	assert(pOffset);
+	assert(pProtocol->rxBufferSize > 0);
+
+	errorCode = SBG_NOT_READY;
+
+	for (size_t i = startOffset; i < (pProtocol->rxBufferSize - 1); i++)
+	{
+		if ((pProtocol->rxBuffer[i] == SBG_ECOM_SYNC_1) && (pProtocol->rxBuffer[i + 1] == SBG_ECOM_SYNC_2))
+		{
+			*pOffset	= i;
+			errorCode	= SBG_NO_ERROR;
+			break;
 		}
 	}
 
 	//
-	// We have read all available data and stored them into the rx buffer
-	// We will try to process all received data until we have found a valid frame.
+	// The SYNC bytes were not found, but check if the last byte in the work buffer is the first SYNC byte,
+	// as it could result from receiving a partial frame.
 	//
-	while (pHandle->rxBufferSize > 0)
+	if ((errorCode != SBG_NO_ERROR) && (pProtocol->rxBuffer[pProtocol->rxBufferSize - 1] == SBG_ECOM_SYNC_1))
 	{
-		//
-		// For now, we haven't found any start of frame
-		//
-		syncFound = FALSE;
+		*pOffset	= pProtocol->rxBufferSize - 1;
+		errorCode	= SBG_NOT_CONTINUOUS_FRAME;
+	}
 
-		//
-		// To find a valid start of frame we need at least 2 bytes in the reception buffer
-		//
-		if (pHandle->rxBufferSize >= 2)
+	return errorCode;
+}
+
+/*!
+ * Parse a frame in the work buffer of a protocol.
+ *
+ * A non-zero number of pages indicates the reception of an extended frame.
+ *
+ * \param[in]	pProtocol					Protocol.
+ * \param[in]	offset						Frame offset in the protocol work buffer.
+ * \param[out]	pEndOffset					Frame end offset in the protocol work buffer.
+ * \param[out]	pMsgClass					Message class.
+ * \param[out]	pMsgId						Message ID.
+ * \param[out]	pTransferId					Transfer ID.
+ * \param[out]	pPageIndex					Page index.
+ * \param[out]	pNrPages					Number of pages.
+ * \param[out]	pBuffer						Payload buffer.
+ * \param[out]	pSize						Payload buffer size, in bytes.
+ * \return									SBG_NO_ERROR if successful,
+ *											SBG_NOT_READY if the frame is incomplete,
+ *											SBG_INVALID_FRAME if the frame is invalid,
+ *											SBG_INVALID_CRC if the frame CRC is invalid.
+ */
+static SbgErrorCode sbgEComProtocolParseFrame(SbgEComProtocol *pProtocol, size_t offset, size_t *pEndOffset, uint8_t *pMsgClass, uint8_t *pMsgId, uint8_t *pTransferId, uint16_t *pPageIndex, uint16_t *pNrPages, void **pBuffer, size_t *pSize)
+{
+	SbgErrorCode						 errorCode;
+	SbgStreamBuffer						 streamBuffer;
+	uint8_t								 msgId;
+	uint8_t								 msgClass;
+	size_t								 standardPayloadSize;
+
+	assert(pProtocol);
+	assert(offset < pProtocol->rxBufferSize);
+	assert(pEndOffset);
+	assert(pMsgClass);
+	assert(pMsgId);
+	assert(pTransferId);
+	assert(pPageIndex);
+	assert(pNrPages);
+	assert(pBuffer);
+	assert(pSize);
+
+	sbgStreamBufferInitForRead(&streamBuffer, &pProtocol->rxBuffer[offset], pProtocol->rxBufferSize - offset);
+
+	//
+	// Skip SYNC bytes.
+	//
+	sbgStreamBufferSeek(&streamBuffer, 2, SB_SEEK_CUR_INC);
+
+	msgId				= sbgStreamBufferReadUint8(&streamBuffer);
+	msgClass			= sbgStreamBufferReadUint8(&streamBuffer);
+	standardPayloadSize	= sbgStreamBufferReadUint16LE(&streamBuffer);
+
+	errorCode = sbgStreamBufferGetLastError(&streamBuffer);
+
+	if (errorCode == SBG_NO_ERROR)
+	{
+		if (standardPayloadSize <= SBG_ECOM_MAX_PAYLOAD_SIZE)
 		{
-			//
-			// Try to find a valid start of frame by looking for SYNC_1 and SYNC_2 chars
-			//
-			for (i = 0; i < pHandle->rxBufferSize-1; i++)
+			if (sbgStreamBufferGetSize(&streamBuffer) >= (standardPayloadSize + 9))
 			{
-				//
-				// A valid start of frame should begin with SYNC and when STX chars
-				//
-				if ( (pHandle->rxBuffer[i] == SBG_ECOM_SYNC_1) && (pHandle->rxBuffer[i+1] == SBG_ECOM_SYNC_2) )
+				size_t					 payloadSize;
+				uint8_t					 transferId;
+				uint16_t				 pageIndex;
+				uint16_t				 nrPages;
+
+				if ((msgClass & 0x80) == 0)
 				{
+					payloadSize = standardPayloadSize;
+
+					transferId	= 0;
+					pageIndex	= 0;
+					nrPages		= 0;
+
+					errorCode = SBG_NO_ERROR;
+				}
+				else
+				{
+					msgClass &= 0x7f;
+
 					//
-					// We have found the sync char, test if we have dummy bytes at the begining of the frame
+					// In extended frames, the payload size includes the extended headers.
 					//
-					if (i > 0)
+					payloadSize = standardPayloadSize - 5;
+
+					transferId	= sbgStreamBufferReadUint8(&streamBuffer);
+					pageIndex	= sbgStreamBufferReadUint16LE(&streamBuffer);
+					nrPages		= sbgStreamBufferReadUint16LE(&streamBuffer);
+
+					if ((transferId & 0xf0) != 0)
 					{
-						//
-						// Remove all dumy received bytes before the begining of the frame
-						//
-						memmove(pHandle->rxBuffer, pHandle->rxBuffer+i, pHandle->rxBufferSize-i);
-						pHandle->rxBufferSize = pHandle->rxBufferSize-i;
+						SBG_LOG_WARNING(SBG_INVALID_FRAME, "reserved bits set in extended headers");
+						transferId &= 0xf;
 					}
 
-					//
-					// The sync has been found
-					//
-					syncFound = TRUE;
-					break;
-				}
-			}
-		}
-
-		//
-		// Check if a valid start of frame has been found
-		//
-		if (syncFound)
-		{
-			//
-			// A valid start of frame has been found, try to extract the frame if we have at least a whole frame.
-			//
-			if (pHandle->rxBufferSize < 8)
-			{
-				//
-				// Don't have enough data for a valid frame
-				//
-				return SBG_NOT_READY;
-			}
-
-			//
-			// Initialize an input stream buffer to parse the received frame
-			//
-			sbgStreamBufferInitForRead(&inputStream, pHandle->rxBuffer, pHandle->rxBufferSize);
-
-			//
-			// Skip both the Sync 1 and Sync 2 chars
-			//
-			sbgStreamBufferSeek(&inputStream, sizeof(uint8_t)*2, SB_SEEK_CUR_INC);
-
-			//
-			// Read the command
-			//
-			receivedMsg = sbgStreamBufferReadUint8LE(&inputStream);
-			receivedMsgClass = sbgStreamBufferReadUint8LE(&inputStream);
-
-			//
-			// Read the payload size
-			//
-			payloadSize = (uint16_t)sbgStreamBufferReadUint16LE(&inputStream);
-
-			//
-			// Check that the payload size is valid
-			//
-			if (payloadSize <= SBG_ECOM_MAX_PAYLOAD_SIZE)
-			{
-				//
-				// Check if we have received the whole frame
-				//
-				if (pHandle->rxBufferSize < payloadSize+9)
-				{
-					//
-					// Don't have received the whole frame
-					//
-					return SBG_NOT_READY;
+					if (pageIndex < nrPages)
+					{
+						errorCode = SBG_NO_ERROR;
+					}
+					else
+					{
+						errorCode = SBG_INVALID_FRAME;
+						SBG_LOG_ERROR(errorCode, "invalid page information : %" PRIu16 "/%" PRIu16, pageIndex, nrPages);
+					}
 				}
 
-				//
-				// We should have the whole frame so for now, skip the payload part but before store the current cursor
-				//
-				payloadOffset = sbgStreamBufferTell(&inputStream);
-				sbgStreamBufferSeek(&inputStream, payloadSize, SB_SEEK_CUR_INC);
-
-				//
-				// Read the frame CRC
-				//
-				frameCrc = sbgStreamBufferReadUint16LE(&inputStream);
-
-				//
-				// Read and test the frame ETX
-				//
-				if (sbgStreamBufferReadUint8(&inputStream) == SBG_ECOM_ETX)
+				if (errorCode == SBG_NO_ERROR)
 				{
-					//
-					// Go back at the beginning of the payload part
-					//
-					sbgStreamBufferSeek(&inputStream, payloadOffset, SB_SEEK_SET);
+					void				*pPayloadAddr;
+					uint16_t			 frameCrc;
+					uint8_t				 lastByte;
 
-					//
-					// We have a frame so return the received command if needed even if the CRC is still not validated
-					//
-					if (pMsg)
-					{
-						*pMsg = receivedMsg;
-					}
-					if (pMsgClass)
-					{
-						*pMsgClass = receivedMsgClass;
-					}
+					pPayloadAddr = sbgStreamBufferGetCursor(&streamBuffer);
 
-					//
-					// Compute the CRC of the received frame (Skip SYNC 1 and SYNC 2 chars)
-					//
-					computedCrc = sbgCrc16Compute(((uint8_t*)sbgStreamBufferGetLinkedBuffer(&inputStream)) + 2, payloadSize + 4);
-						
-					//
-					// Check if the received frame has a valid CRC
-					//
-					if (frameCrc == computedCrc)
+					sbgStreamBufferSeek(&streamBuffer, payloadSize, SB_SEEK_CUR_INC);
+
+					frameCrc	= sbgStreamBufferReadUint16LE(&streamBuffer);
+					lastByte	= sbgStreamBufferReadUint8(&streamBuffer);
+
+					assert(sbgStreamBufferGetLastError(&streamBuffer) == SBG_NO_ERROR);
+
+					if (lastByte == SBG_ECOM_ETX)
 					{
+						uint16_t		 computedCrc;
+
 						//
-						// Extract the payload if needed
+						// The CRC spans from the header (excluding the SYNC bytes) up to the CRC bytes.
 						//
-						if (payloadSize > 0)
+						sbgStreamBufferSeek(&streamBuffer, 2, SB_SEEK_SET);
+						computedCrc = sbgCrc16Compute(sbgStreamBufferGetCursor(&streamBuffer), standardPayloadSize + 4);
+
+						if (frameCrc == computedCrc)
 						{
-							//
-							// Check if input parameters are valid
-							//
-							if ( (pData) && (pSize) )
-							{
-								//
-								// Check if we have enough space to store the payload
-								//
-								if (payloadSize <= maxSize)
-								{
-									//
-									// Copy the payload and return the payload size
-									//
-									*pSize = payloadSize;
-									memcpy(pData, sbgStreamBufferGetCursor(&inputStream), payloadSize);
-									errorCode = SBG_NO_ERROR;
-								}
-								else
-								{
-									//
-									// Not enough space to store the payload, we will just drop the received data
-									//
-									errorCode = SBG_BUFFER_OVERFLOW;
-								}									
-							}
-							else
-							{
-								errorCode = SBG_NULL_POINTER;
-							}
+							*pEndOffset		= offset + standardPayloadSize + 9;
+							*pMsgClass		= msgClass;
+							*pMsgId			= msgId;
+							*pTransferId	= transferId;
+							*pPageIndex		= pageIndex;
+							*pNrPages		= nrPages;
+							*pBuffer		= pPayloadAddr;
+							*pSize			= payloadSize;
+
+							errorCode = SBG_NO_ERROR;
 						}
 						else
 						{
-							//
-							// No payload but the frame has been read successfully
-							//
-							errorCode = SBG_NO_ERROR;
+							errorCode = SBG_INVALID_CRC;
+							SBG_LOG_ERROR(errorCode, "invalid CRC, frame:%#" PRIx16 " computed:%#" PRIx16, frameCrc, computedCrc);
 						}
 					}
 					else
 					{
-						//
-						// We have an invalid frame CRC and we will directly return this error
-						//
-						errorCode = SBG_INVALID_CRC;
+						errorCode = SBG_INVALID_FRAME;
+						SBG_LOG_ERROR(errorCode, "invalid end-of-frame: byte:%#" PRIx8, lastByte);
 					}
-
-					//
-					// We have read a whole valid frame so remove it from the buffer
-					// First, test if the reception buffer contains more than just the current frame
-					//
-					if (pHandle->rxBufferSize > payloadSize+9)
-					{
-						//
-						// We remove the read frame but we keep the remaining data
-						//
-						pHandle->rxBufferSize = pHandle->rxBufferSize-(payloadSize+9);
-						memmove(pHandle->rxBuffer, pHandle->rxBuffer+payloadSize+9, pHandle->rxBufferSize);
-					}
-					else
-					{
-						//
-						// We have parsed the whole received buffer so just empty it
-						//
-						pHandle->rxBufferSize = 0;
-					}
-
-					//
-					// We have at least found a complete frame
-					//
-					return errorCode;
 				}
 			}
-				
-			//
-			// Frame size invalid or the found frame is invalid so we should have incorrectly detected a start of frame.
-			// Remove the SYNC 1 and SYNC 2 chars to retry to find a new frame
-			//
-			pHandle->rxBufferSize -= 2;
-			memmove(pHandle->rxBuffer, pHandle->rxBuffer+2, pHandle->rxBufferSize);
+			else
+			{
+				errorCode = SBG_NOT_READY;
+			}
 		}
 		else
 		{
-			//
-			// Unable to find a valid start of frame so check if the last byte is a SYNC char in order to keep it for next time
-			//
-			if (pHandle->rxBuffer[pHandle->rxBufferSize-1] == SBG_ECOM_SYNC_1)
+			errorCode = SBG_INVALID_FRAME;
+			SBG_LOG_ERROR(errorCode, "invalid payload size %zu", standardPayloadSize);
+		}
+	}
+	else
+	{
+		errorCode = SBG_NOT_READY;
+	}
+
+	return errorCode;
+}
+
+/*!
+ * Find a frame in the work buffer of a protocol.
+ *
+ * If an extended frame is received, the number of pages is set to a non-zero value.
+ *
+ * \param[in]	pProtocol					Protocol.
+ * \param[out]	pMsgClass					Message class.
+ * \param[out]	pMsgId						Message ID.
+ * \param[out]	pTransferId					Transfer ID.
+ * \param[out]	pPageIndex					Page index.
+ * \param[out]	pNrPages					Number of pages.
+ * \param[out]	pBuffer						Payload buffer.
+ * \param[out]	pSize						Payload buffer size, in bytes.
+ * \return									SBG_NO_ERROR if successful,
+ *											SBG_NOT_READY if no frame was found.
+ */
+static SbgErrorCode sbgEComProtocolFindFrame(SbgEComProtocol *pProtocol, uint8_t *pMsgClass, uint8_t *pMsgId, uint8_t *pTransferId, uint16_t *pPageIndex, uint16_t *pNrPages, void **pBuffer, size_t *pSize)
+{
+	SbgErrorCode						 errorCode;
+	size_t								 startOffset;
+
+	assert(pProtocol);
+
+	errorCode	= SBG_NOT_READY;
+	startOffset	= 0;
+
+	while (startOffset < pProtocol->rxBufferSize)
+	{
+		size_t							 offset;
+
+		errorCode = sbgEComProtocolFindSyncBytes(pProtocol, startOffset, &offset);
+
+		if (errorCode == SBG_NO_ERROR)
+		{
+			size_t						 endOffset;
+
+			errorCode = sbgEComProtocolParseFrame(pProtocol, offset, &endOffset, pMsgClass, pMsgId, pTransferId, pPageIndex, pNrPages, pBuffer, pSize);
+
+			if (errorCode == SBG_NO_ERROR)
 			{
 				//
-				// Report the SYNC char and discard all other bytes in the buffer
+				// Valid frame found, discard all data up to and including that frame
+				// on the next read.
 				//
-				pHandle->rxBuffer[0] = SBG_ECOM_SYNC_1;
-				pHandle->rxBufferSize = 1;
+				pProtocol->discardSize = endOffset;
+				
+				//
+				// If installed, call the method used to intercept received sbgECom frames
+				//
+				if (pProtocol->pReceiveFrameCb)
+				{
+					SbgStreamBuffer		fullFrameStream;
+
+					sbgStreamBufferInitForRead(&fullFrameStream, &pProtocol->rxBuffer[offset], endOffset-offset);
+					pProtocol->pReceiveFrameCb(pProtocol, *pMsgClass, *pMsgId, &fullFrameStream, pProtocol->pUserArg);
+				}
+
+				break;
+			}
+			else if (errorCode == SBG_NOT_READY)
+			{
+				//
+				// There may be a valid frame at the parse offset, but it's not complete.
+				// Have all preceding bytes discarded on the next read.
+				//
+				pProtocol->discardSize = offset;
+				break;
 			}
 			else
 			{
 				//
-				// Discard the whole buffer
+				// Not a valid frame, skip SYNC bytes and try again.
 				//
-				pHandle->rxBufferSize = 0;
+				startOffset = offset + 2;
+				errorCode = SBG_NOT_READY;
 			}
-
+		}
+		else if (errorCode == SBG_NOT_CONTINUOUS_FRAME)
+		{
 			//
-			// Unable to find a frame
+			// The first SYNC byte was found, but not the second. It may be a valid
+			// frame, so keep the SYNC byte but have all preceding bytes discarded
+			// on the next read.
 			//
-			return SBG_NOT_READY;
+			pProtocol->discardSize = offset;
+			errorCode = SBG_NOT_READY;
+			break;
+		}
+		else
+		{
+			//
+			// No SYNC byte found, discard all data.
+			//
+			pProtocol->rxBufferSize = 0;
+			errorCode = SBG_NOT_READY;
+			break;
 		}
 	}
 
+	assert(pProtocol->discardSize <= pProtocol->rxBufferSize);
+
+	return errorCode;
+}
+
+/*!
+ * Send a standard frame.
+ *
+ * \param[in]	pProtocol					Protocol.
+ * \param[in]	msgClass					Message class.
+ * \param[in]	msgId						Message ID.
+ * \param[in]	pData						Data buffer.
+ * \param[in]	size						Data buffer size, in bytes.
+ * \return									SBG_NO_ERROR if successful.
+ */
+static SbgErrorCode sbgEComProtocolSendStandardFrame(SbgEComProtocol *pProtocol, uint8_t msgClass, uint8_t msgId, const void *pData, size_t size)
+{
+	uint8_t								 buffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	SbgStreamBuffer						 streamBuffer;
+	const uint8_t						*crcDataStart;
+	const uint8_t						*crcDataEnd;
+	uint16_t							 crc;
+
+	assert(pProtocol);
+	assert((msgClass & 0x80) == 0);
+	assert(size <= SBG_ECOM_MAX_PAYLOAD_SIZE);
+	assert(pData || (size == 0));
+
+	sbgStreamBufferInitForWrite(&streamBuffer, buffer, sizeof(buffer));
+
+	sbgStreamBufferWriteUint8(&streamBuffer, SBG_ECOM_SYNC_1);
+	sbgStreamBufferWriteUint8(&streamBuffer, SBG_ECOM_SYNC_2);
+
+	crcDataStart = sbgStreamBufferGetCursor(&streamBuffer);
+
+	sbgStreamBufferWriteUint8(&streamBuffer, msgId);
+	sbgStreamBufferWriteUint8(&streamBuffer, msgClass);
+
+	sbgStreamBufferWriteUint16LE(&streamBuffer, (uint16_t)size);
+
+	sbgStreamBufferWriteBuffer(&streamBuffer, pData, size);
+
+	crcDataEnd = sbgStreamBufferGetCursor(&streamBuffer);
+
+	crc = sbgCrc16Compute(crcDataStart, crcDataEnd - crcDataStart);
+
+	sbgStreamBufferWriteUint16LE(&streamBuffer, crc);
+
+	sbgStreamBufferWriteUint8(&streamBuffer, SBG_ECOM_ETX);
+
+	assert(sbgStreamBufferGetLastError(&streamBuffer) == SBG_NO_ERROR);
+
+	return sbgInterfaceWrite(pProtocol->pLinkedInterface, sbgStreamBufferGetLinkedBuffer(&streamBuffer), sbgStreamBufferGetLength(&streamBuffer));
+}
+
+/*!
+ * Send an extended frame.
+ *
+ * \param[in]	pProtocol					Protocol.
+ * \param[in]	msgClass					Message class.
+ * \param[in]	msgId						Message ID.
+ * \param[in]	transferId					Transfer ID.
+ * \param[in]	pageIndex					Page index (0 to 65534)
+ * \param[in]	nrPages						Total number of pages (1 to 65535)
+ * \param[in]	pData						Data buffer.
+ * \param[in]	size						Data buffer size, in bytes.
+ * \return									SBG_NO_ERROR if successful.
+ */
+static SbgErrorCode sbgEComProtocolSendExtendedFrame(SbgEComProtocol *pProtocol, uint8_t msgClass, uint8_t msgId, uint8_t transferId, size_t pageIndex, size_t nrPages, const void *pData, size_t size)
+{
+	SbgErrorCode						 errorCode;
+	uint8_t								 buffer[SBG_ECOM_MAX_BUFFER_SIZE];
+	SbgStreamBuffer						 streamBuffer;
+	const uint8_t						*crcDataStart;
+	const uint8_t						*crcDataEnd;
+	uint16_t							 crc;
+
+	assert(pProtocol);
+	assert((msgClass & 0x80) == 0);
+	assert((transferId & 0xf0) == 0);
+	assert(pageIndex < UINT16_MAX);
+	assert((nrPages > 0) && (nrPages <=	UINT16_MAX));
+	assert(pageIndex < nrPages);
+	assert(size <= SBG_ECOM_MAX_EXTENDED_PAYLOAD_SIZE);
+	assert(pData || (size == 0));
+
+	sbgStreamBufferInitForWrite(&streamBuffer, buffer, sizeof(buffer));
+
+	sbgStreamBufferWriteUint8(&streamBuffer, SBG_ECOM_SYNC_1);
+	sbgStreamBufferWriteUint8(&streamBuffer, SBG_ECOM_SYNC_2);
+
+	crcDataStart = sbgStreamBufferGetCursor(&streamBuffer);
+
+	sbgStreamBufferWriteUint8(&streamBuffer, msgId);
+	sbgStreamBufferWriteUint8(&streamBuffer, 0x80 | msgClass);
+
 	//
-	// The whole buffer has been paresed and no valid frame has been found
+	// For compatibility reasons, the size must span over the extended headers.
 	//
-	return SBG_NOT_READY;
+	sbgStreamBufferWriteUint16LE(&streamBuffer, (uint16_t)size + 5);
+
+	sbgStreamBufferWriteUint8(&streamBuffer, transferId);
+	sbgStreamBufferWriteUint16LE(&streamBuffer, (uint16_t)pageIndex);
+	sbgStreamBufferWriteUint16LE(&streamBuffer, (uint16_t)nrPages);
+
+	sbgStreamBufferWriteBuffer(&streamBuffer, pData, size);
+
+	crcDataEnd = sbgStreamBufferGetCursor(&streamBuffer);
+
+	crc = sbgCrc16Compute(crcDataStart, crcDataEnd - crcDataStart);
+
+	sbgStreamBufferWriteUint16LE(&streamBuffer, crc);
+
+	sbgStreamBufferWriteUint8(&streamBuffer, SBG_ECOM_ETX);
+
+	assert(sbgStreamBufferGetLastError(&streamBuffer) == SBG_NO_ERROR);
+
+	for (;;)
+	{
+		errorCode = sbgInterfaceWrite(pProtocol->pLinkedInterface, sbgStreamBufferGetLinkedBuffer(&streamBuffer), sbgStreamBufferGetLength(&streamBuffer));
+
+		if (errorCode != SBG_BUFFER_OVERFLOW)
+		{
+			break;
+		}
+
+		sbgSleep(SBG_ECOM_PROTOCOL_EXT_SEND_DELAY);
+	}
+
+	return errorCode;
+}
+
+/*!
+ * Get a transfer ID for the next large send.
+ *
+ * This function returns a different ID every time it's called.
+ *
+ * \param[in]	pProtocol					Protocol.
+ * \return									Transfer ID of the next large send.
+ */
+static SbgErrorCode sbgEComProtocolGetTxId(SbgEComProtocol *pProtocol)
+{
+	uint8_t								 transferId;
+
+	assert(pProtocol);
+	assert((pProtocol->nextLargeTxId & 0xf0) == 0);
+
+	transferId = pProtocol->nextLargeTxId;
+	pProtocol->nextLargeTxId = (pProtocol->nextLargeTxId + 1) & 0xf0;
+
+	return transferId;
+}
+
+/*!
+ * Check if a large transfer is in progress.
+ *
+ * \param[in]	pProtocol					Protocol.
+ * \return									True if a large transfer is in progress.
+ */
+static bool sbgEComProtocolLargeTransferInProgress(const SbgEComProtocol *pProtocol)
+{
+	assert(pProtocol);
+
+	return pProtocol->pLargeBuffer;
+}
+
+/*!
+ * Reset The large transfer member variables of a protocol.
+ *
+ * \param[in]	pProtocol					Protocol.
+ */
+static void sbgEComProtocolResetLargeTransfer(SbgEComProtocol *pProtocol)
+{
+	assert(pProtocol);
+
+	pProtocol->pLargeBuffer		= NULL;
+	pProtocol->largeBufferSize	= 0;
+	pProtocol->transferId		= 0;
+	pProtocol->pageIndex		= 0;
+	pProtocol->nrPages			= 0;
+}
+
+/*!
+ * Clear any large transfer in progress.
+ *
+ * \param[in]	pProtocol					Protocol.
+ */
+static void sbgEComProtocolClearLargeTransfer(SbgEComProtocol *pProtocol)
+{
+	assert(pProtocol);
+
+	free(pProtocol->pLargeBuffer);
+
+	sbgEComProtocolResetLargeTransfer(pProtocol);
+}
+
+/*!
+ * Process an extended frame.
+ *
+ * \param[in]	pProtocol					Protocol.
+ * \param[in]	msgClass					Message class.
+ * \param[in]	msgId						Message ID.
+ * \param[in]	transferId					Transfer ID.
+ * \param[in]	pageIndex					Page index.
+ * \param[in]	nrPages						Number of pages.
+ * \param[in]	pBuffer						Buffer.
+ * \param[in]	size						Buffer size, in bytes.
+ * \return									SBG_NO_ERROR if a large transfer is complete,
+ *											SBG_NOT_READY otherwise.
+ */
+static SbgErrorCode sbgEComProtocolProcessExtendedFrame(SbgEComProtocol *pProtocol, uint8_t msgClass, uint8_t msgId, uint8_t transferId, uint16_t pageIndex, uint16_t nrPages, const void *pBuffer, size_t size)
+{
+	SbgErrorCode						 errorCode;
+
+	assert(pProtocol);
+	assert((transferId & 0xf0) == 0);
+	assert(pageIndex < nrPages);
+	assert(pBuffer || (size == 0));
+	assert(size <= SBG_ECOM_MAX_EXTENDED_PAYLOAD_SIZE);
+
+	if (pageIndex == 0)
+	{
+		size_t							 capacity;
+
+		if (sbgEComProtocolLargeTransferInProgress(pProtocol))
+		{
+			SBG_LOG_ERROR(SBG_ERROR, "large transfer started while a large transfer is in progress");
+			SBG_LOG_ERROR(SBG_ERROR, "terminating large transfer");
+
+			sbgEComProtocolClearLargeTransfer(pProtocol);
+		}
+
+		capacity = nrPages * SBG_ECOM_MAX_EXTENDED_PAYLOAD_SIZE;
+
+		pProtocol->pLargeBuffer = malloc(capacity);
+
+		if (pProtocol->pLargeBuffer)
+		{
+			pProtocol->largeBufferSize	= 0;
+			pProtocol->msgClass			= msgClass;
+			pProtocol->msgId			= msgId;
+			pProtocol->transferId		= transferId;
+			pProtocol->pageIndex		= 0;
+			pProtocol->nrPages			= nrPages;
+
+			errorCode = SBG_NO_ERROR;
+		}
+		else
+		{
+			SBG_LOG_ERROR(SBG_MALLOC_FAILED, "unable to allocate buffer");
+
+			sbgEComProtocolResetLargeTransfer(pProtocol);
+
+			errorCode = SBG_NOT_READY;
+		}
+	}
+	else
+	{
+		if (sbgEComProtocolLargeTransferInProgress(pProtocol))
+		{
+			errorCode = SBG_NO_ERROR;
+		}
+		else
+		{
+			SBG_LOG_ERROR(SBG_ERROR, "extended frame received while no large transfer in progress");
+
+			errorCode = SBG_NOT_READY;
+		}
+	}
+
+	if (errorCode == SBG_NO_ERROR)
+	{
+		if (msgClass == pProtocol->msgClass)
+		{
+			errorCode = SBG_NO_ERROR;
+		}
+		else
+		{
+			SBG_LOG_ERROR(SBG_ERROR, "message class mismatch in extended frame");
+			SBG_LOG_ERROR(SBG_ERROR, "terminating large transfer");
+
+			sbgEComProtocolClearLargeTransfer(pProtocol);
+
+			errorCode = SBG_NOT_READY;
+		}
+
+		if (msgId == pProtocol->msgId)
+		{
+			errorCode = SBG_NO_ERROR;
+		}
+		else
+		{
+			SBG_LOG_ERROR(SBG_ERROR, "message ID mismatch in extended frame");
+			SBG_LOG_ERROR(SBG_ERROR, "terminating large transfer");
+
+			sbgEComProtocolClearLargeTransfer(pProtocol);
+
+			errorCode = SBG_NOT_READY;
+		}
+
+		if (transferId == pProtocol->transferId)
+		{
+			errorCode = SBG_NO_ERROR;
+		}
+		else
+		{
+			SBG_LOG_ERROR(SBG_ERROR, "transfer ID mismatch in extended frame");
+			SBG_LOG_ERROR(SBG_ERROR, "terminating large transfer");
+
+			sbgEComProtocolClearLargeTransfer(pProtocol);
+
+			errorCode = SBG_NOT_READY;
+		}
+
+		if (errorCode == SBG_NO_ERROR)
+		{
+			if (nrPages == pProtocol->nrPages)
+			{
+				if (pageIndex == pProtocol->pageIndex)
+				{
+					size_t				 offset;
+
+					offset = pageIndex * SBG_ECOM_MAX_EXTENDED_PAYLOAD_SIZE;
+					memcpy(&pProtocol->pLargeBuffer[offset], pBuffer, size);
+
+					pProtocol->largeBufferSize += size;
+					pProtocol->pageIndex++;
+
+					if (pProtocol->pageIndex != pProtocol->nrPages)
+					{
+						errorCode = SBG_NOT_READY;
+					}
+				}
+				else
+				{
+					SBG_LOG_ERROR(SBG_ERROR, "extended frame received out of sequence");
+					SBG_LOG_ERROR(SBG_ERROR, "terminating large transfer");
+
+					sbgEComProtocolClearLargeTransfer(pProtocol);
+
+					errorCode = SBG_NOT_READY;
+				}
+			}
+			else
+			{
+				SBG_LOG_ERROR(SBG_ERROR, "page count mismatch in extended frame");
+				SBG_LOG_ERROR(SBG_ERROR, "terminating large transfer");
+
+				sbgEComProtocolClearLargeTransfer(pProtocol);
+
+				errorCode = SBG_NOT_READY;
+			}
+		}
+	}
+
+	return errorCode;
 }
 
 //----------------------------------------------------------------------//
-//- Frame generation to stream buffer                                  -//
+//- Public methods (SbgEComProtocolPayload)                            -//
 //----------------------------------------------------------------------//
 
-/*!
- * Initialize an output stream for an sbgECom frame generation.
- * This method is helpful to avoid memory copy compared to sbgEComProtocolSend one.
- *
- * \param[in]	pOutputStream			Pointer to an allocated and initialized output stream.
- * \param[in]	msgClass				Message class (0-255)
- * \param[in]	msg						Message id (0-255)
- * \param[out]	pStreamCursor			The initial output stream cursor that thus points to the begining of the generated message.
- *										This value should be passed to sbgEComFinalizeFrameGeneration for correct operations.
- * \return								SBG_NO_ERROR in case of good operation.
- */
+void sbgEComProtocolPayloadConstruct(SbgEComProtocolPayload *pPayload)
+{
+	assert(pPayload);
+
+	pPayload->allocated	= false;
+	pPayload->pBuffer	= NULL;
+	pPayload->size		= 0;
+}
+
+void sbgEComProtocolPayloadDestroy(SbgEComProtocolPayload *pPayload)
+{
+	assert(pPayload);
+
+	if (pPayload->allocated)
+	{
+		free(pPayload->pBuffer);
+	}
+}
+
+const void *sbgEComProtocolPayloadGetBuffer(const SbgEComProtocolPayload *pPayload)
+{
+	assert(pPayload);
+
+	return pPayload->pBuffer;
+}
+
+size_t sbgEComProtocolPayloadGetSize(const SbgEComProtocolPayload *pPayload)
+{
+	assert(pPayload);
+
+	return pPayload->size;
+}
+
+void *sbgEComProtocolPayloadMoveBuffer(SbgEComProtocolPayload *pPayload)
+{
+	void								*pBuffer;
+
+	assert(pPayload);
+
+	if (pPayload->pBuffer)
+	{
+		if (pPayload->allocated)
+		{
+			pBuffer = pPayload->pBuffer;
+
+			sbgEComProtocolPayloadConstruct(pPayload);
+		}
+		else
+		{
+			pBuffer = malloc(pPayload->size);
+
+			if (pBuffer)
+			{
+				memcpy(pBuffer, pPayload->pBuffer, pPayload->size);
+
+				sbgEComProtocolPayloadConstruct(pPayload);
+			}
+			else
+			{
+				SBG_LOG_ERROR(SBG_MALLOC_FAILED, "unable to allocate buffer");
+			}
+		}
+	}
+	else
+	{
+		pBuffer = NULL;
+	}
+
+	return pBuffer;
+}
+
+//----------------------------------------------------------------------//
+//- Public methods (SbgEComProtocol)                                   -//
+//----------------------------------------------------------------------//
+
+SbgErrorCode sbgEComProtocolInit(SbgEComProtocol *pProtocol, SbgInterface *pInterface)
+{
+	assert(pProtocol);
+	assert(pInterface);
+
+	memset(pProtocol, 0x00, sizeof(*pProtocol));
+
+	pProtocol->pLinkedInterface	= pInterface;
+
+	sbgEComProtocolResetLargeTransfer(pProtocol);
+
+	return SBG_NO_ERROR;
+}
+
+SbgErrorCode sbgEComProtocolClose(SbgEComProtocol *pProtocol)
+{
+	assert(pProtocol);
+
+	pProtocol->pLinkedInterface	= NULL;
+	pProtocol->rxBufferSize		= 0;
+	pProtocol->discardSize		= 0;
+	pProtocol->nextLargeTxId	= 0;
+
+	sbgEComProtocolClearLargeTransfer(pProtocol);
+
+	return SBG_NO_ERROR;
+}
+
+SbgErrorCode sbgEComProtocolPurgeIncoming(SbgEComProtocol *pProtocol)
+{
+	SbgErrorCode	errorCode = SBG_NO_ERROR;
+	size_t			numBytesRead;
+	uint32_t		timeStamp;
+
+	//
+	// Reset the work buffer
+	//
+	pProtocol->rxBufferSize		= 0;
+	pProtocol->discardSize		= 0;
+	pProtocol->nextLargeTxId	= 0;
+
+	sbgEComProtocolClearLargeTransfer(pProtocol);
+
+	//
+	// Try to read all incoming data for at least 100 ms and trash them
+	///
+	timeStamp = sbgGetTime();
+
+	do
+	{
+		errorCode = sbgInterfaceRead(pProtocol->pLinkedInterface, pProtocol->rxBuffer, &numBytesRead, sizeof(pProtocol->rxBuffer));
+
+		if (errorCode != SBG_NO_ERROR)
+		{
+			SBG_LOG_ERROR(errorCode, "Unable to read data from interface");
+			break;
+		}
+	} while ((sbgGetTime() - timeStamp) < 100);
+
+	//
+	// If we still have read some bytes it means we were not able to purge successfully the rx buffer
+	//
+	if ( (errorCode == SBG_NO_ERROR) && (numBytesRead > 0) )
+	{
+		errorCode = SBG_ERROR;
+		SBG_LOG_ERROR(errorCode, "Unable to purge the rx buffer,  %zu bytes remaining", numBytesRead);
+	}
+
+	return errorCode;
+}
+
+SbgErrorCode sbgEComProtocolSend(SbgEComProtocol *pProtocol, uint8_t msgClass, uint8_t msgId, const void *pData, size_t size)
+{
+	SbgErrorCode						 errorCode;
+
+	if (size <= SBG_ECOM_MAX_PAYLOAD_SIZE)
+	{
+		errorCode = sbgEComProtocolSendStandardFrame(pProtocol, msgClass, msgId, pData, size);
+	}
+	else
+	{
+		size_t							 nrPages;
+
+		nrPages = sbgDivCeil(size, SBG_ECOM_MAX_EXTENDED_PAYLOAD_SIZE);
+
+		if (nrPages <= UINT16_MAX)
+		{
+			const uint8_t				*pBuffer;
+			size_t						 offset;
+			uint8_t						 transferId;
+
+			pBuffer		= pData;
+			offset		= 0;
+			transferId	= sbgEComProtocolGetTxId(pProtocol);
+			errorCode	= SBG_INVALID_PARAMETER;
+
+			for (uint16_t pageIndex = 0; pageIndex < nrPages; pageIndex++)
+			{
+				size_t					 transferSize;
+
+				if ((size - offset) < SBG_ECOM_MAX_EXTENDED_PAYLOAD_SIZE)
+				{
+					transferSize = size - offset;
+				}
+				else
+				{
+					transferSize = SBG_ECOM_MAX_EXTENDED_PAYLOAD_SIZE;
+				}
+
+				errorCode = sbgEComProtocolSendExtendedFrame(pProtocol, msgClass, msgId, transferId, pageIndex, nrPages, &pBuffer[offset], transferSize);
+
+				if (errorCode != SBG_NO_ERROR)
+				{
+					break;
+				}
+
+				offset += transferSize;
+			}
+		}
+		else
+		{
+			errorCode = SBG_INVALID_PARAMETER;
+			SBG_LOG_ERROR(errorCode, "payload size too large: %zu", size);
+		}
+	}
+
+	return errorCode;
+}
+
+SbgErrorCode sbgEComProtocolReceive(SbgEComProtocol *pProtocol, uint8_t *pMsgClass, uint8_t *pMsgId, void *pData, size_t *pSize, size_t maxSize)
+{
+	SbgErrorCode						 errorCode;
+	SbgEComProtocolPayload				 payload;
+
+	sbgEComProtocolPayloadConstruct(&payload);
+
+	errorCode = sbgEComProtocolReceive2(pProtocol, pMsgClass, pMsgId, &payload);
+
+	if (errorCode == SBG_NO_ERROR)
+	{
+		size_t							 size;
+
+		size = sbgEComProtocolPayloadGetSize(&payload);
+
+		if (size <= maxSize)
+		{
+			if (pData)
+			{
+				const void				*pBuffer;
+
+				pBuffer = sbgEComProtocolPayloadGetBuffer(&payload);
+
+				memcpy(pData, pBuffer, size);
+			}
+
+			if (pSize)
+			{
+				*pSize = size;
+			}
+		}
+		else
+		{
+			errorCode = SBG_BUFFER_OVERFLOW;
+		}
+	}
+
+	sbgEComProtocolPayloadDestroy(&payload);
+
+	return errorCode;
+}
+
+SbgErrorCode sbgEComProtocolReceive2(SbgEComProtocol *pProtocol, uint8_t *pMsgClass, uint8_t *pMsgId, SbgEComProtocolPayload *pPayload)
+{
+	SbgErrorCode						 errorCode;
+	uint8_t								 msgClass;
+	uint8_t								 msgId;
+	uint8_t								 transferId;
+	uint16_t							 pageIndex;
+	uint16_t							 nrPages;
+	void								*pBuffer;
+	size_t								 size;
+
+	assert(pProtocol);
+	assert(pProtocol->discardSize <= pProtocol->rxBufferSize);
+
+	sbgEComProtocolPayloadClear(pPayload);
+
+	sbgEComProtocolDiscardUnusedBytes(pProtocol);
+
+	sbgEComProtocolRead(pProtocol);
+
+	errorCode = sbgEComProtocolFindFrame(pProtocol, &msgClass, &msgId, &transferId, &pageIndex, &nrPages, &pBuffer, &size);
+
+	if (errorCode == SBG_NO_ERROR)
+	{
+		if (nrPages == 0)
+		{
+			if (sbgEComProtocolLargeTransferInProgress(pProtocol))
+			{
+				SBG_LOG_ERROR(SBG_ERROR, "standard frame received while a large transfer is in progress");
+				SBG_LOG_ERROR(SBG_ERROR, "terminating large transfer");
+
+				sbgEComProtocolClearLargeTransfer(pProtocol);
+			}
+
+			if (pMsgClass)
+			{
+				*pMsgClass = msgClass;
+			}
+
+			if (pMsgId)
+			{
+				*pMsgId = msgId;
+			}
+
+			sbgEComProtocolPayloadSet(pPayload, false, pBuffer, size);
+		}
+		else
+		{
+			errorCode = sbgEComProtocolProcessExtendedFrame(pProtocol, msgClass, msgId, transferId, pageIndex, nrPages, pBuffer, size);
+
+			if (errorCode == SBG_NO_ERROR)
+			{
+				if (pMsgClass)
+				{
+					*pMsgClass = msgClass;
+				}
+
+				if (pMsgId)
+				{
+					*pMsgId = msgId;
+				}
+
+				sbgEComProtocolPayloadSet(pPayload, true, pProtocol->pLargeBuffer, pProtocol->largeBufferSize);
+				sbgEComProtocolResetLargeTransfer(pProtocol);
+			}
+		}
+	}
+
+	return errorCode;
+}
+
+void sbgEComProtocolSetOnFrameReceivedCb(SbgEComProtocol *pProtocol, SbgEComProtocolFrameCb pOnFrameReceivedCb, void *pUserArg)
+{
+	assert(pProtocol);
+	
+	pProtocol->pReceiveFrameCb	= pOnFrameReceivedCb;
+	pProtocol->pUserArg			= pUserArg;
+}
+
 SbgErrorCode sbgEComStartFrameGeneration(SbgStreamBuffer *pOutputStream, uint8_t msgClass, uint8_t msg, size_t *pStreamCursor)
 {
 	assert(pOutputStream);
+	assert((msgClass & 0x80) == 0);
 	assert(pStreamCursor);
 
 	//
@@ -486,16 +1137,6 @@ SbgErrorCode sbgEComStartFrameGeneration(SbgStreamBuffer *pOutputStream, uint8_t
 	return sbgStreamBufferSeek(pOutputStream, sizeof(uint16_t), SB_SEEK_CUR_INC);
 }
 
-/*!
- * Finalize an output stream that has been initialized with sbgEComStartFrameGeneration.
- * At return, the output stream buffer should point at the end of the generated message.
- * You can thus easily create consecutive SBG_ECOM_LOGS with these methods.
- *
- * \param[in]	pOutputStream			Pointer to an allocated and initialized output stream.
- * \param[in]	streamCursor			Position in the stream buffer of the generated message first byte.
- *										This value is returned by sbgEComStartFrameGeneration and is mandatory for correct operations.
- * \return								SBG_NO_ERROR in case of good operation.
- */
 SbgErrorCode sbgEComFinalizeFrameGeneration(SbgStreamBuffer *pOutputStream, size_t streamCursor)
 {
 	SbgErrorCode	errorCode;
@@ -566,7 +1207,7 @@ SbgErrorCode sbgEComFinalizeFrameGeneration(SbgStreamBuffer *pOutputStream, size
 			// Invalid payload size
 			//
 			errorCode = SBG_BUFFER_OVERFLOW;
-			SBG_LOG_ERROR(errorCode, "Payload of %u bytes is too big for a valid sbgECom log", payloadSize);
+			SBG_LOG_ERROR(errorCode, "Payload of %zu bytes is too big for a valid sbgECom log", payloadSize);
 		}
 	}
 	else

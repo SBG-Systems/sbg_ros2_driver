@@ -1,37 +1,50 @@
 /*!
- * \file		sbgEComCmdOdo.h
- * \author		SBG Systems
- * \date		11 June 2014
+ * \file			sbgEComCmdOdo.h
+ * \ingroup			commands
+ * \author			SBG Systems
+ * \date			11 June 2014
  *
- * \brief		This file implements SbgECom commands related to Odometer module.
+ * \brief			Odometer / DMI aiding module configuration commands.
  *
- * \section CodeCopyright Copyright Notice 
- *  The MIT license
- *  
- *  Copyright (C) 2007-2020, SBG Systems SAS. All rights reserved.
+ * \copyright		Copyright (C) 2022, SBG Systems SAS. All rights reserved.
+ * \beginlicense	The MIT license
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *  
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * \endlicense
  */
+
 #ifndef SBG_ECOM_CMD_ODO_H
 #define SBG_ECOM_CMD_ODO_H
 
+// sbgCommonLib headers
+#include <sbgCommon.h>
+
+// Project headers
+#include <sbgECom.h>
+
+// Local headers
 #include "sbgEComCmdCommon.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //----------------------------------------------------------------------//
 //- Public definitions                                                 -//
@@ -57,7 +70,7 @@ typedef struct _SbgEComOdoRejectionConf
 
 /*!
  * CAN odometer channels definition
- * A channel is an inforamtion that can be decoded / used by the device.
+ * A channel is an information that can be decoded / used by the device.
  */
 typedef enum _SbgEComCmdOdoCanChannel
 {
@@ -81,7 +94,7 @@ typedef struct _SbgEComCmdOdoCanConf
 {
 	uint16_t	options;				/*!< Set of options bit masks such as CAN extended. */
 	uint32_t	canId;					/*!< CAN message ID from which the odometer velocity will be parsed. */
-	
+
 	size_t		startBit;				/*!< Index of field MSB in big endian or LSB in little endian within the payload (any value from 0 to 63). */
 	size_t		dataSize; 				/*!< Length in bits of the odometer velocity field (any value from 1 to 64 minus dataOffset). */
 
@@ -117,19 +130,19 @@ SbgErrorCode sbgEComCmdOdoSetConf(SbgEComHandle *pHandle, const SbgEComOdoConf *
  * Retrieve the lever arm applicable for both quadrature or CAN based odometer.
  *
  * \param[in]	pHandle						A valid sbgECom handle.
- * \param[out]	leverArm					Array of three values, one for each axis.
+ * \param[out]	pLeverArm					Array of three values, one for each axis.
  * \return									SBG_NO_ERROR if the command has been executed successfully.
  */
-SbgErrorCode sbgEComCmdOdoGetLeverArm(SbgEComHandle *pHandle, float leverArm[3]);
+SbgErrorCode sbgEComCmdOdoGetLeverArm(SbgEComHandle *pHandle, float *pLeverArm);
 
 /*!
  * Set the lever arm applicable for both quadrature or CAN based odometer.
  *
  * \param[in]	pHandle						A valid sbgECom handle.
- * \param[in]	leverArm					Array of three values, one for each axis.
+ * \param[in]	pLeverArm					Array of three values, one for each axis.
  * \return									SBG_NO_ERROR if the command has been executed successfully.
  */
-SbgErrorCode sbgEComCmdOdoSetLeverArm(SbgEComHandle *pHandle, const float leverArm[3]);
+SbgErrorCode sbgEComCmdOdoSetLeverArm(SbgEComHandle *pHandle, const float *pLeverArm);
 
 /*!
  * Retrieve the velocity rejection configuration for both quadrature or CAN based odometer.
@@ -153,7 +166,7 @@ SbgErrorCode sbgEComCmdOdoSetRejection(SbgEComHandle *pHandle, const SbgEComOdoR
  * Retrieve the CAN odometer configuration for a specific CAN information channel
  *
  * \param[in]	pHandle						A valid sbgECom handle.
- * \param[in]	canChannel					The CAN channel to retreive associated DBC configuration.
+ * \param[in]	canChannel					The CAN channel to retrieve associated DBC configuration.
  * \param[out]	pOdoCanConf					Struct to hold configuration of the CAN odometer.
  * \return									SBG_NO_ERROR if the command has been executed successfully.
  */
@@ -169,4 +182,8 @@ SbgErrorCode sbgEComCmdOdoCanGetConf(SbgEComHandle *pHandle, SbgEComCmdOdoCanCha
  */
 SbgErrorCode sbgEComCmdOdoCanSetConf(SbgEComHandle *pHandle, SbgEComCmdOdoCanChannel canChannel, const SbgEComCmdOdoCanConf *pOdoCanConf);
 
-#endif /* SBG_ECOM_CMD_ODO_H */
+#ifdef __cplusplus
+}
+#endif
+
+#endif // SBG_ECOM_CMD_ODO_H

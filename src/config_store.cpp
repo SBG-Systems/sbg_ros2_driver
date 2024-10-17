@@ -77,7 +77,7 @@ void ConfigStore::loadSensorParameters(const rclcpp::Node& ref_node_handle)
   init_condition_conf_.month    = getParameter<uint8_t>(ref_node_handle, "sensorParameters.year", 03);
   init_condition_conf_.day      = getParameter<uint8_t>(ref_node_handle, "sensorParameters.year", 10);
 
-  motion_profile_model_info_.id = getParameter<uint32>(ref_node_handle, "sensorParameters.motionProfile", SBG_ECOM_MOTION_PROFILE_GENERAL_PURPOSE);
+  motion_profile_model_info_ = getParameter<SbgEComMotionProfileStdIds>(ref_node_handle, "sensorParameters.motionProfile", SBG_ECOM_MOTION_PROFILE_GENERAL_PURPOSE);
 }
 
 void ConfigStore::loadImuAlignementParameters(const rclcpp::Node& ref_node_handle)
@@ -107,7 +107,7 @@ void ConfigStore::loadAidingAssignementParameters(const rclcpp::Node& ref_node_h
 
 void ConfigStore::loadMagnetometersParameters(const rclcpp::Node& ref_node_handle)
 {
-  mag_model_info_.id                = getParameter<uint32_t>(ref_node_handle, "magnetometer.magnetometerModel", SBG_ECOM_MAG_MODEL_NORMAL);
+  mag_model_info_                   = getParameter<SbgEComMagModelsStdId>(ref_node_handle, "magnetometer.magnetometerModel", SBG_ECOM_MAG_MODEL_NORMAL);
   mag_rejection_conf_.magneticField = getParameter<SbgEComRejectionMode>(ref_node_handle, "magnetometer.magnetometerRejectMode", SBG_ECOM_AUTOMATIC_MODE);
 
   mag_calib_mode_       = getParameter<SbgEComMagCalibMode>(ref_node_handle, "magnetometer.calibration.mode", SBG_ECOM_MAG_CALIB_MODE_2D);
@@ -116,7 +116,7 @@ void ConfigStore::loadMagnetometersParameters(const rclcpp::Node& ref_node_handl
 
 void ConfigStore::loadGnssParameters(const rclcpp::Node& ref_node_handle)
 {
-  gnss_model_info_.id = getParameter<uint32_t>(ref_node_handle, "gnss.gnss_model_id", SBG_ECOM_GNSS_MODEL_NMEA);
+  gnss_model_info_ = getParameter<SbgEComGnssModelsStdIds>(ref_node_handle, "gnss.gnss_model_id", SBG_ECOM_GNSS_MODEL_NMEA);
 
   ref_node_handle.get_parameter_or<float>("gnss.primaryLeverArmX", gnss_installation_.leverArmPrimary[0], 0.0f);
   ref_node_handle.get_parameter_or<float>("gnss.primaryLeverArmY", gnss_installation_.leverArmPrimary[1], 0.0f);
@@ -271,7 +271,7 @@ const SbgEComInitConditionConf &ConfigStore::getInitialConditions() const
   return init_condition_conf_;
 }
 
-const SbgEComModelInfo &ConfigStore::getMotionProfile() const
+const SbgEComMotionProfileStdIds &ConfigStore::getMotionProfile() const
 {
   return motion_profile_model_info_;
 }
@@ -291,7 +291,7 @@ const SbgEComAidingAssignConf &ConfigStore::getAidingAssignement() const
   return aiding_assignement_conf_;
 }
 
-const SbgEComModelInfo &ConfigStore::getMagnetometerModel() const
+const SbgEComMagModelsStdId &ConfigStore::getMagnetometerModel() const
 {
   return mag_model_info_;
 }
@@ -311,7 +311,7 @@ const SbgEComMagCalibBandwidth &ConfigStore::getMagnetometerCalibBandwidth() con
   return mag_calib_bandwidth_;
 }
 
-const SbgEComModelInfo &ConfigStore::getGnssModel() const
+const SbgEComGnssModelsStdIds &ConfigStore::getGnssModel() const
 {
   return gnss_model_info_;
 }
@@ -437,27 +437,40 @@ void ConfigStore::loadFromRosNodeHandle(const rclcpp::Node& ref_node_handle)
 
   loadOutputTimeReference(ref_node_handle, "output.time_reference");
 
-  loadOutputConfiguration(ref_node_handle, "output.log_status", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_STATUS);
-  loadOutputConfiguration(ref_node_handle, "output.log_imu_data", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_IMU_DATA);
-  loadOutputConfiguration(ref_node_handle, "output.log_ekf_euler", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EKF_EULER);
-  loadOutputConfiguration(ref_node_handle, "output.log_ekf_quat", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EKF_QUAT);
-  loadOutputConfiguration(ref_node_handle, "output.log_ekf_nav", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EKF_NAV);
-  loadOutputConfiguration(ref_node_handle, "output.log_ship_motion", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_SHIP_MOTION);
-  loadOutputConfiguration(ref_node_handle, "output.log_utc_time", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_UTC_TIME);
-  loadOutputConfiguration(ref_node_handle, "output.log_mag", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_MAG);
-  loadOutputConfiguration(ref_node_handle, "output.log_mag_calib", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_MAG_CALIB);
-  loadOutputConfiguration(ref_node_handle, "output.log_gps1_vel", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_GPS1_VEL);
-  loadOutputConfiguration(ref_node_handle, "output.log_gps1_pos", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_GPS1_POS);
-  loadOutputConfiguration(ref_node_handle, "output.log_gps1_hdt", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_GPS1_HDT);
-  loadOutputConfiguration(ref_node_handle, "output.log_gps1_raw", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_GPS1_RAW);
-  loadOutputConfiguration(ref_node_handle, "output.log_odo_vel", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_ODO_VEL);
-  loadOutputConfiguration(ref_node_handle, "output.log_event_a", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EVENT_A);
-  loadOutputConfiguration(ref_node_handle, "output.log_event_b", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EVENT_B);
-  loadOutputConfiguration(ref_node_handle, "output.log_event_c", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EVENT_C);
-  loadOutputConfiguration(ref_node_handle, "output.log_event_d", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EVENT_D);
-  loadOutputConfiguration(ref_node_handle, "output.log_event_e", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EVENT_E);
-  loadOutputConfiguration(ref_node_handle, "output.log_air_data", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_AIR_DATA);
-  loadOutputConfiguration(ref_node_handle, "output.log_imu_short", SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_IMU_SHORT);
+  loadOutputConfiguration(ref_node_handle, "output.log_status",               SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_STATUS);
+
+  loadOutputConfiguration(ref_node_handle, "output.log_imu_data",             SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_IMU_DATA);
+
+  loadOutputConfiguration(ref_node_handle, "output.log_ekf_euler",            SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EKF_EULER);
+  loadOutputConfiguration(ref_node_handle, "output.log_ekf_quat",             SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EKF_QUAT);
+  loadOutputConfiguration(ref_node_handle, "output.log_ekf_nav",              SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EKF_NAV);
+  loadOutputConfiguration(ref_node_handle, "output.log_ekf_rot_accel_body",   SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EKF_ROT_ACCEL_BODY);
+  loadOutputConfiguration(ref_node_handle, "output.log_ekf_rot_accel_ned",    SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EKF_ROT_ACCEL_NED);
+  loadOutputConfiguration(ref_node_handle, "output.log_ekf_vel_body",         SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EKF_VEL_BODY);
+
+  loadOutputConfiguration(ref_node_handle, "output.log_ship_motion",          SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_SHIP_MOTION);
+
+  loadOutputConfiguration(ref_node_handle, "output.log_utc_time",             SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_UTC_TIME);
+
+  loadOutputConfiguration(ref_node_handle, "output.log_mag",                  SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_MAG);
+  loadOutputConfiguration(ref_node_handle, "output.log_mag_calib",            SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_MAG_CALIB);
+
+  loadOutputConfiguration(ref_node_handle, "output.log_gps1_vel",             SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_GPS1_VEL);
+  loadOutputConfiguration(ref_node_handle, "output.log_gps1_pos",             SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_GPS1_POS);
+  loadOutputConfiguration(ref_node_handle, "output.log_gps1_hdt",             SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_GPS1_HDT);
+  loadOutputConfiguration(ref_node_handle, "output.log_gps1_raw",             SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_GPS1_RAW);
+
+  loadOutputConfiguration(ref_node_handle, "output.log_odo_vel",              SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_ODO_VEL);
+
+  loadOutputConfiguration(ref_node_handle, "output.log_event_a",              SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EVENT_A);
+  loadOutputConfiguration(ref_node_handle, "output.log_event_b",              SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EVENT_B);
+  loadOutputConfiguration(ref_node_handle, "output.log_event_c",              SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EVENT_C);
+  loadOutputConfiguration(ref_node_handle, "output.log_event_d",              SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EVENT_D);
+  loadOutputConfiguration(ref_node_handle, "output.log_event_e",              SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EVENT_E);
+
+  loadOutputConfiguration(ref_node_handle, "output.log_air_data",             SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_AIR_DATA);
+
+  loadOutputConfiguration(ref_node_handle, "output.log_imu_short",            SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_IMU_SHORT);
 
   ref_node_handle.get_parameter_or<bool>("output.ros_standard", ros_standard_output_, false);
 }
