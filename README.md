@@ -315,32 +315,32 @@ The ELLIPSE offers both a 2D and 3D magnetic field calibration mode.
 2) Start a new magnetic calibration session once you are ready to map the magnetic field:
 
 ```
-roslaunch sbg_driver sbg_device_mag_calibration.launch
-rosservice call /sbg/mag_calibration
+ros2 launch sbg_driver sbg_device_mag_calibration_launch.py
+ros2 service call /sbg/mag_calibration std_srvs/srv/Trigger
 ```
 
-> success: True  
-> message: "Magnetometer calibration process started."
+> response:
+> std_srvs.srv.Trigger_Response(success=True, message='Magnetometer calibration process started.')
 
 3) Rotate as much as possible the unit to map the surrounding magnetic field (ideally, perform a 360° with X then Y then Z axis pointing downward).
 4) Once you believe you have covered enough orientations, compute a magnetic field calibration:
 
 ```
-rosservice call /sbg/mag_calibration
+ros2 service call /sbg/mag_calibration std_srvs/srv/Trigger
 ```
 
-> success: True  
-> message: "Magnetometer calibration is finished. See the output console to get calibration information."
+> response:
+> std_srvs.srv.Trigger_Response(success=True, message='Magnetometer calibration is finished. See the output console to get calibration information.')
 
 5) If you are happy with the results (Quality, Confidence), apply and save the new magnetic calibration parameters.  
    If not, you can continue to rotate the product and try to perform a new computation (and repeat step 4)
 
 ```
-rosservice call /sbg/mag_calibration_save
+ros2 service call /sbg/mag_calibration_save std_srvs/srv/Trigger
 ```
 
-> success: True  
-> message: "Magnetometer calibration has been uploaded to the device."
+> response:
+> std_srvs.srv.Trigger_Response(success=True, message='Magnetometer calibration has been uploaded to the device.')
 
 6) Reset/Power Cycle the device and you should now get an accurate magnetic based heading.
 
