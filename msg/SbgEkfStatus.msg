@@ -33,9 +33,6 @@ bool gps1_vel_used
 # True if GPS Position is used in solution (data used and valid since 3s)
 bool gps1_pos_used
 
-# True if GPS Course is used in solution (data used and valid since 3s)
-bool gps1_course_used
-
 # True if GPS True Heading is used in solution (data used and valid since 3s)
 bool gps1_hdt_used
 
@@ -45,11 +42,38 @@ bool gps2_vel_used
 # True if GPS2 Position is used in solution (data used and valid since 3s)
 bool gps2_pos_used
 
-# True if GPS2 Course is used in solution (data used and valid since 3s)
-bool gps2_course_used
-
 # True if GPS2 True Heading is used in solution (data used and valid since 3s)
 bool gps2_hdt_used
 
 # True if Odometer is used in solution (data used and valid since 3s)
 bool odo_used
+
+# True if DVL Bottom Tracking is used in solution (data used and valid since 3s)
+bool dvl_bt_used
+
+# True if DVL Water Tracking is used in solution (data used and valid since 3s)
+bool dvl_wt_used
+
+# True if user Position is used in solution (data used and valid since 3s)
+bool user_pos_used
+
+# True if user Velocity is used in solution (data used and valid since 3s)
+bool user_vel_used
+
+# True if user Course is used in solution (data used and valid since 3s)
+bool user_heading_used
+
+# True if USBL / LBL is used in solution (data used and valid since 3s)
+bool usbl_used
+
+# True if AirData (altimeter and/or true airspeed) is used in solution (data used and valid since 3s)
+bool air_data_used
+
+# True if a ZUPT is used in solution (data used and valid since 3s)
+bool zupt_used
+
+# True if sensor alignment and calibration parameters are valid
+bool align_valid
+
+# True if Depth sensor (for sub-sea navigation) is used in solution (data used and valid since 3s)
+bool depth_used
