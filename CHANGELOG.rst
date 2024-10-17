@@ -2,8 +2,8 @@
 Changelog for package sbg_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.2.0 (2024-10-17)
+------------------
 * Update README with ROS2 commands to launch magnetic calibration
 * Fix segfault when running magnetic calibration
 * Removed unused flags from SbgEkfStatus message
