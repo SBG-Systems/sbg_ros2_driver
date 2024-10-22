@@ -170,6 +170,14 @@ install(DIRECTORY config/
   DESTINATION share/${PROJECT_NAME}/config
   PATTERN ".git" EXCLUDE)
 
+# Install URDF and meshes
+install(DIRECTORY urdf/
+  DESTINATION share/${PROJECT_NAME}/urdf
+)
+
+install(DIRECTORY meshes/
+  DESTINATION share/${PROJECT_NAME}/meshes
+)
 
 ###################################
 ## ament specific configuration  ##

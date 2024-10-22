@@ -1,0 +1,10 @@
+<robot name="ELLIPSE-A">
+  <link name="odom">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 -1.5708"/><!-- Add rotation to align the 3D model with odometry -->
+      <geometry>
+        <mesh filename="package://sbg_driver/meshes/ELLIPSE-A.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+</robot>
