@@ -49,6 +49,7 @@ void ConfigStore::loadCommunicationParameters(const rclcpp::Node& ref_node_handl
     ref_node_handle.get_parameter_or<std::string>("uartConf.portName", uart_port_name_, "/dev/ttyUSB0");
 
     uart_baud_rate_ = getParameter<uint32_t>(ref_node_handle, "uartConf.baudRate", 0);
+    fallback_uart_baud_rate_ = getParameter<uint32_t>(ref_node_handle, "uartConf.fallbackBaudRate", 0);
     output_port_    = getParameter<SbgEComOutputPort>(ref_node_handle, "uartConf.portID", SBG_ECOM_OUTPUT_PORT_A);
   }
   else if (ref_node_handle.has_parameter("ipConf.ipAddress"))
@@ -239,6 +240,11 @@ const std::string &ConfigStore::getUartPortName() const
 uint32_t ConfigStore::getBaudRate() const
 {
   return uart_baud_rate_;
+}
+
+uint32_t ConfigStore::getFallbackBaudRate() const
+{
+  return fallback_uart_baud_rate_;
 }
 
 SbgEComOutputPort ConfigStore::getOutputPort() const

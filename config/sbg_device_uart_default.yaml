@@ -30,6 +30,7 @@
     
       # Baude rate (4800 ,9600 ,19200 ,38400 ,115200 [default],230400 ,460800 ,921600)
       baudRate: 115200
+      fallbackBaudRate: 115200
     
       # Port Id
       # 0 PORT_A: Main communication interface. Full duplex.

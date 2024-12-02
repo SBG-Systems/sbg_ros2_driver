@@ -76,6 +76,7 @@ private:
   std::string                 uart_port_name_;
   SbgEComOutputPort           output_port_;
   uint32_t                    uart_baud_rate_;
+  uint32_t                    fallback_uart_baud_rate_;
   bool                        serial_communication_;
 
   sbgIpAddress                sbg_ip_address_;
@@ -296,11 +297,18 @@ public:
   const std::string &getUartPortName() const;
 
   /*!
-   * Get the UART baudrate communication.
+   * Get the UART baudrate.
    *
    * \return                      UART serial baudrate.
    */
   uint32_t getBaudRate() const;
+
+  /*!
+   * Get the fallback UART baudrate.
+   *
+   * \return                      UART serial baudrate.
+   */
+  uint32_t getFallbackBaudRate() const;
 
   /*!
    * Get the output port of the device.

@@ -175,9 +175,9 @@ SbgErrorCode SbgDevice::findCurrentDeviceBaudrate()
 {
   SbgErrorCode error_code;
   error_code = SBG_ERROR;
-  static constexpr uint32_t kBaudRates[8] = {115200, 921600, 460800, 230400, 38400, 19200, 9600, 4800};
 
-  for (const auto br : kBaudRates)
+  auto br = config_store_.getFallbackBaudRate();
+  if (br != 0)
   {
     RCLCPP_INFO(ref_node_.get_logger(), "Not successful with %d bps, trying with %d bps instead", config_store_.getBaudRate(), br);
 
