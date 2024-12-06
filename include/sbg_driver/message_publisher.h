@@ -72,6 +72,7 @@ private:
 
   rclcpp::Publisher<sensor_msgs::msg::Imu, std::allocator<void>>::SharedPtr             imu_pub_;
   sbg_driver::msg::SbgImuData                                                           sbg_imu_message_;
+  sbg_driver::msg::SbgImuShort                                                          sbg_imu_short_message_;
   sbg_driver::msg::SbgEkfQuat                                                           sbg_ekf_quat_message_;
   sbg_driver::msg::SbgEkfNav                                                            sbg_ekf_nav_message_;
   sbg_driver::msg::SbgEkfEuler                                                          sbg_ekf_euler_message_;
@@ -122,11 +123,9 @@ private:
   void defineRosStandardPublishers(rclcpp::Node& ref_ros_node_handle, bool odom_enable, bool enu_enable);
 
   /*!
-   * Publish a received SBG IMU log.
-   *
-   * \param[in] ref_sbg_log             SBG log.
+   * Process a received SBG IMU log.
    */
-  void publishIMUData(const SbgEComLogUnion &ref_sbg_log);
+  void processImuMessage();
 
   /*!
    * Process a ROS Velocity standard message.
