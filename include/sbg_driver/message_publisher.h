@@ -209,6 +209,16 @@ public:
    * \param[in] ref_sbg_log             SBG binary log.
    */
   void publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgEComLogUnion &ref_sbg_log);
+
+  /*!
+   * Get the timestamp of an SBG binary log.
+   *
+   * \param[in] sbg_msg_class           Class ID of the SBG message.
+   * \param[in] sbg_msg_id              Id of the SBG message.
+   * \param[in] ref_sbg_log             SBG binary log.
+   * \return                            Timestamp in us.
+   */
+  uint32_t getTimestamp(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgEComLogUnion &ref_sbg_log);
 };
 }
 

@@ -61,6 +61,11 @@ void ConfigStore::loadCommunicationParameters(const rclcpp::Node& ref_node_handl
     out_port_address_   = getParameter<uint32_t>(ref_node_handle, "ipConf.out_port", 0);
     in_port_address_    = getParameter<uint32_t>(ref_node_handle, "ipConf.in_port", 0);
   }
+  else if (ref_node_handle.has_parameter("fileConf.path"))
+  {
+    file_communication_ = true;
+    ref_node_handle.get_parameter_or<std::string>("fileConf.path", sbg_file_, "sbg_data.dat");
+  }
   else
   {
     rclcpp::exceptions::throw_from_rcl_error(RMW_RET_ERROR, "SBG DRIVER - Invalid communication interface parameters.");
@@ -264,6 +269,16 @@ uint32_t ConfigStore::getOutputPortAddress() const
 uint32_t ConfigStore::getInputPortAddress() const
 {
   return in_port_address_;
+}
+
+bool ConfigStore::isInterfaceFile() const
+{
+  return file_communication_;
+}
+
+const std::string &ConfigStore::getFile() const
+{
+  return sbg_file_;
 }
 
 const SbgEComInitConditionConf &ConfigStore::getInitialConditions() const

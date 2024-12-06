@@ -85,6 +85,8 @@ private:
 
   rclcpp::Subscription<rtcm_msgs::msg::Message>::SharedPtr  rtcm_sub_;
 
+  uint32_t                                                  log_replay_last_timestamp_;
+
   //---------------------------------------------------------------------//
   //- Private  methods                                                  -//
   //---------------------------------------------------------------------//
