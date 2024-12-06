@@ -22,23 +22,12 @@
 
     # Configuration of the device with ROS.
     confWithRos: false
-    
-    # Uart configuration
-    uartConf:
-      # Port Name
-      portName: "/dev/ttyUSB0"
-    
-      # Baude rate (4800 ,9600 ,19200 ,38400 ,115200 [default],230400 ,460800 ,921600)
-      baudRate: 115200
-    
-      # Port Id
-      # 0 PORT_A: Main communication interface. Full duplex.
-      # 1 PORT_B: Auxiliary input interface for RTCM
-      # 2 PORT_C: Auxiliary communication interface. Full duplex.
-      # 3 PORT_D: Auxiliary input interface
-      # 4 PORT_E: Auxiliary input/output interface
-      portID: 0
-    
+
+    # File configuration to replay INS data
+    # can be configured by command line as defined in README
+    fileConf:
+      path: 'sbg_raw_data.dat'
+
     # Sensor Parameters
     sensorParameters:
       # Initial latitude (°)

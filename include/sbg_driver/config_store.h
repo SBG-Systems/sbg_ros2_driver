@@ -83,6 +83,9 @@ private:
   uint32_t                    in_port_address_;
   bool                        upd_communication_;
 
+  std::string                 sbg_file_;
+  bool                        file_communication_;
+
   bool                        configure_through_ros_;
 
   SbgEComInitConditionConf    init_condition_conf_;
@@ -336,6 +339,20 @@ public:
    * \return                      Input port.
    */
   uint32_t getInputPortAddress() const;
+
+  /*!
+   * Check if the interface configuration is a log file.
+   *
+   * \return                      True if the interface is a log files, False otherwise.
+   */
+  bool isInterfaceFile() const;
+
+  /*!
+   * Get the input log files.
+   *
+   * \return                      Input file.
+   */
+  const std::string &getFile() const;
 
   /*!
    * Get the initial conditions configuration.

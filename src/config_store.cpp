@@ -13,6 +13,7 @@ using sbg::ConfigStore;
 ConfigStore::ConfigStore():
 serial_communication_(false),
 upd_communication_(false),
+file_communication_(false),
 configure_through_ros_(false),
 ros_standard_output_(false),
 rtcm_subscribe_(false),
@@ -60,6 +61,11 @@ void ConfigStore::loadCommunicationParameters(const rclcpp::Node& ref_node_handl
     sbg_ip_address_     = sbgNetworkIpFromString(ip_address.c_str());
     out_port_address_   = getParameter<uint32_t>(ref_node_handle, "ipConf.out_port", 0);
     in_port_address_    = getParameter<uint32_t>(ref_node_handle, "ipConf.in_port", 0);
+  }
+  else if (ref_node_handle.has_parameter("fileConf.path"))
+  {
+    file_communication_ = true;
+    ref_node_handle.get_parameter_or<std::string>("fileConf.path", sbg_file_, "sbg_data.dat");
   }
   else
   {
@@ -264,6 +270,16 @@ uint32_t ConfigStore::getOutputPortAddress() const
 uint32_t ConfigStore::getInputPortAddress() const
 {
   return in_port_address_;
+}
+
+bool ConfigStore::isInterfaceFile() const
+{
+  return file_communication_;
+}
+
+const std::string &ConfigStore::getFile() const
+{
+  return sbg_file_;
 }
 
 const SbgEComInitConditionConf &ConfigStore::getInitialConditions() const
