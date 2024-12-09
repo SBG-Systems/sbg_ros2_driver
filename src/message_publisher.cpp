@@ -384,7 +384,7 @@ void MessagePublisher::processRosOdoMessage()
 {
   if (odometry_pub_)
   {
-    if (sbg_ekf_nav_message_.status.position_valid)
+    if (sbg_ekf_nav_message_.status.solution_mode == SBG_ECOM_SOL_MODE_NAV_POSITION)
     {
       if (sbg_imu_short_pub_)
       {
