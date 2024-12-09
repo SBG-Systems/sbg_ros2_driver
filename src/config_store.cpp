@@ -107,7 +107,7 @@ void ConfigStore::loadAidingAssignementParameters(const rclcpp::Node& ref_node_h
 
 void ConfigStore::loadMagnetometersParameters(const rclcpp::Node& ref_node_handle)
 {
-  mag_model_info_                   = getParameter<SbgEComMagModelsStdId>(ref_node_handle, "magnetometer.magnetometerModel", SBG_ECOM_MAG_MODEL_NORMAL);
+  mag_model_info_                   = getParameter<SbgEComMagModelsStdId>(ref_node_handle, "magnetometer.magnetometerModel", SBG_ECOM_MAG_MODEL_INTERNAL_NORMAL);
   mag_rejection_conf_.magneticField = getParameter<SbgEComRejectionMode>(ref_node_handle, "magnetometer.magnetometerRejectMode", SBG_ECOM_AUTOMATIC_MODE);
 
   mag_calib_mode_       = getParameter<SbgEComMagCalibMode>(ref_node_handle, "magnetometer.calibration.mode", SBG_ECOM_MAG_CALIB_MODE_2D);
