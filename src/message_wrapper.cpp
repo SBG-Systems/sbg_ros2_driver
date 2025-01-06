@@ -60,13 +60,10 @@ const rclcpp::Time MessageWrapper::convertInsTimeToUnix(uint32_t device_timestam
   // Add the SBG timestamp difference (timestamp is in microsecond).
   //
   rclcpp::Time utc_to_epoch;
-  uint32_t  device_timestamp_diff;
   uint64_t  nanoseconds;
 
-  utc_to_epoch          = convertUtcTimeToUnix(last_sbg_utc_);
-  device_timestamp_diff = device_timestamp - last_sbg_utc_.time_stamp;
-
-  nanoseconds = utc_to_epoch.nanoseconds() + static_cast<uint64_t>(device_timestamp_diff) * 1000;
+  utc_to_epoch = convertUtcTimeToUnix(last_sbg_utc_);
+  nanoseconds  = utc_to_epoch.nanoseconds() + static_cast<uint64_t>(device_timestamp) * 1000 - static_cast<uint64_t>(last_sbg_utc_.time_stamp) * 1000;
 
   utc_to_epoch = rclcpp::Time(nanoseconds);
 
