@@ -958,16 +958,27 @@ const sbg_driver::msg::SbgImuShort MessageWrapper::createSbgImuShortMessage(cons
 const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg, const sbg_driver::msg::SbgEkfQuat& ref_sbg_quat_msg) const
 {
   sensor_msgs::msg::Imu imu_ros_message;
+  sbg_driver::msg::SbgEkfQuat ekf_quat_message_zero;
 
   imu_ros_message.header = createRosHeader(ref_sbg_imu_msg.time_stamp);
 
-  imu_ros_message.orientation               = ref_sbg_quat_msg.quaternion;
   imu_ros_message.angular_velocity          = ref_sbg_imu_msg.delta_angle;
   imu_ros_message.linear_acceleration       = ref_sbg_imu_msg.delta_vel;
 
-  imu_ros_message.orientation_covariance[0] = pow(ref_sbg_quat_msg.accuracy.x, 2);
-  imu_ros_message.orientation_covariance[4] = pow(ref_sbg_quat_msg.accuracy.y, 2);
-  imu_ros_message.orientation_covariance[8] = pow(ref_sbg_quat_msg.accuracy.z, 2);
+  //
+  // If orientation is not provided, set element 0 of the associated covariance matrix to -1
+  //
+  if (ekf_quat_message_zero == ref_sbg_quat_msg)
+  {
+    imu_ros_message.orientation_covariance[0] = -1;
+  }
+  else
+  {
+    imu_ros_message.orientation               = ref_sbg_quat_msg.quaternion;
+    imu_ros_message.orientation_covariance[0] = pow(ref_sbg_quat_msg.accuracy.x, 2);
+    imu_ros_message.orientation_covariance[4] = pow(ref_sbg_quat_msg.accuracy.y, 2);
+    imu_ros_message.orientation_covariance[8] = pow(ref_sbg_quat_msg.accuracy.z, 2);
+  }
 
   //
   // Angular velocity and linear acceleration covariances are not provided.
@@ -984,16 +995,27 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
 const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver::msg::SbgImuShort& ref_sbg_imu_msg, const sbg_driver::msg::SbgEkfQuat& ref_sbg_quat_msg) const
 {
   sensor_msgs::msg::Imu imu_ros_message;
+  sbg_driver::msg::SbgEkfQuat ekf_quat_message_zero;
 
   imu_ros_message.header = createRosHeader(ref_sbg_imu_msg.time_stamp);
 
-  imu_ros_message.orientation               = ref_sbg_quat_msg.quaternion;
   imu_ros_message.angular_velocity          = ref_sbg_imu_msg.delta_angle;
   imu_ros_message.linear_acceleration       = ref_sbg_imu_msg.delta_velocity;
 
-  imu_ros_message.orientation_covariance[0] = pow(ref_sbg_quat_msg.accuracy.x, 2);
-  imu_ros_message.orientation_covariance[4] = pow(ref_sbg_quat_msg.accuracy.y, 2);
-  imu_ros_message.orientation_covariance[8] = pow(ref_sbg_quat_msg.accuracy.z, 2);
+  //
+  // If orientation is not provided, set element 0 of the associated covariance matrix to -1
+  //
+  if (ekf_quat_message_zero == ref_sbg_quat_msg)
+  {
+    imu_ros_message.orientation_covariance[0] = -1;
+  }
+  else
+  {
+    imu_ros_message.orientation               = ref_sbg_quat_msg.quaternion;
+    imu_ros_message.orientation_covariance[0] = pow(ref_sbg_quat_msg.accuracy.x, 2);
+    imu_ros_message.orientation_covariance[4] = pow(ref_sbg_quat_msg.accuracy.y, 2);
+    imu_ros_message.orientation_covariance[8] = pow(ref_sbg_quat_msg.accuracy.z, 2);
+  }
 
   //
   // Angular velocity and linear acceleration covariances are not provided.

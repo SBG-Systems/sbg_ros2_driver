@@ -363,16 +363,18 @@ void MessagePublisher::processRosImuMessage()
 {
   if (imu_pub_)
   {
+    sbg_driver::msg::SbgEkfQuat ekf_quat_message_zero;
+
     if (sbg_imu_short_pub_)
     {
-      if (sbg_imu_short_message_.time_stamp == sbg_ekf_quat_message_.time_stamp)
+      if ((sbg_ekf_quat_message_ == ekf_quat_message_zero) || (sbg_imu_short_message_.time_stamp == sbg_ekf_quat_message_.time_stamp))
       {
         imu_pub_->publish(message_wrapper_.createRosImuMessage(sbg_imu_short_message_, sbg_ekf_quat_message_));
       }
     }
     else if (sbg_imu_data_pub_)
     {
-      if (sbg_imu_message_.time_stamp == sbg_ekf_quat_message_.time_stamp)
+      if ((sbg_ekf_quat_message_ == ekf_quat_message_zero) || (sbg_imu_message_.time_stamp == sbg_ekf_quat_message_.time_stamp))
       {
         imu_pub_->publish(message_wrapper_.createRosImuMessage(sbg_imu_message_, sbg_ekf_quat_message_));
       }
