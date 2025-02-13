@@ -197,7 +197,8 @@ For each ROS standard, you have to activate the needed SBG outputs.
 * **`/imu/data`** [sensor_msgs/Imu](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Imu.html)
 
   IMU data.
-  Requires `/sbg/imu_data` and `/sbg/ekf_quat`.
+  Requires `/sbg/imu_data` or `/sbg/imu_short`.
+  Optional (orientation) `/sbg/ekf_quat`.
   
 * **`/imu/temp`** [sensor_msgs/Temperature](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Temperature.html)
 
