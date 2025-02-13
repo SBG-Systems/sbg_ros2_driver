@@ -17,6 +17,28 @@
 using sbg::MessageWrapper;
 
 /*!
+ * Standard gyroscope scale factor.
+ */
+#define SBG_ECOM_LOG_IMU_GYRO_SCALE_STD                     (67108864.0f)
+
+/*!
+ * High range gyroscope scale factor derived from 10000 degrees per second maximum range.
+ *
+ * Calculation: (2^31 - 1) / (10000 * π / 180)
+ */
+#define SBG_ECOM_LOG_IMU_GYRO_SCALE_HIGH                    (12304174.0f)
+
+/*!
+ * Standard accelerometer scale factor.
+ */
+#define SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD                    (1048576.0f)
+
+/*!
+ * Standard temperature scale factor.
+ */
+#define SBG_ECOM_LOG_IMU_TEMP_SCALE_STD                     (256.0f)
+
+/*!
  * Class to wrap the SBG logs into ROS messages.
  */
 //---------------------------------------------------------------------//
@@ -211,18 +233,19 @@ const sbg_driver::msg::SbgImuStatus MessageWrapper::createImuStatusMessage(uint1
 {
   sbg_driver::msg::SbgImuStatus imu_status_message;
 
-  imu_status_message.imu_com              = (sbg_imu_status & SBG_ECOM_IMU_COM_OK) != 0;
-  imu_status_message.imu_status           = (sbg_imu_status & SBG_ECOM_IMU_STATUS_BIT) != 0 ;
-  imu_status_message.imu_accels_in_range  = (sbg_imu_status & SBG_ECOM_IMU_ACCELS_IN_RANGE) != 0;
-  imu_status_message.imu_gyros_in_range   = (sbg_imu_status & SBG_ECOM_IMU_GYROS_IN_RANGE) != 0;
+  imu_status_message.imu_com                    = (sbg_imu_status & SBG_ECOM_IMU_COM_OK) != 0;
+  imu_status_message.imu_status                 = (sbg_imu_status & SBG_ECOM_IMU_STATUS_BIT) != 0 ;
+  imu_status_message.imu_accels_in_range        = (sbg_imu_status & SBG_ECOM_IMU_ACCELS_IN_RANGE) != 0;
+  imu_status_message.imu_gyros_in_range         = (sbg_imu_status & SBG_ECOM_IMU_GYROS_IN_RANGE) != 0;
+  imu_status_message.imu_gyros_use_high_scale   = (sbg_imu_status & SBG_ECOM_IMU_GYROS_USE_HIGH_SCALE) != 0;
 
-  imu_status_message.imu_accel_x          = (sbg_imu_status & SBG_ECOM_IMU_ACCEL_X_BIT) != 0;
-  imu_status_message.imu_accel_y          = (sbg_imu_status & SBG_ECOM_IMU_ACCEL_Y_BIT) != 0;
-  imu_status_message.imu_accel_z          = (sbg_imu_status & SBG_ECOM_IMU_ACCEL_Z_BIT) != 0;
+  imu_status_message.imu_accel_x                = (sbg_imu_status & SBG_ECOM_IMU_ACCEL_X_BIT) != 0;
+  imu_status_message.imu_accel_y                = (sbg_imu_status & SBG_ECOM_IMU_ACCEL_Y_BIT) != 0;
+  imu_status_message.imu_accel_z                = (sbg_imu_status & SBG_ECOM_IMU_ACCEL_Z_BIT) != 0;
 
-  imu_status_message.imu_gyro_x           = (sbg_imu_status & SBG_ECOM_IMU_GYRO_X_BIT) != 0;
-  imu_status_message.imu_gyro_y           = (sbg_imu_status & SBG_ECOM_IMU_GYRO_Y_BIT) != 0;
-  imu_status_message.imu_gyro_z           = (sbg_imu_status & SBG_ECOM_IMU_GYRO_Z_BIT) != 0;
+  imu_status_message.imu_gyro_x                 = (sbg_imu_status & SBG_ECOM_IMU_GYRO_X_BIT) != 0;
+  imu_status_message.imu_gyro_y                 = (sbg_imu_status & SBG_ECOM_IMU_GYRO_Y_BIT) != 0;
+  imu_status_message.imu_gyro_z                 = (sbg_imu_status & SBG_ECOM_IMU_GYRO_Z_BIT) != 0;
 
   return imu_status_message;
 }
@@ -962,8 +985,13 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
 
   imu_ros_message.header = createRosHeader(ref_sbg_imu_msg.time_stamp);
 
-  imu_ros_message.angular_velocity          = ref_sbg_imu_msg.delta_angle;
-  imu_ros_message.linear_acceleration       = ref_sbg_imu_msg.delta_vel;
+  imu_ros_message.angular_velocity.x          = ref_sbg_imu_msg.delta_angle.x / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
+  imu_ros_message.angular_velocity.y          = ref_sbg_imu_msg.delta_angle.y / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
+  imu_ros_message.angular_velocity.z          = ref_sbg_imu_msg.delta_angle.z / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
+
+  imu_ros_message.linear_acceleration.x       = ref_sbg_imu_msg.delta_vel.x / SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD;
+  imu_ros_message.linear_acceleration.y       = ref_sbg_imu_msg.delta_vel.y / SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD;
+  imu_ros_message.linear_acceleration.z       = ref_sbg_imu_msg.delta_vel.z / SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD;
 
   //
   // If orientation is not provided, set element 0 of the associated covariance matrix to -1
@@ -999,8 +1027,22 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
 
   imu_ros_message.header = createRosHeader(ref_sbg_imu_msg.time_stamp);
 
-  imu_ros_message.angular_velocity          = ref_sbg_imu_msg.delta_angle;
-  imu_ros_message.linear_acceleration       = ref_sbg_imu_msg.delta_velocity;
+  if (ref_sbg_imu_msg.imu_status.imu_gyros_use_high_scale)
+  {
+    imu_ros_message.angular_velocity.x          = ref_sbg_imu_msg.delta_angle.x / SBG_ECOM_LOG_IMU_GYRO_SCALE_HIGH;
+    imu_ros_message.angular_velocity.y          = ref_sbg_imu_msg.delta_angle.y / SBG_ECOM_LOG_IMU_GYRO_SCALE_HIGH;
+    imu_ros_message.angular_velocity.z          = ref_sbg_imu_msg.delta_angle.z / SBG_ECOM_LOG_IMU_GYRO_SCALE_HIGH;
+  }
+  else
+  {
+    imu_ros_message.angular_velocity.x          = ref_sbg_imu_msg.delta_angle.x / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
+    imu_ros_message.angular_velocity.y          = ref_sbg_imu_msg.delta_angle.y / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
+    imu_ros_message.angular_velocity.z          = ref_sbg_imu_msg.delta_angle.z / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
+  }
+
+  imu_ros_message.linear_acceleration.x       = ref_sbg_imu_msg.delta_velocity.x / SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD;
+  imu_ros_message.linear_acceleration.y       = ref_sbg_imu_msg.delta_velocity.y / SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD;
+  imu_ros_message.linear_acceleration.z       = ref_sbg_imu_msg.delta_velocity.z / SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD;
 
   //
   // If orientation is not provided, set element 0 of the associated covariance matrix to -1
@@ -1261,7 +1303,7 @@ const sensor_msgs::msg::Temperature MessageWrapper::createRosTemperatureMessage(
   sensor_msgs::msg::Temperature temperature_message;
 
   temperature_message.header      = createRosHeader(ref_sbg_imu_msg.time_stamp);
-  temperature_message.temperature = ref_sbg_imu_msg.temp;
+  temperature_message.temperature = ref_sbg_imu_msg.temp / SBG_ECOM_LOG_IMU_TEMP_SCALE_STD;
   temperature_message.variance    = 0.0;
 
   return temperature_message;
@@ -1272,7 +1314,7 @@ const sensor_msgs::msg::Temperature MessageWrapper::createRosTemperatureMessage(
   sensor_msgs::msg::Temperature temperature_message;
 
   temperature_message.header      = createRosHeader(ref_sbg_imu_msg.time_stamp);
-  temperature_message.temperature = ref_sbg_imu_msg.temperature;
+  temperature_message.temperature = ref_sbg_imu_msg.temperature / SBG_ECOM_LOG_IMU_TEMP_SCALE_STD;
   temperature_message.variance    = 0.0;
 
   return temperature_message;
