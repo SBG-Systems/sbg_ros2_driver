@@ -526,5 +526,5 @@ void SbgDevice::initDeviceForMagCalibration()
 
 void SbgDevice::periodicHandle()
 {
-  sbgEComHandleOneLog(&com_handle_);
+  sbgEComHandle(&com_handle_);
 }
