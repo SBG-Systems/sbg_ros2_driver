@@ -1531,7 +1531,7 @@ const nmea_msgs::msg::Sentence MessageWrapper::createNmeaGGAMessageForNtrip(cons
     constexpr uint32_t nmea_sentence_buffer_size = 128;
     char nmea_sentence_buff[nmea_sentence_buffer_size]{};
     auto len = snprintf(nmea_sentence_buff, nmea_sentence_buffer_size,
-                        "$GPGGA,%02d%02d%02d.%02d,%02d%02.4f,%c,%03d%02.4f,%c,%d,%d,%.1f,%.1f,M,%d,M,%.1f,%04d",
+                        "$GPGGA,%02d%02d%02d.%02d,%02d%07.4f,%c,%03d%07.4f,%c,%d,%d,%.1f,%.1f,M,%d,M,%.1f,%04d",
                         utc_hour,
                         utc_minute,
                         utc_second,
