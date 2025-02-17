@@ -90,7 +90,7 @@ include(FetchContent)
 FetchContent_Declare(
     sbgECom
     GIT_REPOSITORY https://github.com/SBG-Systems/sbgECom.git
-    GIT_TAG 5.1.708-stable
+    GIT_TAG 5.2.590-stable
     GIT_SHALLOW TRUE
 )
 
