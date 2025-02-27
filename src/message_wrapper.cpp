@@ -985,13 +985,8 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
 
   imu_ros_message.header = createRosHeader(ref_sbg_imu_msg.time_stamp);
 
-  imu_ros_message.angular_velocity.x          = ref_sbg_imu_msg.delta_angle.x / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
-  imu_ros_message.angular_velocity.y          = ref_sbg_imu_msg.delta_angle.y / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
-  imu_ros_message.angular_velocity.z          = ref_sbg_imu_msg.delta_angle.z / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
-
-  imu_ros_message.linear_acceleration.x       = ref_sbg_imu_msg.delta_vel.x / SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD;
-  imu_ros_message.linear_acceleration.y       = ref_sbg_imu_msg.delta_vel.y / SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD;
-  imu_ros_message.linear_acceleration.z       = ref_sbg_imu_msg.delta_vel.z / SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD;
+  imu_ros_message.angular_velocity          = ref_sbg_imu_msg.delta_angle;
+  imu_ros_message.linear_acceleration       = ref_sbg_imu_msg.delta_vel;
 
   //
   // If orientation is not provided, set element 0 of the associated covariance matrix to -1
