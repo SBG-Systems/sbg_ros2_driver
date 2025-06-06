@@ -13,6 +13,7 @@ using sbg::ConfigStore;
 ConfigStore::ConfigStore():
 serial_communication_(false),
 upd_communication_(false),
+file_communication_(false),
 configure_through_ros_(false),
 ros_standard_output_(false),
 rtcm_subscribe_(false),
@@ -47,6 +48,7 @@ void ConfigStore::loadCommunicationParameters(const rclcpp::Node& ref_node_handl
   {
     serial_communication_ = true;
     ref_node_handle.get_parameter_or<std::string>("uartConf.portName", uart_port_name_, "/dev/ttyUSB0");
+    ref_node_handle.get_parameter_or<std::vector<int64_t>>("uartConf.fallbackBaudRates", uart_fallback_baud_rates_, {});
 
     uart_baud_rate_ = getParameter<uint32_t>(ref_node_handle, "uartConf.baudRate", 0);
     output_port_    = getParameter<SbgEComOutputPort>(ref_node_handle, "uartConf.portID", SBG_ECOM_OUTPUT_PORT_A);
@@ -60,6 +62,11 @@ void ConfigStore::loadCommunicationParameters(const rclcpp::Node& ref_node_handl
     sbg_ip_address_     = sbgNetworkIpFromString(ip_address.c_str());
     out_port_address_   = getParameter<uint32_t>(ref_node_handle, "ipConf.out_port", 0);
     in_port_address_    = getParameter<uint32_t>(ref_node_handle, "ipConf.in_port", 0);
+  }
+  else if (ref_node_handle.has_parameter("fileConf.path"))
+  {
+    file_communication_ = true;
+    ref_node_handle.get_parameter_or<std::string>("fileConf.path", sbg_file_, "sbg_data.dat");
   }
   else
   {
@@ -107,7 +114,7 @@ void ConfigStore::loadAidingAssignementParameters(const rclcpp::Node& ref_node_h
 
 void ConfigStore::loadMagnetometersParameters(const rclcpp::Node& ref_node_handle)
 {
-  mag_model_info_                   = getParameter<SbgEComMagModelsStdId>(ref_node_handle, "magnetometer.magnetometerModel", SBG_ECOM_MAG_MODEL_NORMAL);
+  mag_model_info_                   = getParameter<SbgEComMagModelsStdId>(ref_node_handle, "magnetometer.magnetometerModel", SBG_ECOM_MAG_MODEL_INTERNAL_NORMAL);
   mag_rejection_conf_.magneticField = getParameter<SbgEComRejectionMode>(ref_node_handle, "magnetometer.magnetometerRejectMode", SBG_ECOM_AUTOMATIC_MODE);
 
   mag_calib_mode_       = getParameter<SbgEComMagCalibMode>(ref_node_handle, "magnetometer.calibration.mode", SBG_ECOM_MAG_CALIB_MODE_2D);
@@ -241,6 +248,11 @@ uint32_t ConfigStore::getBaudRate() const
   return uart_baud_rate_;
 }
 
+const std::vector<int64_t> ConfigStore::getFallbackBaudRates() const
+{
+  return uart_fallback_baud_rates_;
+}
+
 SbgEComOutputPort ConfigStore::getOutputPort() const
 {
   return output_port_;
@@ -264,6 +276,16 @@ uint32_t ConfigStore::getOutputPortAddress() const
 uint32_t ConfigStore::getInputPortAddress() const
 {
   return in_port_address_;
+}
+
+bool ConfigStore::isInterfaceFile() const
+{
+  return file_communication_;
+}
+
+const std::string &ConfigStore::getFile() const
+{
+  return sbg_file_;
 }
 
 const SbgEComInitConditionConf &ConfigStore::getInitialConditions() const

@@ -85,12 +85,21 @@ ament_export_dependencies(rosidl_default_runtime)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-add_subdirectory(external/sbgECom)
+include(FetchContent)
+
+FetchContent_Declare(
+    sbgECom
+    GIT_REPOSITORY https://github.com/SBG-Systems/sbgECom.git
+    GIT_TAG 5.2.590-stable
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(sbgECom)
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/include/sbg_driver/
-  ${PROJECT_SOURCE_DIR}/external/sbgECom/common
-  ${PROJECT_SOURCE_DIR}/external/sbgECom/src
+  ${sbgECom_SOURCE_DIR}/common
+  ${sbgECom_SOURCE_DIR}/src
 )
 
 ## Define common resources.
@@ -161,6 +170,14 @@ install(DIRECTORY config/
   DESTINATION share/${PROJECT_NAME}/config
   PATTERN ".git" EXCLUDE)
 
+# Install URDF and meshes
+install(DIRECTORY urdf/
+  DESTINATION share/${PROJECT_NAME}/urdf
+)
+
+install(DIRECTORY meshes/
+  DESTINATION share/${PROJECT_NAME}/meshes
+)
 
 ###################################
 ## ament specific configuration  ##

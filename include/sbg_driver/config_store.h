@@ -76,12 +76,16 @@ private:
   std::string                 uart_port_name_;
   SbgEComOutputPort           output_port_;
   uint32_t                    uart_baud_rate_;
+  std::vector<int64_t>        uart_fallback_baud_rates_;
   bool                        serial_communication_;
 
   sbgIpAddress                sbg_ip_address_;
   uint32_t                    out_port_address_;
   uint32_t                    in_port_address_;
   bool                        upd_communication_;
+
+  std::string                 sbg_file_;
+  bool                        file_communication_;
 
   bool                        configure_through_ros_;
 
@@ -303,6 +307,13 @@ public:
   uint32_t getBaudRate() const;
 
   /*!
+   * Get the fallback UART baudrates.
+   *
+   * \return                      Fallback UART serial baudrates.
+   */
+  const std::vector<int64_t> getFallbackBaudRates() const;
+
+  /*!
    * Get the output port of the device.
    *
    * \return                      SBG device output port.
@@ -336,6 +347,20 @@ public:
    * \return                      Input port.
    */
   uint32_t getInputPortAddress() const;
+
+  /*!
+   * Check if the interface configuration is a log file.
+   *
+   * \return                      True if the interface is a log files, False otherwise.
+   */
+  bool isInterfaceFile() const;
+
+  /*!
+   * Get the input log files.
+   *
+   * \return                      Input file.
+   */
+  const std::string &getFile() const;
 
   /*!
    * Get the initial conditions configuration.

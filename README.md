@@ -9,15 +9,19 @@ This driver package uses the [sbgECom binary protocol](https://github.com/SBG-Sy
 **Contact:** support@sbg-systems.com
 
 ## Features
+The driver supports all SBG systems sensors, IMUs, AHRS and INS, with a various degree of configurations available.
+
 The driver supports the following features:
- - Configure ELLIPSE products using yaml files (see note below)
  - Parse IMU/AHRS/INS/GNSS using the sbgECom protocol
  - Publish standard ROS2 messages and more detailed specific SBG Systems topics
  - Subscribe and forward RTCM data to support DGPS/RTK mode with centimeters-level accuracy
  - Calibrate 2D/3D magnetic field using the on-board ELLIPSE algorithms
+ - Configure ELLIPSE products using yaml files (see note below)
 
 > [!NOTE]
-> Only ELLIPSE devices can be configured from the ROS2 driver. For High Performance INS such as EKINOX, APOGEE and QUANTA, please use the [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/)
+> While the ROS2 drivers can be used with all SBG Systems sensors, the drivers can only be used to configure the Ellipse family.
+> For other  INS such as EKINOX, APOGEE and QUANTA, please use the [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/)
+> For the PULSE-40, please use the sbgEcom encapsulation of the sbgInsRestApi: see our [Getting started Guide](https://support.sbg-systems.com/sc/imu/latest/getting-started)
 
 ## Installation
 ### Installation from Packages
@@ -48,7 +52,7 @@ source install/setup.bash
 
 
 ## Usage
-To run the default ROS2 node with the default configuration
+To run the default ROS2 node with the default configuration file
 
 ```
 ros2 launch sbg_driver sbg_device_launch.py
@@ -73,8 +77,8 @@ It defines a few outputs for the device:
   * `/sbg/status`, `/sbg/utc_time` and `/imu/utc_ref` at 1Hz.
 
 * **sbg_device_udp_default.yaml**
-This config file is the default one for an Udp connection with the device.  
-It does not configure the device through the ROS2 node, so it has to be previously configured (manually or with the ROS2 node).  
+This config file is the default one for an UDP connection with the device.  
+It does not configure the device through the ROS2 node, so it has to be previously configured (manually).  
 It defines a few outputs for the device:
   * `/sbg/imu_data`, `/sbg/ekf_quat` at 25Hz
   * ROS2 standard outputs `/imu/data`, `/imu/velocity`, `/imu/temp` at 25Hz
@@ -109,6 +113,8 @@ The `sbg_device` node handles the communication with the connected device, publi
 ##### SBG Systems specific topics
 SBG Systems has defined proprietary ROS2 messages to report more detailed information from the AHRS/INS.  
 These messages try to match as much as possible the sbgECom logs as they are output by the device.
+>[!NOTE] 
+> Please refer to the [firmware manual](https://support.sbg-systems.com/sc/dev/latest/firmware-documentation) to check the availability of the outputs per product.
 
 * **`/sbg/status`** [sbg_driver/SbgStatus](http://docs.ros.org/api/sbg_driver/html/msg/SbgStatus.html)
 
@@ -193,7 +199,8 @@ For each ROS2 standard, you have to activate the needed SBG outputs.
 * **`/imu/data`** [sensor_msgs/Imu](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Imu.html)
 
   IMU data.
-  Requires `/sbg/imu_data` and `/sbg/ekf_quat`.
+  Requires `/sbg/imu_data` or `/sbg/imu_short`.
+  Optional (orientation) `/sbg/ekf_quat`.
   
 * **`/imu/temp`** [sensor_msgs/Temperature](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Temperature.html)
 
@@ -278,7 +285,7 @@ Only ELLIPSE products support magnetic based heading and feature the on-board ma
 
 ## HowTo
 ### Configure the SBG device
-The SBG ROS2 driver allows the user to configure the device before starting data parsing.  
+The SBG ROS2 driver allows the user to configure the SBG device before starting data parsing.  
 To do so, set the corresponding parameter in the used config file.
 
 ```
@@ -287,6 +294,11 @@ confWithRos: true
 ```
 
 Then, modify the desired parameters in the config file, using the [Firmware Reference Manual](https://support.sbg-systems.com/sc/dev/latest/firmware-documentation), to see which features are configurable, and which parameter values are available.
+
+> [!NOTE]
+> The confWithRos parameter will only impact the configuration of the SBG device sensor, not the configuration of the ROS drivers themselves. 
+> This means you can still configure RTCM corrections, reference frames, etc. when you set confWithRos to false.
+> The confWithRos parameter must be disabled for HPI and pulse-40 products.
 
 ### Configure for RTK/DGPS
 The `sbg_device` node can subscribe to [rtcm_msgs/Message](https://github.com/tilk/rtcm_msgs/blob/master/msg/Message.msg) topics to forward differential corrections to the INS internal GNSS receiver.
@@ -392,6 +404,9 @@ The frame_id of the header can be set with this parameter:
 frame_id: "imu_link_ned"
 ```
 
+> [!NOTE]
+> This parameter has not impact on the configuration and will be inserted as-is within the header field. The recommended default parameters for ros are imu_link when use_enu is activated, and imu_link_ned when use_enu is inactive. You can also use another frame_id as needed.
+
 ### Frame convention
 The frame convention can be set to NED or ENU:
 * The NED convention is SBG Systems native convention so no transformation is applied
@@ -447,3 +462,8 @@ Please report bugs and/or issues using the [Issue Tracker](https://github.com/SB
 ### Features requests or additions
 In order to contribute to the code, please use Pull requests to the `devel` branch.  
 If you have some feature requests, use the [Issue Tracker](https://github.com/SBG-Systems/sbg_ros2_driver/issues) as well.
+
+## Known limitations
+> Baudrate configuration is not possible via ROS and can only be done in sbgCenter or using sbgECom library.
+> Device information is not displayed for Pulse-40.
+> GNSS and RTCM port configurations are not possible via ROS.  
