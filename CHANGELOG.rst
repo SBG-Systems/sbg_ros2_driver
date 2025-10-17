@@ -2,8 +2,8 @@
 Changelog for package sbg_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.3.0 (2025-10-17)
+------------------
 * Update README.md
 * Don't apply scale factor on SbgImuData message, it already has the good unit
 * Update sbgECom to latest stable
