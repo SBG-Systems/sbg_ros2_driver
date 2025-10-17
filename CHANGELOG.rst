@@ -2,6 +2,27 @@
 Changelog for package sbg_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update README.md
+* Don't apply scale factor on SbgImuData message, it already has the good unit
+* Update sbgECom to latest stable
+* Fix transformations to use correct parents and children frames
+* Issue-35 Add Ellipse STL and URDF files
+* fix lon&lat minutes snprintf format error in NMEA sentence for ntrip
+* Update README
+* uart: implement baudrate discovery mechanism
+* Apply LSB on IMU messages
+* Add file mode to replay sbgECom logs on the driver
+* Provide /imu/data topic even if orientation is not available
+* Handle INS internal clock rollover
+* Fix timestamp computation for out-of-order messages
+* Use cmake fetch content to get sbgECom, get the latest release and fix compilation issue
+* Send odometry topic as soon as the solution mode is full navigation instead of waiting for position valid flag
+* Use imu_short to populate standard topics
+* Improved documentation
+* Contributors: Christoph Gruber, Kaoutar Benmakhlouf, Samuel Toledano, djason-todd
+
 3.2.0 (2024-10-17)
 ------------------
 * Update README with ROS2 commands to launch magnetic calibration

@@ -311,16 +311,18 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
   }
 }
 
-void MessagePublisher::publishIMUData(const SbgEComLogUnion &ref_sbg_log)
+void MessagePublisher::processImuMessage()
 {
-  if (sbg_imu_data_pub_)
-  {
-    sbg_imu_message_ = message_wrapper_.createSbgImuDataMessage(ref_sbg_log.imuData);
-    sbg_imu_data_pub_->publish(sbg_imu_message_);
-  }
   if (temp_pub_)
   {
-    temp_pub_->publish(message_wrapper_.createRosTemperatureMessage(sbg_imu_message_));
+    if (sbg_imu_short_pub_)
+    {
+      temp_pub_->publish(message_wrapper_.createRosTemperatureMessage(sbg_imu_short_message_));
+    }
+    else if (sbg_imu_data_pub_)
+    {
+      temp_pub_->publish(message_wrapper_.createRosTemperatureMessage(sbg_imu_message_));
+    }
   }
 
   processRosImuMessage();
@@ -332,13 +334,27 @@ void MessagePublisher::processRosVelMessage()
 {
   if (velocity_pub_)
   {
-    if (sbg_ekf_quat_pub_)
+    if (sbg_imu_short_pub_)
     {
-      velocity_pub_->publish(message_wrapper_.createRosTwistStampedMessage(sbg_ekf_quat_message_, sbg_ekf_nav_message_, sbg_imu_message_));
+      if (sbg_ekf_quat_pub_)
+      {
+        velocity_pub_->publish(message_wrapper_.createRosTwistStampedMessage(sbg_ekf_quat_message_, sbg_ekf_nav_message_, sbg_imu_short_message_));
+      }
+      else if (sbg_ekf_euler_pub_)
+      {
+        velocity_pub_->publish(message_wrapper_.createRosTwistStampedMessage(sbg_ekf_euler_message_, sbg_ekf_nav_message_, sbg_imu_short_message_));
+      }
     }
-    else if (sbg_ekf_euler_pub_)
+    else if (sbg_imu_data_pub_)
     {
-      velocity_pub_->publish(message_wrapper_.createRosTwistStampedMessage(sbg_ekf_euler_message_, sbg_ekf_nav_message_, sbg_imu_message_));
+      if (sbg_ekf_quat_pub_)
+      {
+        velocity_pub_->publish(message_wrapper_.createRosTwistStampedMessage(sbg_ekf_quat_message_, sbg_ekf_nav_message_, sbg_imu_message_));
+      }
+      else if (sbg_ekf_euler_pub_)
+      {
+        velocity_pub_->publish(message_wrapper_.createRosTwistStampedMessage(sbg_ekf_euler_message_, sbg_ekf_nav_message_, sbg_imu_message_));
+      }
     }
   }
 }
@@ -347,9 +363,21 @@ void MessagePublisher::processRosImuMessage()
 {
   if (imu_pub_)
   {
-    if (sbg_imu_message_.time_stamp == sbg_ekf_quat_message_.time_stamp)
+    sbg_driver::msg::SbgEkfQuat ekf_quat_message_zero;
+
+    if (sbg_imu_short_pub_)
     {
-      imu_pub_->publish(message_wrapper_.createRosImuMessage(sbg_imu_message_, sbg_ekf_quat_message_));
+      if ((sbg_ekf_quat_message_ == ekf_quat_message_zero) || (sbg_imu_short_message_.time_stamp == sbg_ekf_quat_message_.time_stamp))
+      {
+        imu_pub_->publish(message_wrapper_.createRosImuMessage(sbg_imu_short_message_, sbg_ekf_quat_message_));
+      }
+    }
+    else if (sbg_imu_data_pub_)
+    {
+      if ((sbg_ekf_quat_message_ == ekf_quat_message_zero) || (sbg_imu_message_.time_stamp == sbg_ekf_quat_message_.time_stamp))
+      {
+        imu_pub_->publish(message_wrapper_.createRosImuMessage(sbg_imu_message_, sbg_ekf_quat_message_));
+      }
     }
   }
 }
@@ -358,26 +386,53 @@ void MessagePublisher::processRosOdoMessage()
 {
   if (odometry_pub_)
   {
-    if (sbg_ekf_nav_message_.status.position_valid)
+    if (sbg_ekf_nav_message_.status.solution_mode == SBG_ECOM_SOL_MODE_NAV_POSITION)
     {
-      if (sbg_imu_message_.time_stamp == sbg_ekf_nav_message_.time_stamp)
+      if (sbg_imu_short_pub_)
       {
-        /*
-         * Odometry message can be generated from quaternion or euler angles.
-         * Quaternion is prefered if they are available.
-         */
-        if (sbg_ekf_quat_pub_)
+        if (sbg_imu_short_message_.time_stamp == sbg_ekf_nav_message_.time_stamp)
         {
-          if (sbg_imu_message_.time_stamp == sbg_ekf_quat_message_.time_stamp)
+          /*
+          * Odometry message can be generated from quaternion or euler angles.
+          * Quaternion is prefered if they are available.
+          */
+          if (sbg_ekf_quat_pub_)
           {
-            odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_message_, sbg_ekf_nav_message_, sbg_ekf_quat_message_, sbg_ekf_euler_message_));
+            if (sbg_imu_short_message_.time_stamp == sbg_ekf_quat_message_.time_stamp)
+            {
+              odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_quat_message_, sbg_ekf_euler_message_));
+            }
+          }
+          else
+          {
+            if (sbg_imu_short_message_.time_stamp == sbg_ekf_euler_message_.time_stamp)
+            {
+              odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_euler_message_));
+            }
           }
         }
-        else
+      }
+      else if (sbg_imu_data_pub_)
+      {
+        if (sbg_imu_message_.time_stamp == sbg_ekf_nav_message_.time_stamp)
         {
-          if (sbg_imu_message_.time_stamp == sbg_ekf_euler_message_.time_stamp)
+          /*
+          * Odometry message can be generated from quaternion or euler angles.
+          * Quaternion is prefered if they are available.
+          */
+          if (sbg_ekf_quat_pub_)
           {
-            odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_message_, sbg_ekf_nav_message_, sbg_ekf_euler_message_));
+            if (sbg_imu_message_.time_stamp == sbg_ekf_quat_message_.time_stamp)
+            {
+              odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_message_, sbg_ekf_nav_message_, sbg_ekf_quat_message_, sbg_ekf_euler_message_));
+            }
+          }
+          else
+          {
+            if (sbg_imu_message_.time_stamp == sbg_ekf_euler_message_.time_stamp)
+            {
+              odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_message_, sbg_ekf_nav_message_, sbg_ekf_euler_message_));
+            }
           }
         }
       }
@@ -537,7 +592,12 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
 
       case SBG_ECOM_LOG_IMU_DATA:
-        publishIMUData(ref_sbg_log);
+        if (sbg_imu_data_pub_)
+        {
+          sbg_imu_message_ = message_wrapper_.createSbgImuDataMessage(ref_sbg_log.imuData);
+          sbg_imu_data_pub_->publish(sbg_imu_message_);
+          processImuMessage();
+        }
         break;
 
       case SBG_ECOM_LOG_MAG:
@@ -678,7 +738,9 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
       case SBG_ECOM_LOG_IMU_SHORT:
         if (sbg_imu_short_pub_)
         {
-          sbg_imu_short_pub_->publish(message_wrapper_.createSbgImuShortMessage(ref_sbg_log.imuShort));
+          sbg_imu_short_message_ = message_wrapper_.createSbgImuShortMessage(ref_sbg_log.imuShort);
+          sbg_imu_short_pub_->publish(sbg_imu_short_message_);
+          processImuMessage();
         }
         break;
 
@@ -698,4 +760,135 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
         break;
     }
   }
+}
+
+uint32_t MessagePublisher::getTimestamp(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgEComLogUnion &ref_sbg_log)
+{
+  uint32_t timestamp;
+
+  if (sbg_msg_class == SBG_ECOM_CLASS_LOG_ECOM_0)
+  {
+    switch (sbg_msg_id)
+    {
+    case SBG_ECOM_LOG_STATUS:
+      timestamp = ref_sbg_log.statusData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_UTC_TIME:
+      timestamp = ref_sbg_log.utcData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_IMU_DATA:
+      timestamp = ref_sbg_log.imuData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_MAG:
+      timestamp = ref_sbg_log.magData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_MAG_CALIB:
+      timestamp = ref_sbg_log.magCalibData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_EKF_EULER:
+      timestamp = ref_sbg_log.ekfEulerData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_EKF_QUAT:
+      timestamp = ref_sbg_log.ekfQuatData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_EKF_NAV:
+      timestamp = ref_sbg_log.ekfNavData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_SHIP_MOTION:
+    case SBG_ECOM_LOG_SHIP_MOTION_HP:
+      timestamp = ref_sbg_log.shipMotionData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_GPS1_VEL:
+    case SBG_ECOM_LOG_GPS2_VEL:
+      timestamp = ref_sbg_log.gpsVelData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_GPS1_POS:
+    case SBG_ECOM_LOG_GPS2_POS:
+      timestamp = ref_sbg_log.gpsPosData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_GPS1_HDT:
+    case SBG_ECOM_LOG_GPS2_HDT:
+      timestamp = ref_sbg_log.gpsHdtData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_ODO_VEL:
+      timestamp = ref_sbg_log.odometerData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_EVENT_A:
+    case SBG_ECOM_LOG_EVENT_B:
+    case SBG_ECOM_LOG_EVENT_C:
+    case SBG_ECOM_LOG_EVENT_D:
+    case SBG_ECOM_LOG_EVENT_E:
+    case SBG_ECOM_LOG_EVENT_OUT_A:
+    case SBG_ECOM_LOG_EVENT_OUT_B:
+      timestamp = ref_sbg_log.eventMarker.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_DVL_BOTTOM_TRACK:
+    case SBG_ECOM_LOG_DVL_WATER_TRACK:
+      timestamp = ref_sbg_log.dvlData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_GPS1_RAW:
+    case SBG_ECOM_LOG_GPS2_RAW:
+      timestamp = 0;
+      break;
+
+    case SBG_ECOM_LOG_AIR_DATA:
+      timestamp = ref_sbg_log.airData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_USBL:
+      timestamp = ref_sbg_log.usblData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_IMU_SHORT:
+      timestamp = ref_sbg_log.imuShort.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_DEPTH:
+      timestamp = ref_sbg_log.depthData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_DIAG:
+      timestamp = ref_sbg_log.diagData.timestamp;
+      break;
+
+    case SBG_ECOM_LOG_RTCM_RAW:
+      timestamp = 0;
+      break;
+
+    case SBG_ECOM_LOG_GPS1_SAT:
+    case SBG_ECOM_LOG_GPS2_SAT:
+      timestamp = ref_sbg_log.satGroupData.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_EKF_ROT_ACCEL_BODY:
+    case SBG_ECOM_LOG_EKF_ROT_ACCEL_NED:
+      timestamp = ref_sbg_log.ekfRotAccel.timeStamp;
+      break;
+
+    case SBG_ECOM_LOG_EKF_VEL_BODY:
+      timestamp = ref_sbg_log.ekfVelBody.timeStamp;
+      break;
+    }
+  }
+  else
+  {
+    timestamp = 0;
+  }
+
+  return timestamp;
 }

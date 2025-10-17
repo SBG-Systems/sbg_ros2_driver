@@ -9,30 +9,35 @@ This driver package uses the [sbgECom binary protocol](https://github.com/SBG-Sy
 **Contact:** support@sbg-systems.com
 
 ## Features
+The driver supports all SBG systems sensors, IMUs, AHRS and INS, with a various degree of configurations available.
+
 The driver supports the following features:
- - Configure ELLIPSE products using yaml files (see note below)
  - Parse IMU/AHRS/INS/GNSS using the sbgECom protocol
- - Publish standard ROS messages and more detailed specific SBG Systems topics
+ - Publish standard ROS2 messages and more detailed specific SBG Systems topics
  - Subscribe and forward RTCM data to support DGPS/RTK mode with centimeters-level accuracy
  - Calibrate 2D/3D magnetic field using the on-board ELLIPSE algorithms
+ - Configure ELLIPSE products using yaml files (see note below)
 
 > [!NOTE]
-> Only ELLIPSE devices can be configured from the ROS driver. For High Performance INS such as EKINOX, APOGEE and QUANTA, please use the [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/)
+> While the ROS2 drivers can be used with all SBG Systems sensors, the drivers can only be used to configure the Ellipse family.
+> For other  INS such as EKINOX, APOGEE and QUANTA, please use the [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/)
+> For the PULSE-40, please use the sbgEcom encapsulation of the sbgInsRestApi: see our [Getting started Guide](https://support.sbg-systems.com/sc/imu/latest/getting-started)
 
 ## Installation
 ### Installation from Packages
-User can install the sbg_ros2_driver through the standard ROS installation system.
+User can install the sbg_ros2_driver through the standard ROS2 installation system.
+* Humble ```sudo apt-get install ros-humble-sbg-driver```
 * Galactic ```sudo apt-get install ros-galactic-sbg-driver```
 * Foxy ```sudo apt-get install ros-foxy-sbg-driver```
 
 ### Building from sources
 #### Dependencies
-* [Robot Operating System (ROS)](http://wiki.ros.org/)
+* [Robot Operating System (ROS2)](https://docs.ros.org/)
 * [sbgECom C Library](https://github.com/SBG-Systems/sbgECom) (embeds v4.0.1987-stable - compatible with ELLIPSE firmware 2.5 and above)
 
 #### Building
 1. Clone the repository (use a Release version)
-2. Build using the ROS colcon build system
+2. Build using the ROS2 colcon build system
 
 ```
 cd colcon_ws/src
@@ -47,8 +52,7 @@ source install/setup.bash
 
 
 ## Usage
-To run the default Ros2 node with the default configuration
-
+To run the default ROS2 node with the default configuration file
 ```
 ros2 launch sbg_driver sbg_device_launch.py
 ```
@@ -65,18 +69,18 @@ Every configuration file is defined according to the same structure.
 
 * **sbg_device_uart_default.yaml**
 This config file is the default one for UART connection with the device.  
-It does not configure the device through the ROS node, so it has to be previously configured (manually or with the ROS node).  
+It does not configure the device through the ROS2 node, so it has to be previously configured (manually or with the ROS2 node).  
 It defines a few outputs for the device:
   * `/sbg/imu_data`, `/sbg/ekf_quat` at 25Hz
-  * ROS standard outputs `/imu/data`, `/imu/velocity`, `/imu/temp` at 25Hz
+  * ROS2 standard outputs `/imu/data`, `/imu/velocity`, `/imu/temp` at 25Hz
   * `/sbg/status`, `/sbg/utc_time` and `/imu/utc_ref` at 1Hz.
 
 * **sbg_device_udp_default.yaml**
-This config file is the default one for an Udp connection with the device.  
-It does not configure the device through the ROS node, so it has to be previously configured (manually or with the ROS node).  
+This config file is the default one for an UDP connection with the device.  
+It does not configure the device through the ROS2 node, so it has to be previously configured (manually).  
 It defines a few outputs for the device:
   * `/sbg/imu_data`, `/sbg/ekf_quat` at 25Hz
-  * ROS standard outputs `/imu/data`, `/imu/velocity`, `/imu/temp` at 25Hz
+  * ROS2 standard outputs `/imu/data`, `/imu/velocity`, `/imu/temp` at 25Hz
   * `/sbg/status`, `/sbg/utc_time` and `/imu/utc_ref` at 1Hz.
 
 ### Example config files
@@ -102,12 +106,14 @@ Launch the sbg_device_mag node to calibrate the magnetometers, and load the `ell
 
 ## Nodes
 ### sbg_device node
-The `sbg_device` node handles the communication with the connected device, publishes the SBG output to the Ros environment and subscribes to useful topics such as RTCM data streams.
+The `sbg_device` node handles the communication with the connected device, publishes the SBG output to the ROS2 environment and subscribes to useful topics such as RTCM data streams.
 
 #### Published Topics
 ##### SBG Systems specific topics
-SBG Systems has defined proprietary ROS messages to report more detailed information from the AHRS/INS.  
+SBG Systems has defined proprietary ROS2 messages to report more detailed information from the AHRS/INS.  
 These messages try to match as much as possible the sbgECom logs as they are output by the device.
+>[!NOTE] 
+> Please refer to the [firmware manual](https://support.sbg-systems.com/sc/dev/latest/firmware-documentation) to check the availability of the outputs per product.
 
 * **`/sbg/status`** [sbg_driver/SbgStatus](http://docs.ros.org/api/sbg_driver/html/msg/SbgStatus.html)
 
@@ -185,14 +191,15 @@ These messages try to match as much as possible the sbgECom logs as they are out
 
   Pressure data.
 
-##### ROS standard topics
-In order to define ROS standard topics, it requires sometimes several SBG messages, to be merged.
-For each ROS standard, you have to activate the needed SBG outputs.
+##### ROS2 standard topics
+In order to define ROS2 standard topics, it requires sometimes several SBG messages, to be merged.
+For each ROS2 standard, you have to activate the needed SBG outputs.
 
 * **`/imu/data`** [sensor_msgs/Imu](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Imu.html)
 
   IMU data.
-  Requires `/sbg/imu_data` and `/sbg/ekf_quat`.
+  Requires `/sbg/imu_data` or `/sbg/imu_short`.
+  Optional (orientation) `/sbg/ekf_quat`.
   
 * **`/imu/temp`** [sensor_msgs/Temperature](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Temperature.html)
 
@@ -236,7 +243,7 @@ For each ROS standard, you have to activate the needed SBG outputs.
   Disabled by default, set `odometry.enable` in configuration file.
 
 > [!NOTE]
-> Please update the driver configuration to enable standard ROS messages publication. Also, the driver only publish standard ROS messages if the driver is setup to use ENU frame convention.
+> Please update the driver configuration to enable standard ROS2 messages publication. Also, the driver only publish standard ROS2 messages if the driver is setup to use ENU frame convention.
 
 ##### NMEA topics
 The driver can publish NMEA GGA messages from the internal GNSS receiver. It can be used with third party [NTRIP client](https://github.com/LORD-MicroStrain/ntrip_client) modules to support VRS networks providers.
@@ -277,26 +284,31 @@ Only ELLIPSE products support magnetic based heading and feature the on-board ma
 
 ## HowTo
 ### Configure the SBG device
-The SBG Ros driver allows the user to configure the device before starting data parsing.  
+The SBG ROS2 driver allows the user to configure the SBG device before starting data parsing.  
 To do so, set the corresponding parameter in the used config file.
 
 ```
-# Configuration of the device with ROS.
+# Configuration of the device with ROS2.
 confWithRos: true
 ```
 
 Then, modify the desired parameters in the config file, using the [Firmware Reference Manual](https://support.sbg-systems.com/sc/dev/latest/firmware-documentation), to see which features are configurable, and which parameter values are available.
 
+> [!NOTE]
+> The confWithRos parameter will only impact the configuration of the SBG device sensor, not the configuration of the ROS2 drivers themselves. 
+> This means you can still configure RTCM corrections, reference frames, etc. when you set confWithRos to false.
+> The confWithRos parameter must be disabled for HPI and pulse-40 products.
+
 ### Configure for RTK/DGPS
 The `sbg_device` node can subscribe to [rtcm_msgs/Message](https://github.com/tilk/rtcm_msgs/blob/master/msg/Message.msg) topics to forward differential corrections to the INS internal GNSS receiver.
 
-The RTCM data stream is sent through the serial/ethernet interface used by ROS to communicate with the INS.  
+The RTCM data stream is sent through the serial/ethernet interface used by ROS2 to communicate with the INS.  
 This enables simple and efficient RTK operations without requiring additional hardware or wiring.
 
 When combined with a third party [NTRIP client](https://github.com/LORD-MicroStrain/ntrip_client), it offers a turnkey solution to access local VRS providers and get centimeter-level accuracy solutions.
 
 The driver and the device should be properly setup:
- - Configure the INS to accept RTCM corrections on the interface used by the ROS driver:
+ - Configure the INS to accept RTCM corrections on the interface used by the ROS2 driver:
    - For ELLIPSE, simply use the `sbgCenter` and in `Assignment panel`, `RTCM` should be set to `Port A`.
    - For High Performance INS, either use the configuration web interface or the [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/).
  - Install and configure a third party node that broadcast RTCM corrections such as a [NTRIP client](https://github.com/LORD-MicroStrain/ntrip_client)
@@ -308,7 +320,7 @@ ELLIPSE products can use magnetometers to determine the heading. A calibration i
 
 You can read more information about magnetic field calibration procedure from the SBG Systems [Support Center](https://support.sbg-systems.com/sc/kb/v3/inertial-sensors-installation/magnetic-calibration).
 
-The ROS driver provides a dedicated node to easily use ELLIPSE on board magnetic field calibration algorithms.  
+The ROS2 driver provides a dedicated node to easily use ELLIPSE on board magnetic field calibration algorithms.  
 The ELLIPSE offers both a 2D and 3D magnetic field calibration mode.
 
 1) Make sure you have selected the desired 2D or 3D magnetic field calibration mode (`calibration.mode` in the configuration `yaml` file).
@@ -362,7 +374,7 @@ Once it is done, configuration file could be updated `portName: "/dev/sbg"`.
 See the docs folder, to see an example of rules with the corresponding screenshot using the udev functions.
 
 ### Time source & reference
-ROS uses an internal system time to time stamp messages. This time stamp is generally gathered when the message is processed and published.
+ROS2 uses an internal system time to time stamp messages. This time stamp is generally gathered when the message is processed and published.
 As a result, the message is not time stamped accurately due to transmission and processing delays.
 
 SBG Systems INS however provides a very accurate timing based on GNSS time if available. The following conditions have to be met to get
@@ -374,7 +386,7 @@ absolute accurate timing information:
 * The ELLIPSE should be setup to send SBG_ECOM_LOG_UTC message
 
 You can select which time source to use with the parameter `time_reference` to time stamp messages published by this driver:
-* `ros`: The header.stamp member contains the current ROS system time when the message has been processed.
+* `ros`: The header.stamp member contains the current ROS2 system time when the message has been processed.
 * `ins_unix`: The header.stamp member contains an absolute and accurate time referenced to UNIX epoch (00:00:00 UTC on 1 January 1970)
 
 Configuration example to use an absolute and accurate time reference to UNIX epoch:
@@ -391,10 +403,13 @@ The frame_id of the header can be set with this parameter:
 frame_id: "imu_link_ned"
 ```
 
+> [!NOTE]
+> This parameter has not impact on the configuration and will be inserted as-is within the header field. The recommended default parameters for ros are imu_link when use_enu is activated, and imu_link_ned when use_enu is inactive. You can also use another frame_id as needed.
+
 ### Frame convention
 The frame convention can be set to NED or ENU:
 * The NED convention is SBG Systems native convention so no transformation is applied
-* The ENU convention follows ROS standard [REP-103](https://www.ros.org/reps/rep-0103.html#coordinate-frame-conventions)
+* The ENU convention follows ROS2 standard [REP-103](https://www.ros.org/reps/rep-0103.html#coordinate-frame-conventions)
 
 Please read the SBG Systems [Support Center article](https://support.sbg-systems.com/sc/kb/latest/underlying-maths-conventions) for more details.
 
@@ -405,7 +420,7 @@ use_enu: true
 ```
 
 > [!NOTE]
-> The driver only publish standard ROS messages if the driver is setup to use ENU frame convention.
+> The driver only publish standard ROS2 messages if the driver is setup to use ENU frame convention.
 
 #### Body/Vehicle Frame:
 The X axis should point the vehicle **forward** direction for both NED and ENU frame conventions. 
@@ -419,7 +434,7 @@ The table below summarizes the body/vehicle axis frame definitions for each conv
 
 #### Navigation Frame:
 
-The navigation frame also referred by ROS as the cartesian representation is defined as follow:
+The navigation frame also referred by ROS2 as the cartesian representation is defined as follow:
 
 | NED Convention | ENU Convention |
 | -------------- | -------------- |
@@ -446,3 +461,8 @@ Please report bugs and/or issues using the [Issue Tracker](https://github.com/SB
 ### Features requests or additions
 In order to contribute to the code, please use Pull requests to the `devel` branch.  
 If you have some feature requests, use the [Issue Tracker](https://github.com/SBG-Systems/sbg_ros2_driver/issues) as well.
+
+## Known limitations
+> Baudrate configuration is not possible via ROS2 and can only be done in sbgCenter or using sbgECom library.
+> Device information is not displayed for Pulse-40.
+> GNSS and RTCM port configurations are not possible via ROS2.  

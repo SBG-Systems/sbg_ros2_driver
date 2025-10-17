@@ -6,6 +6,12 @@ cmake-build-debug
 Build
 build
 
+# Install folder
+install
+
+# Log folder
+log
+
 # Prerequisites
 *.d
 

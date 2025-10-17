@@ -1,5 +1,5 @@
 # SBG Ellipse Messages
-# Submessage SbgImuData
+# Submessage SbgImuData and SbgImuShort
 
 # True if the communication with the IMU is ok.
 bool imu_com
@@ -30,3 +30,6 @@ bool imu_accels_in_range
 
 # True if gyroscopes are within operating range
 bool imu_gyros_in_range
+
+# True if the gyroscope scale factor range is high. Applicable only for SbgImuShort message.
+bool imu_gyros_use_high_scale

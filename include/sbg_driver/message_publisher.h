@@ -72,6 +72,7 @@ private:
 
   rclcpp::Publisher<sensor_msgs::msg::Imu, std::allocator<void>>::SharedPtr             imu_pub_;
   sbg_driver::msg::SbgImuData                                                           sbg_imu_message_;
+  sbg_driver::msg::SbgImuShort                                                          sbg_imu_short_message_;
   sbg_driver::msg::SbgEkfQuat                                                           sbg_ekf_quat_message_;
   sbg_driver::msg::SbgEkfNav                                                            sbg_ekf_nav_message_;
   sbg_driver::msg::SbgEkfEuler                                                          sbg_ekf_euler_message_;
@@ -122,11 +123,9 @@ private:
   void defineRosStandardPublishers(rclcpp::Node& ref_ros_node_handle, bool odom_enable, bool enu_enable);
 
   /*!
-   * Publish a received SBG IMU log.
-   *
-   * \param[in] ref_sbg_log             SBG log.
+   * Process a received SBG IMU log.
    */
-  void publishIMUData(const SbgEComLogUnion &ref_sbg_log);
+  void processImuMessage();
 
   /*!
    * Process a ROS Velocity standard message.
@@ -210,6 +209,16 @@ public:
    * \param[in] ref_sbg_log             SBG binary log.
    */
   void publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgEComLogUnion &ref_sbg_log);
+
+  /*!
+   * Get the timestamp of an SBG binary log.
+   *
+   * \param[in] sbg_msg_class           Class ID of the SBG message.
+   * \param[in] sbg_msg_id              Id of the SBG message.
+   * \param[in] ref_sbg_log             SBG binary log.
+   * \return                            Timestamp in us.
+   */
+  uint32_t getTimestamp(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id, const SbgEComLogUnion &ref_sbg_log);
 };
 }
 
