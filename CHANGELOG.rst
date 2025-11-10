@@ -2,6 +2,11 @@
 Changelog for package sbg_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix: removed usage of deprecated tf2 C header
+* Contributors: Fabian Freihube
+
 3.3.0 (2025-10-17)
 ------------------
 * Update README.md
