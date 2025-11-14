@@ -2,6 +2,16 @@
 Changelog for package sbg_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Stop using CMake FetchContent to get sbgECom and update it to v5.3.2276-stable
+* Contributors: Samuel TOLEDANO
+
+3.3.1 (2025-11-10)
+------------------
+* fix: removed usage of deprecated tf2 C header
+* Contributors: Fabian Freihube
+
 3.3.0 (2025-10-17)
 ------------------
 * Update README.md
