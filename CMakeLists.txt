@@ -85,21 +85,12 @@ ament_export_dependencies(rosidl_default_runtime)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include(FetchContent)
-
-FetchContent_Declare(
-    sbgECom
-    GIT_REPOSITORY https://github.com/SBG-Systems/sbgECom.git
-    GIT_TAG 5.2.590-stable
-    GIT_SHALLOW TRUE
-)
-
-FetchContent_MakeAvailable(sbgECom)
+add_subdirectory(external/sbgECom)
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/include/sbg_driver/
-  ${sbgECom_SOURCE_DIR}/common
-  ${sbgECom_SOURCE_DIR}/src
+  ${PROJECT_SOURCE_DIR}/external/sbgECom/common
+  ${PROJECT_SOURCE_DIR}/external/sbgECom/src
 )
 
 ## Define common resources.

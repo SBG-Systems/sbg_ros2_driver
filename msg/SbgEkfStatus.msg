@@ -54,14 +54,8 @@ bool dvl_bt_used
 # True if DVL Water Tracking is used in solution (data used and valid since 3s)
 bool dvl_wt_used
 
-# True if user Position is used in solution (data used and valid since 3s)
-bool user_pos_used
-
-# True if user Velocity is used in solution (data used and valid since 3s)
-bool user_vel_used
-
-# True if user Course is used in solution (data used and valid since 3s)
-bool user_heading_used
+# True if generic velocity 1 is used in solution (data used and valid since 3s)
+bool vel1_used
 
 # True if USBL / LBL is used in solution (data used and valid since 3s)
 bool usbl_used
@@ -77,3 +71,6 @@ bool align_valid
 
 # True if Depth sensor (for sub-sea navigation) is used in solution (data used and valid since 3s)
 bool depth_used
+
+# True if a ZARU is used in solution (data used and valid since 3s)
+bool zaru_used

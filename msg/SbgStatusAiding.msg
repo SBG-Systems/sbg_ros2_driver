@@ -43,11 +43,5 @@ bool depth_recv
 # AIR_DATA_RECV true when valid Air Data (altitude and/or true airspeed) is received
 bool air_data_recv
 
-# USER_POS_RECV	true when valid user position data is received
-bool user_pos_recv
-
-# USER_VEL_RECV true when valid user velocity data is received
-bool user_vel_recv
-
-# USER_HEADING_RECV	true when valid user heading data is received
-bool user_heading_recv
+# VEL1_RECV true when valid Generic Velocity 1 is received
+bool vel1_recv

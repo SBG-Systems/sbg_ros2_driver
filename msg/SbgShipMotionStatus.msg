@@ -15,11 +15,11 @@ bool heave_vel_aided
 # True if surge and sway channels are provided in this output.
 bool surge_sway_included
 
-# True if the swell period is provided in this output.
-bool period_available
-
-# True if the period returned is assumed to be valid or not.
+# True if the period returned is assumed to be valid.
 bool period_valid
 
 # True if the real time heave filter is using the swell mode computations.
 bool swell_mode
+
+# True if the acceleration returned is assumed to be valid.
+bool accel_valid

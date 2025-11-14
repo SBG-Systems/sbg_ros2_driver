@@ -167,9 +167,7 @@ const sbg_driver::msg::SbgEkfStatus MessageWrapper::createEkfStatusMessage(uint3
   ekf_status_message.dvl_bt_used        = (ekf_status & SBG_ECOM_SOL_DVL_BT_USED) != 0;
   ekf_status_message.dvl_wt_used        = (ekf_status & SBG_ECOM_SOL_DVL_WT_USED) != 0;
 
-  ekf_status_message.user_pos_used      = (ekf_status & SBG_ECOM_SOL_USER_POS_USED) != 0;
-  ekf_status_message.user_vel_used      = (ekf_status & SBG_ECOM_SOL_USER_VEL_USED) != 0;
-  ekf_status_message.user_heading_used  = (ekf_status & SBG_ECOM_SOL_USER_HEADING_USED) != 0;
+  ekf_status_message.vel1_used          = (ekf_status & SBG_ECOM_SOL_VEL1_USED) != 0;
 
   ekf_status_message.usbl_used          = (ekf_status & SBG_ECOM_SOL_USBL_USED) != 0;
 
@@ -180,6 +178,8 @@ const sbg_driver::msg::SbgEkfStatus MessageWrapper::createEkfStatusMessage(uint3
   ekf_status_message.align_valid        = (ekf_status & SBG_ECOM_SOL_ALIGN_VALID) != 0;
 
   ekf_status_message.depth_used         = (ekf_status & SBG_ECOM_SOL_DEPTH_USED) != 0;
+
+  ekf_status_message.zaru_used          = (ekf_status & SBG_ECOM_SOL_ZARU_USED) != 0;
 
   return ekf_status_message;
 }
@@ -273,12 +273,12 @@ const sbg_driver::msg::SbgShipMotionStatus MessageWrapper::createShipMotionStatu
 {
   sbg_driver::msg::SbgShipMotionStatus ship_motion_status_message;
 
-  ship_motion_status_message.heave_valid          = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_VALID) != 0;
-  ship_motion_status_message.heave_vel_aided      = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_VEL_AIDED) != 0;
-  ship_motion_status_message.surge_sway_included  = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_SURGE_SWAY_INCLUDED) != 0;
-  ship_motion_status_message.period_available     = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_PERIOD_INCLUDED) != 0;
-  ship_motion_status_message.period_valid         = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_PERIOD_VALID) != 0;
-  ship_motion_status_message.swell_mode           = (ref_log_ship_motion.status & SBG_ECOM_HEAVE_SWELL_MODE) != 0;
+  ship_motion_status_message.heave_valid          = (ref_log_ship_motion.status & SBG_ECOM_SHIP_MOTION_HEAVE_VALID) != 0;
+  ship_motion_status_message.heave_vel_aided      = (ref_log_ship_motion.status & SBG_ECOM_SHIP_MOTION_VEL_AIDED) != 0;
+  ship_motion_status_message.surge_sway_included  = (ref_log_ship_motion.status & SBG_ECOM_SHIP_MOTION_SURGE_SWAY_VALID) != 0;
+  ship_motion_status_message.period_valid         = (ref_log_ship_motion.status & SBG_ECOM_SHIP_MOTION_HEAVE_PERIOD_VALID) != 0;
+  ship_motion_status_message.swell_mode           = (ref_log_ship_motion.status & SBG_ECOM_SHIP_MOTION_SWELL_MODE) != 0;
+  ship_motion_status_message.accel_valid          = (ref_log_ship_motion.status & SBG_ECOM_SHIP_MOTION_ACCEL_VALID) != 0;
 
   return ship_motion_status_message;
 }
@@ -303,10 +303,7 @@ const sbg_driver::msg::SbgStatusAiding MessageWrapper::createStatusAidingMessage
   status_aiding_message.usbl_recv     = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_USBL_RECV) != 0;
   status_aiding_message.depth_recv    = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_DEPTH_RECV) != 0;
   status_aiding_message.air_data_recv = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_AIR_DATA_RECV) != 0;
-
-  status_aiding_message.user_pos_recv     = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_USER_POS_RECV) != 0;
-  status_aiding_message.user_vel_recv     = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_USER_VEL_RECV) != 0;
-  status_aiding_message.user_heading_recv = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_USER_HEADING_RECV) != 0;
+  status_aiding_message.vel1_recv     = (ref_log_status.aidingStatus & SBG_ECOM_AIDING_VEL1_RECV) != 0;
 
   return status_aiding_message;
 }
