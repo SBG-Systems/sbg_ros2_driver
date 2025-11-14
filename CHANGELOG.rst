@@ -2,8 +2,8 @@
 Changelog for package sbg_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.3.2 (2025-11-14)
+------------------
 * Stop using CMake FetchContent to get sbgECom and update it to v5.3.2276-stable
 * Contributors: Samuel TOLEDANO
 
