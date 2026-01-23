@@ -79,27 +79,23 @@ const rclcpp::Time MessageWrapper::convertInsTimeToUnix(uint32_t device_timestam
 {
   //
   // Convert the UTC time to epoch from the last received message.
-  // Add the SBG timestamp difference (timestamp is in microsecond).
+  // Add the SBG timestamp difference (timestamp is in microsecond since device boot).
   //
   rclcpp::Time utc_to_epoch;
   uint64_t  nanoseconds;
 
   utc_to_epoch = convertUtcTimeToUnix(last_sbg_utc_);
 
-  // Handle 32-bit device timestamp rollover.
-  uint32_t timestamp_diff;
-  if (device_timestamp >= last_sbg_utc_.time_stamp)
+  // Convert difference to signed 64-bit
+  int64_t timestamp_diff = static_cast<int64_t>(device_timestamp) - static_cast<int64_t>(last_sbg_utc_.time_stamp);
+  
+  // Handle 32-bit device timestamp rollover if diff is very negative.
+  if (timestamp_diff < -static_cast<int64_t>(UINT32_MAX / 2))
   {
-    // No rollover, straightforward time difference.
-    timestamp_diff = device_timestamp - last_sbg_utc_.time_stamp;
-  }
-  else
-  {
-    // Rollover has occurred: handle the wraparound.
-    timestamp_diff = device_timestamp + (UINT32_MAX - last_sbg_utc_.time_stamp) + 1;
+      timestamp_diff = static_cast<int64_t>(device_timestamp) + (UINT32_MAX - static_cast<uint64_t>(last_sbg_utc_.time_stamp)) + 1;
   }
 
-  nanoseconds  = utc_to_epoch.nanoseconds() + static_cast<uint64_t>(timestamp_diff) * 1000;
+  nanoseconds  = utc_to_epoch.nanoseconds() + timestamp_diff * 1000LL;
 
   utc_to_epoch = rclcpp::Time(nanoseconds);
 
