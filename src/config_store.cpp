@@ -81,8 +81,8 @@ void ConfigStore::loadSensorParameters(const rclcpp::Node& ref_node_handle)
   ref_node_handle.get_parameter_or<double>("sensorParameters.initAlt", init_condition_conf_.altitude, 100);
 
   init_condition_conf_.year     = getParameter<uint16_t>(ref_node_handle, "sensorParameters.year", 2018);
-  init_condition_conf_.month    = getParameter<uint8_t>(ref_node_handle, "sensorParameters.year", 03);
-  init_condition_conf_.day      = getParameter<uint8_t>(ref_node_handle, "sensorParameters.year", 10);
+  init_condition_conf_.month    = getParameter<uint8_t>(ref_node_handle, "sensorParameters.month", 03);
+  init_condition_conf_.day      = getParameter<uint8_t>(ref_node_handle, "sensorParameters.day", 10);
 
   motion_profile_model_info_ = getParameter<SbgEComMotionProfileStdIds>(ref_node_handle, "sensorParameters.motionProfile", SBG_ECOM_MOTION_PROFILE_GENERAL_PURPOSE);
 }
