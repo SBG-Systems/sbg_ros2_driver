@@ -153,8 +153,8 @@ sbg::SbgVector3d sbg::helpers::convertLLAtoECEF(double latitude, double longitud
   double latitude_rad = sbgDegToRadd(latitude);
   double longitude_rad = sbgDegToRadd(longitude);
   double compute_cte = pow(POLAR_RADIUS, 2) / pow(EQUATORIAL_RADIUS, 2);
-  double eccentricity = 1.0 - compute_cte;
-  double prime_vertical_radius = EQUATORIAL_RADIUS / sqrt(1.0 - (pow(eccentricity, 2) * pow(sin(latitude_rad), 2)));
+  double eccentricity_sq = 1.0 - compute_cte;
+  double prime_vertical_radius = EQUATORIAL_RADIUS / sqrt(1.0 - (eccentricity_sq * pow(sin(latitude_rad), 2)));
 
   sbg::SbgVector3d ecef_vector((prime_vertical_radius + altitude) * cos(latitude_rad) * cos(longitude_rad),
                                (prime_vertical_radius + altitude) * cos(latitude_rad) * sin(longitude_rad),
