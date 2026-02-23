@@ -555,26 +555,13 @@ const sbg_driver::msg::SbgEkfVelBody MessageWrapper::createSbgEkfVelBodyMessage(
   ekf_vel_body_message.time_stamp        = ref_log_ekf_vel_body.timeStamp;
   ekf_vel_body_message.status            = createEkfStatusMessage(ref_log_ekf_vel_body.status);
 
-  if (use_enu_)
-  {
-    ekf_vel_body_message.velocity.x = ref_log_ekf_vel_body.velocity[1];
-    ekf_vel_body_message.velocity.y = ref_log_ekf_vel_body.velocity[0];
-    ekf_vel_body_message.velocity.z = -ref_log_ekf_vel_body.velocity[2];
+  ekf_vel_body_message.velocity.x = ref_log_ekf_vel_body.velocity[0];
+  ekf_vel_body_message.velocity.y = ref_log_ekf_vel_body.velocity[1];
+  ekf_vel_body_message.velocity.z = ref_log_ekf_vel_body.velocity[2];
 
-    ekf_vel_body_message.velocity_accuracy.x = ref_log_ekf_vel_body.velocityStdDev[1];
-    ekf_vel_body_message.velocity_accuracy.y = ref_log_ekf_vel_body.velocityStdDev[0];
-    ekf_vel_body_message.velocity_accuracy.z = ref_log_ekf_vel_body.velocityStdDev[2];
-  }
-  else
-  {
-    ekf_vel_body_message.velocity.x = ref_log_ekf_vel_body.velocity[0];
-    ekf_vel_body_message.velocity.y = ref_log_ekf_vel_body.velocity[1];
-    ekf_vel_body_message.velocity.z = ref_log_ekf_vel_body.velocity[2];
-
-    ekf_vel_body_message.velocity_accuracy.x = ref_log_ekf_vel_body.velocityStdDev[0];
-    ekf_vel_body_message.velocity_accuracy.y = ref_log_ekf_vel_body.velocityStdDev[1];
-    ekf_vel_body_message.velocity_accuracy.z = ref_log_ekf_vel_body.velocityStdDev[2];
-  }
+  ekf_vel_body_message.velocity_accuracy.x = ref_log_ekf_vel_body.velocityStdDev[0];
+  ekf_vel_body_message.velocity_accuracy.y = ref_log_ekf_vel_body.velocityStdDev[1];
+  ekf_vel_body_message.velocity_accuracy.z = ref_log_ekf_vel_body.velocityStdDev[2];
 
   return ekf_vel_body_message;
 }
