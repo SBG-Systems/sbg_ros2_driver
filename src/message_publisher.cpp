@@ -222,7 +222,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
     return;
   }
 
-  if (sbg_imu_data_pub_ && sbg_ekf_quat_pub_)
+  if ((sbg_imu_data_pub_ || sbg_imu_short_pub_) && sbg_ekf_quat_pub_)
   {
     imu_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::Imu>("imu/data", max_messages_);
   }
@@ -231,7 +231,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
     RCLCPP_WARN(ref_ros_node_handle.get_logger(), "SBG_DRIVER - [Publisher] SBG Imu and/or Quat output are not configured, the standard IMU can not be defined.");
   }
 
-  if (sbg_imu_data_pub_)
+  if (sbg_imu_data_pub_ || sbg_imu_short_pub_)
   {
     temp_pub_ = ref_ros_node_handle.create_publisher<sensor_msgs::msg::Temperature>("imu/temp", max_messages_);
   }
@@ -253,7 +253,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
   // We need either Euler or quat angles, and we must have Nav and IMU data to
   // compute Body and angular velocity.
   //
-  if ((sbg_ekf_euler_pub_ || sbg_ekf_quat_pub_) && sbg_ekf_nav_pub_ && sbg_imu_data_pub_)
+  if ((sbg_ekf_euler_pub_ || sbg_ekf_quat_pub_) && sbg_ekf_nav_pub_ && (sbg_imu_data_pub_ || sbg_imu_short_pub_))
   {
     velocity_pub_ = ref_ros_node_handle.create_publisher<geometry_msgs::msg::TwistStamped>("imu/velocity", max_messages_);
   }
@@ -300,7 +300,7 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
 
   if (odom_enable)
   {
-    if (sbg_imu_data_pub_ && sbg_ekf_nav_pub_ && (sbg_ekf_euler_pub_ || sbg_ekf_quat_pub_))
+    if ((sbg_imu_data_pub_ || sbg_imu_short_pub_) && sbg_ekf_nav_pub_ && (sbg_ekf_euler_pub_ || sbg_ekf_quat_pub_))
     {
       odometry_pub_ = ref_ros_node_handle.create_publisher<nav_msgs::msg::Odometry>("imu/odometry", max_messages_);
     }
@@ -390,26 +390,17 @@ void MessagePublisher::processRosOdoMessage()
     {
       if (sbg_imu_short_pub_)
       {
-        if (sbg_imu_short_message_.time_stamp == sbg_ekf_nav_message_.time_stamp)
+        /*
+        * Odometry message can be generated from quaternion or euler angles.
+        * Quaternion is prefered if they are available.
+        */
+        if (sbg_ekf_quat_pub_)
         {
-          /*
-          * Odometry message can be generated from quaternion or euler angles.
-          * Quaternion is prefered if they are available.
-          */
-          if (sbg_ekf_quat_pub_)
-          {
-            if (sbg_imu_short_message_.time_stamp == sbg_ekf_quat_message_.time_stamp)
-            {
-              odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_quat_message_, sbg_ekf_euler_message_));
-            }
-          }
-          else
-          {
-            if (sbg_imu_short_message_.time_stamp == sbg_ekf_euler_message_.time_stamp)
-            {
-              odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_euler_message_));
-            }
-          }
+          odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_quat_message_, sbg_ekf_euler_message_));
+        }
+        else
+        {
+          odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_euler_message_));
         }
       }
       else if (sbg_imu_data_pub_)
