@@ -1101,7 +1101,6 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
       pose.position.z = first_valid_altitude_;
 
       fillTransform(odom_init_frame_id_, odom_base_frame_id_, pose, transform);
-      tf_broadcaster_->sendTransform(transform);
       static_tf_broadcaster_->sendTransform(transform);
     }
   }
@@ -1207,7 +1206,6 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
       pose.position.z = first_valid_altitude_;
 
       fillTransform(odom_init_frame_id_, odom_frame_id_, pose, transform);
-      tf_broadcaster_->sendTransform(transform);
       static_tf_broadcaster_->sendTransform(transform);
     }
   }
