@@ -367,7 +367,8 @@ void MessagePublisher::processRosImuMessage()
 
     if (sbg_imu_short_pub_)
     {
-      if (sbg_ekf_quat_pub_)
+      rclcpp::Duration eps = rclcpp::Duration::from_seconds(1e-8);
+      if ((sbg_ekf_quat_message_ == ekf_quat_message_zero) || ((rclcpp::Time(sbg_imu_short_message_.header.stamp) - rclcpp::Time(sbg_ekf_quat_message_.header.stamp)) < eps))
       {
         imu_pub_->publish(message_wrapper_.createRosImuMessage(sbg_imu_short_message_, sbg_ekf_quat_message_));
       }
@@ -390,17 +391,27 @@ void MessagePublisher::processRosOdoMessage()
     {
       if (sbg_imu_short_pub_)
       {
-        /*
-        * Odometry message can be generated from quaternion or euler angles.
-        * Quaternion is prefered if they are available.
-        */
-        if (sbg_ekf_quat_pub_)
+        rclcpp::Duration eps = rclcpp::Duration::from_seconds(1e-8);
+        if ((rclcpp::Time(sbg_imu_short_message_.header.stamp) - rclcpp::Time(sbg_ekf_nav_message_.header.stamp)) < eps)
         {
-          odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_quat_message_, sbg_ekf_euler_message_));
-        }
-        else
-        {
-          odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_euler_message_));
+          /*
+          * Odometry message can be generated from quaternion or euler angles.
+          * Quaternion is prefered if they are available.
+          */
+          if (sbg_ekf_quat_pub_)
+          {
+            if ((rclcpp::Time(sbg_imu_short_message_.header.stamp) - rclcpp::Time(sbg_ekf_quat_message_.header.stamp)) < eps)
+            {
+              odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_quat_message_, sbg_ekf_euler_message_));
+            }
+          }
+          else
+          {
+            if ((rclcpp::Time(sbg_imu_short_message_.header.stamp) - rclcpp::Time(sbg_ekf_euler_message_.time_stamp)) < eps)
+            {
+              odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_euler_message_));
+            }
+          }
         }
       }
       else if (sbg_imu_data_pub_)
