@@ -2,6 +2,15 @@
 
 using sbg::MessagePublisher;
 
+namespace
+{
+bool areStampsClose(const builtin_interfaces::msg::Time &lhs, const builtin_interfaces::msg::Time &rhs, const rclcpp::Duration &tolerance = rclcpp::Duration::from_seconds(25e-4))
+{
+  const auto delta = rclcpp::Time(lhs) - rclcpp::Time(rhs);
+  return (delta > tolerance*-1) && (delta < tolerance);
+}
+}
+
 /*!
  * Class to publish all SBG-ROS messages to the corresponding publishers. 
  */
@@ -367,8 +376,7 @@ void MessagePublisher::processRosImuMessage()
 
     if (sbg_imu_short_pub_)
     {
-      rclcpp::Duration eps = rclcpp::Duration::from_seconds(1e-8);
-      if ((sbg_ekf_quat_message_ == ekf_quat_message_zero) || ((rclcpp::Time(sbg_imu_short_message_.header.stamp) - rclcpp::Time(sbg_ekf_quat_message_.header.stamp)) < eps))
+      if ((sbg_ekf_quat_message_ == ekf_quat_message_zero) || areStampsClose(sbg_imu_short_message_.header.stamp, sbg_ekf_quat_message_.header.stamp))
       {
         imu_pub_->publish(message_wrapper_.createRosImuMessage(sbg_imu_short_message_, sbg_ekf_quat_message_));
       }
@@ -391,8 +399,7 @@ void MessagePublisher::processRosOdoMessage()
     {
       if (sbg_imu_short_pub_)
       {
-        rclcpp::Duration eps = rclcpp::Duration::from_seconds(1e-8);
-        if ((rclcpp::Time(sbg_imu_short_message_.header.stamp) - rclcpp::Time(sbg_ekf_nav_message_.header.stamp)) < eps)
+        if (areStampsClose(sbg_imu_short_message_.header.stamp, sbg_ekf_nav_message_.header.stamp))
         {
           /*
           * Odometry message can be generated from quaternion or euler angles.
@@ -400,14 +407,14 @@ void MessagePublisher::processRosOdoMessage()
           */
           if (sbg_ekf_quat_pub_)
           {
-            if ((rclcpp::Time(sbg_imu_short_message_.header.stamp) - rclcpp::Time(sbg_ekf_quat_message_.header.stamp)) < eps)
+            if (areStampsClose(sbg_imu_short_message_.header.stamp, sbg_ekf_quat_message_.header.stamp))
             {
               odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_quat_message_, sbg_ekf_euler_message_));
             }
           }
           else
           {
-            if ((rclcpp::Time(sbg_imu_short_message_.header.stamp) - rclcpp::Time(sbg_ekf_euler_message_.time_stamp)) < eps)
+            if (areStampsClose(sbg_imu_short_message_.header.stamp, sbg_ekf_euler_message_.header.stamp))
             {
               odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_euler_message_));
             }
