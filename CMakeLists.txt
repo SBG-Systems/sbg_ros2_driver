@@ -21,19 +21,18 @@ find_package(builtin_interfaces REQUIRED)
 ################################################
 
 ## Generate messages in the 'msg' folder
-
 set (USED_LIBRARIES
-  rclcpp
-  sensor_msgs
-  std_msgs
-  std_srvs
-  geometry_msgs
-  nav_msgs
-  rtcm_msgs
-  tf2_ros
-  tf2_msgs
-  tf2_geometry_msgs
-  nmea_msgs
+  rclcpp::rclcpp
+  ${sensor_msgs_TARGETS}
+  ${std_msgs_TARGETS}
+  ${std_srvs_TARGETS}
+  ${geometry_msgs_TARGETS}
+  ${nav_msgs_TARGETS}
+  ${rtcm_msgs_TARGETS}
+  tf2::tf2
+  ${tf2_msgs_TARGETS}
+  ${tf2_geometry_msgs_TARGETS}
+  ${nmea_msgs_TARGETS}
 )
 
 set (msg_files
@@ -125,8 +124,8 @@ endif()
 target_link_libraries(sbg_device sbgECom)
 target_link_libraries(sbg_device_mag sbgECom)
 
-ament_target_dependencies(sbg_device ${USED_LIBRARIES}) 
-ament_target_dependencies(sbg_device_mag ${USED_LIBRARIES})
+target_link_libraries(sbg_device ${USED_LIBRARIES}) 
+target_link_libraries(sbg_device_mag ${USED_LIBRARIES})
 
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 target_link_libraries(sbg_device "${cpp_typesupport_target}")
