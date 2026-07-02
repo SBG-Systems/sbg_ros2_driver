@@ -92,6 +92,7 @@ private:
   sbg_driver::msg::SbgUtcTime  	      last_sbg_utc_;
   bool                                first_valid_utc_;
   std::string                         frame_id_;
+  std::string                         gps_frame_id_;
   bool                                use_enu_;
   TimeReference                       time_reference_;
 
@@ -285,6 +286,13 @@ public:
    * \param[in]  frame_id      Frame ID.
    */
   void setFrameId(const std::string &frame_id);
+
+  /*!
+   * Set the GPS frame ID (frame of the GNSS antenna).
+   *
+   * \param[in]  gps_frame_id  GPS antenna frame ID.
+   */
+  void setGpsFrameId(const std::string &gps_frame_id);
 
   /*!
    * Set use ENU.
