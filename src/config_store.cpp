@@ -178,6 +178,10 @@ void ConfigStore::loadOutputFrameParameters(const rclcpp::Node& ref_node_handle)
   {
     ref_node_handle.get_parameter_or<std::string>("output.frame_id", frame_id_, "imu_link_ned");
   }
+
+  // GPS logs are expressed at the GNSS antenna phase center, not at the IMU.
+  // Fall back to frame_id to keep the previous behavior when unset.
+  ref_node_handle.get_parameter_or<std::string>("output.gps_frame_id", gps_frame_id_, frame_id_);
 }
 
 void ConfigStore::loadOutputTimeReference(const rclcpp::Node& ref_node_handle, const std::string& ref_key)
@@ -381,6 +385,11 @@ uint32_t ConfigStore::getReadingRateFrequency() const
 const std::string &ConfigStore::getFrameId() const
 {
   return frame_id_;
+}
+
+const std::string &ConfigStore::getGpsFrameId() const
+{
+  return gps_frame_id_;
 }
 
 bool ConfigStore::getUseEnu() const

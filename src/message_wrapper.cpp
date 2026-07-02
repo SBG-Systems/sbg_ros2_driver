@@ -405,6 +405,11 @@ void MessageWrapper::setFrameId(const std::string &frame_id)
   frame_id_ = frame_id;
 }
 
+void MessageWrapper::setGpsFrameId(const std::string &gps_frame_id)
+{
+  gps_frame_id_ = gps_frame_id;
+}
+
 void MessageWrapper::setUseEnu(bool enu)
 {
   use_enu_ = enu;
@@ -636,6 +641,7 @@ const sbg_driver::msg::SbgGpsHdt MessageWrapper::createSbgGpsHdtMessage(const Sb
   sbg_driver::msg::SbgGpsHdt gps_hdt_message;
 
   gps_hdt_message.header           = createRosHeader(ref_log_gps_hdt.timeStamp);
+  gps_hdt_message.header.frame_id  = gps_frame_id_;
   gps_hdt_message.time_stamp       = ref_log_gps_hdt.timeStamp;
   gps_hdt_message.status           = ref_log_gps_hdt.status;
   gps_hdt_message.tow              = ref_log_gps_hdt.timeOfWeek;
@@ -663,8 +669,9 @@ const sbg_driver::msg::SbgGpsPos MessageWrapper::createSbgGpsPosMessage(const Sb
 {
   sbg_driver::msg::SbgGpsPos gps_pos_message;
 
-  gps_pos_message.header      = createRosHeader(ref_log_gps_pos.timeStamp);
-  gps_pos_message.time_stamp  = ref_log_gps_pos.timeStamp;
+  gps_pos_message.header          = createRosHeader(ref_log_gps_pos.timeStamp);
+  gps_pos_message.header.frame_id = gps_frame_id_;
+  gps_pos_message.time_stamp      = ref_log_gps_pos.timeStamp;
 
   gps_pos_message.status              = createGpsPosStatusMessage(ref_log_gps_pos);
   gps_pos_message.gps_tow             = ref_log_gps_pos.timeOfWeek;
@@ -707,8 +714,9 @@ const sbg_driver::msg::SbgGpsVel MessageWrapper::createSbgGpsVelMessage(const Sb
 {
   sbg_driver::msg::SbgGpsVel gps_vel_message;
 
-  gps_vel_message.header      = createRosHeader(ref_log_gps_vel.timeStamp);
-  gps_vel_message.time_stamp  = ref_log_gps_vel.timeStamp;
+  gps_vel_message.header          = createRosHeader(ref_log_gps_vel.timeStamp);
+  gps_vel_message.header.frame_id = gps_frame_id_;
+  gps_vel_message.time_stamp      = ref_log_gps_vel.timeStamp;
   gps_vel_message.status      = createGpsVelStatusMessage(ref_log_gps_vel);
   gps_vel_message.gps_tow     = ref_log_gps_vel.timeOfWeek;
   gps_vel_message.course_acc  = ref_log_gps_vel.courseAcc;
@@ -1421,7 +1429,8 @@ const sensor_msgs::msg::NavSatFix MessageWrapper::createRosNavSatFixMessage(cons
 {
   sensor_msgs::msg::NavSatFix nav_sat_fix_message;
 
-  nav_sat_fix_message.header = createRosHeader(ref_sbg_gps_msg.time_stamp);
+  nav_sat_fix_message.header          = createRosHeader(ref_sbg_gps_msg.time_stamp);
+  nav_sat_fix_message.header.frame_id = ref_sbg_gps_msg.header.frame_id;
 
   if (ref_sbg_gps_msg.status.type == SBG_ECOM_GNSS_POS_TYPE_NO_SOLUTION)
   {
