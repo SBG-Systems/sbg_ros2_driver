@@ -10,6 +10,12 @@ SbgGpsPosStatus status
 # GPS Time of Week ms
 uint32 gps_tow
 
+# The position is the raw GNSS solution expressed at the main antenna phase
+# center of the corresponding GNSS receiver. It is NOT compensated for the
+# antenna lever arm (see the gps_frame_id parameter).
+# For the EKF fused position expressed at the INS reference point, use the
+# SbgEkfNav message instead.
+
 # Latitude [degrees]; Positive is north of equator; negative is south
 float64 latitude
 

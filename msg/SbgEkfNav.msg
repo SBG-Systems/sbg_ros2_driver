@@ -27,6 +27,10 @@ geometry_msgs/Vector3 velocity
 #   z: Vertical
 geometry_msgs/Vector3 velocity_accuracy
 
+# The position is the EKF fused solution expressed at the INS reference point,
+# compensated for the configured lever arms (unlike the raw GNSS position from
+# the SbgGpsPos message, which is expressed at the antenna phase center).
+
 # Latitude [degrees]. Positive is north of equator; negative is south
 float64 latitude
 
