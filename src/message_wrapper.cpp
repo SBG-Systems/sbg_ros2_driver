@@ -562,12 +562,12 @@ const sbg_driver::msg::SbgEkfVelBody MessageWrapper::createSbgEkfVelBodyMessage(
 
   if (use_enu_)
   {
-    ekf_vel_body_message.velocity.x = ref_log_ekf_vel_body.velocity[1];
-    ekf_vel_body_message.velocity.y = ref_log_ekf_vel_body.velocity[0];
+    ekf_vel_body_message.velocity.x = ref_log_ekf_vel_body.velocity[0];
+    ekf_vel_body_message.velocity.y = -ref_log_ekf_vel_body.velocity[1];
     ekf_vel_body_message.velocity.z = -ref_log_ekf_vel_body.velocity[2];
 
-    ekf_vel_body_message.velocity_accuracy.x = ref_log_ekf_vel_body.velocityStdDev[1];
-    ekf_vel_body_message.velocity_accuracy.y = ref_log_ekf_vel_body.velocityStdDev[0];
+    ekf_vel_body_message.velocity_accuracy.x = ref_log_ekf_vel_body.velocityStdDev[0];
+    ekf_vel_body_message.velocity_accuracy.y = ref_log_ekf_vel_body.velocityStdDev[1];
     ekf_vel_body_message.velocity_accuracy.z = ref_log_ekf_vel_body.velocityStdDev[2];
   }
   else
@@ -584,14 +584,24 @@ const sbg_driver::msg::SbgEkfVelBody MessageWrapper::createSbgEkfVelBodyMessage(
   return ekf_vel_body_message;
 }
 
-const sbg_driver::msg::SbgEkfRotAccel MessageWrapper::createSbgEkfRotAccelMessage(const SbgEComLogEkfRotAccel& ref_log_ekf_rot_accel) const
+const sbg_driver::msg::SbgEkfRotAccel MessageWrapper::createSbgEkfRotAccelMessage(const SbgEComLogEkfRotAccel& ref_log_ekf_rot_accel, bool body_frame) const
 {
   sbg_driver::msg::SbgEkfRotAccel ekf_vel_rot_accel_message;
 
   ekf_vel_rot_accel_message.header            = createRosHeader(ref_log_ekf_rot_accel.timeStamp);
   ekf_vel_rot_accel_message.time_stamp        = ref_log_ekf_rot_accel.timeStamp;
 
-  if (use_enu_)
+  if (use_enu_ && body_frame)
+  {
+    ekf_vel_rot_accel_message.rate.x = ref_log_ekf_rot_accel.rate[0];
+    ekf_vel_rot_accel_message.rate.y = -ref_log_ekf_rot_accel.rate[1];
+    ekf_vel_rot_accel_message.rate.z = -ref_log_ekf_rot_accel.rate[2];
+
+    ekf_vel_rot_accel_message.acceleration.x = ref_log_ekf_rot_accel.acceleration[0];
+    ekf_vel_rot_accel_message.acceleration.y = -ref_log_ekf_rot_accel.acceleration[1];
+    ekf_vel_rot_accel_message.acceleration.z = -ref_log_ekf_rot_accel.acceleration[2];
+  }
+  else if (use_enu_)
   {
     ekf_vel_rot_accel_message.rate.x = ref_log_ekf_rot_accel.rate[1];
     ekf_vel_rot_accel_message.rate.y = ref_log_ekf_rot_accel.rate[0];

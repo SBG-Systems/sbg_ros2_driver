@@ -376,9 +376,10 @@ public:
    * Create a SBG-ROS Ekf Rotation Acceleration message.
    *
    * \param[in] ref_log_ekf_rot_accel       SBG Ekf Rotation Acceleration log.
+   * \param[in] body_frame                  True if the log is expressed in the body frame, false for the navigation frame.
    * \return                                Ekf Rotation Acceleration message.
    */
-  const sbg_driver::msg::SbgEkfRotAccel createSbgEkfRotAccelMessage(const SbgEComLogEkfRotAccel& ref_log_ekf_rot_accel) const;
+  const sbg_driver::msg::SbgEkfRotAccel createSbgEkfRotAccelMessage(const SbgEComLogEkfRotAccel& ref_log_ekf_rot_accel, bool body_frame) const;
 
   /*!
    * Create a SBG-ROS event message.
