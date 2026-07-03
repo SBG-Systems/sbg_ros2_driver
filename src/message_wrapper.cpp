@@ -621,7 +621,7 @@ const sbg_driver::msg::SbgEkfRotAccel MessageWrapper::createSbgEkfRotAccelMessag
     ekf_vel_rot_accel_message.acceleration.y = ref_log_ekf_rot_accel.acceleration[1];
     ekf_vel_rot_accel_message.acceleration.z = ref_log_ekf_rot_accel.acceleration[2];
   }
-  
+
 
   return ekf_vel_rot_accel_message;
 }
