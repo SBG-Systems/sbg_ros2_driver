@@ -458,6 +458,42 @@ The navigation frame also referred by ROS2 as the cartesian representation is de
 Based on the definitions above, when using a NED frame, if the vehicle X axis is pointing North, the INS should return a zero heading. 
 When using a ENU frame, the INS should return a zero heading when the vehicle X axis is pointing East.
 
+## Sensor fusion with state estimation packages
+
+The ROS2 standard outputs of the driver can feed any state estimation stack consuming standard `sensor_msgs/Imu` and `sensor_msgs/NavSatFix` messages, for example to fuse the INS with wheel odometry on ground robots.
+
+### Driver configuration
+Standard ROS2 messages are disabled by default and require the ENU frame convention. In the .yaml configuration file:
+
+```
+output:
+  # Publish ROS2 standard messages
+  ros_standard: true
+  # ROS2 standard messages require the ENU convention (REP-103)
+  use_enu: true
+  # Frame of the IMU body (FLU) and frame of the GNSS antenna
+  frame_id: "imu_link"
+  gps_frame_id: "gps_link"
+  # SBG outputs required by the standard topics
+  log_imu_data: 8       # /imu/data, /imu/velocity
+  log_ekf_quat: 8       # /imu/data orientation
+  log_gps1_pos: 10001   # /imu/nav_sat_fix
+  log_utc_time: 200     # /imu/utc_ref
+```
+
+### Topics and frames
+
+| Topic | Message | Content |
+| ----- | ------- | ------- |
+| `/imu/data` | sensor_msgs/Imu | Body-frame (FLU) rates and accelerations, orientation with respect to ENU |
+| `/imu/nav_sat_fix` | sensor_msgs/NavSatFix | Raw GNSS position, expressed at the antenna phase center |
+| `/imu/utc_ref` | sensor_msgs/TimeReference | INS UTC time reference |
+
+State estimators rely on TF to compensate the GNSS antenna lever arm: publish static transforms from `base_link` to `frame_id` (IMU mounting) and from `base_link` to `gps_frame_id` (antenna mounting) matching the physical setup.
+
+> [!NOTE]
+> `/imu/nav_sat_fix` is not compensated for the antenna lever arm. The INS EKF fused position, expressed at the INS reference point, is available on `/sbg/ekf_nav` and `/imu/odometry`.
+
 ## Troubleshooting
 
 If you experience higher latency than expected and have connected the IMU via an USB interface, you can enable the serial driver low latency mode:
