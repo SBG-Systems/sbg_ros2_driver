@@ -647,14 +647,14 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
       case SBG_ECOM_LOG_EKF_ROT_ACCEL_BODY:
         if (sbg_ekf_rot_accel_body_pub_)
         {
-          sbg_ekf_rot_accel_body_pub_->publish(message_wrapper_.createSbgEkfRotAccelMessage(ref_sbg_log.ekfRotAccel));
+          sbg_ekf_rot_accel_body_pub_->publish(message_wrapper_.createSbgEkfRotAccelMessage(ref_sbg_log.ekfRotAccel, true));
         }
         break;
 
       case SBG_ECOM_LOG_EKF_ROT_ACCEL_NED:
         if (sbg_ekf_rot_accel_ned_pub_)
         {
-          sbg_ekf_rot_accel_ned_pub_->publish(message_wrapper_.createSbgEkfRotAccelMessage(ref_sbg_log.ekfRotAccel));
+          sbg_ekf_rot_accel_ned_pub_->publish(message_wrapper_.createSbgEkfRotAccelMessage(ref_sbg_log.ekfRotAccel, false));
         }
         break;
 
