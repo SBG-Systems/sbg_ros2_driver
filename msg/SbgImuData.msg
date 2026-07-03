@@ -9,27 +9,27 @@ SbgImuStatus imu_status
 
 # Filtered Accelerometer [m/s^2]
 #
-# NED convention:
+# SBG body frame convention (FRD - Forward-Right-Down), when use_enu is false:
 #   x: X axis of the device frame
 #   y: Y axis of the device frame
 #   z: Z axis of the device frame
 #
-# ENU convention:
-#   x: Y axis of the device frame
-#   y: X axis of the device frame
+# ROS body frame convention (FLU - Forward-Left-Up, per REP-103), when use_enu is true:
+#   x: X axis of the device frame
+#   y: -Y axis of the device frame
 #   z: -Z axis of the device frame
 geometry_msgs/Vector3 accel
 
 # Filtered Gyroscope [rad/s]
 #
-# NED convention:
+# SBG body frame convention (FRD - Forward-Right-Down), when use_enu is false:
 #   x: X axis of the device frame
 #   y: Y axis of the device frame
 #   z: Z axis of the device frame
 #
-# ENU convention:
-#   x: Y axis of the device frame
-#   y: X axis of the device frame
+# ROS body frame convention (FLU - Forward-Left-Up, per REP-103), when use_enu is true:
+#   x: X axis of the device frame
+#   y: -Y axis of the device frame
 #   z: -Z axis of the device frame
 geometry_msgs/Vector3 gyro
 
@@ -38,26 +38,26 @@ float32 temp
 
 # Sculling output [m/s2]
 #
-# NED convention:
+# SBG body frame convention (FRD - Forward-Right-Down), when use_enu is false:
 #   x: X axis of the device frame
 #   y: Y axis of the device frame
 #   z: Z axis of the device frame
 #
-# ENU convention:
-#   x: Y axis of the device frame
-#   y: X axis of the device frame
+# ROS body frame convention (FLU - Forward-Left-Up, per REP-103), when use_enu is true:
+#   x: X axis of the device frame
+#   y: -Y axis of the device frame
 #   z: -Z axis of the device frame
 geometry_msgs/Vector3 delta_vel
 
 # Coning output [rad/s]
 #
-# NED convention:
+# SBG body frame convention (FRD - Forward-Right-Down), when use_enu is false:
 #   x: X axis of the device frame
 #   y: Y axis of the device frame
 #   z: Z axis of the device frame
 #
-# ENU convention:
-#   x: Y axis of the device frame
-#   y: X axis of the device frame
+# ROS body frame convention (FLU - Forward-Left-Up, per REP-103), when use_enu is true:
+#   x: X axis of the device frame
+#   y: -Y axis of the device frame
 #   z: -Z axis of the device frame
 geometry_msgs/Vector3 delta_angle

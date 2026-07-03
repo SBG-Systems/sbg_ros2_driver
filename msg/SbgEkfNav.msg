@@ -27,6 +27,9 @@ geometry_msgs/Vector3 velocity
 #   z: Vertical
 geometry_msgs/Vector3 velocity_accuracy
 
+# The position is the EKF fused solution expressed at the INS reference point,
+# compensated for the configured lever arms.
+
 # Latitude [degrees]. Positive is north of equator; negative is south
 float64 latitude
 

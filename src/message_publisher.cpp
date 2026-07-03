@@ -553,6 +553,7 @@ void MessagePublisher::initPublishers(rclcpp::Node& ref_ros_node_handle, const C
   message_wrapper_.setTimeReference(ref_config_store.getTimeReference());
 
   message_wrapper_.setFrameId(ref_config_store.getFrameId());
+  message_wrapper_.setGpsFrameId(ref_config_store.getGpsFrameId());
 
   message_wrapper_.setUseEnu(ref_config_store.getUseEnu());
 
@@ -655,14 +656,14 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
       case SBG_ECOM_LOG_EKF_ROT_ACCEL_BODY:
         if (sbg_ekf_rot_accel_body_pub_)
         {
-          sbg_ekf_rot_accel_body_pub_->publish(message_wrapper_.createSbgEkfRotAccelMessage(ref_sbg_log.ekfRotAccel));
+          sbg_ekf_rot_accel_body_pub_->publish(message_wrapper_.createSbgEkfRotAccelMessage(ref_sbg_log.ekfRotAccel, true));
         }
         break;
 
       case SBG_ECOM_LOG_EKF_ROT_ACCEL_NED:
         if (sbg_ekf_rot_accel_ned_pub_)
         {
-          sbg_ekf_rot_accel_ned_pub_->publish(message_wrapper_.createSbgEkfRotAccelMessage(ref_sbg_log.ekfRotAccel));
+          sbg_ekf_rot_accel_ned_pub_->publish(message_wrapper_.createSbgEkfRotAccelMessage(ref_sbg_log.ekfRotAccel, false));
         }
         break;
 

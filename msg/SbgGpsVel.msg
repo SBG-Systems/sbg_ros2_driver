@@ -11,6 +11,8 @@ SbgGpsVelStatus status
 uint32 gps_tow
 
 # Velocity [m/s]
+# The velocity is the raw GNSS solution measured at the main antenna phase
+# center of the corresponding GNSS receiver.
 # In NED convention:
 #   X: North
 #   Y: East

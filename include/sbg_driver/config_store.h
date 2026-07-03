@@ -117,6 +117,7 @@ private:
 
   uint32_t                    rate_frequency_;
   std::string                 frame_id_;
+  std::string                 gps_frame_id_;
   bool                        use_enu_;
 
   bool                        odom_enable_;
@@ -495,6 +496,13 @@ public:
    * \return                      Frame ID.
    */
   const std::string &getFrameId() const;
+
+  /*!
+   * Get the GPS frame ID (frame of the GNSS antenna).
+   *
+   * \return                      GPS antenna frame ID.
+   */
+  const std::string &getGpsFrameId() const;
 
   /*!
    * Get use ENU.

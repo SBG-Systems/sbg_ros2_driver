@@ -10,6 +10,9 @@ SbgGpsPosStatus status
 # GPS Time of Week ms
 uint32 gps_tow
 
+# The position is the raw GNSS solution expressed at the main antenna phase
+# center of the corresponding GNSS receiver.
+
 # Latitude [degrees]; Positive is north of equator; negative is south
 float64 latitude
 

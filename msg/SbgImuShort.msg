@@ -9,27 +9,27 @@ SbgImuStatus imu_status
 
 # X, Y, Z delta velocity. Unit is 1048576 LSB for 1 m.s^-2.
 #
-# NED convention:
+# SBG body frame convention (FRD - Forward-Right-Down), when use_enu is false:
 #   x: X axis of the device frame
 #   y: Y axis of the device frame
 #   z: Z axis of the device frame
 #
-# ENU convention:
-#   x: Y axis of the device frame
-#   y: X axis of the device frame
+# ROS body frame convention (FLU - Forward-Left-Up, per REP-103), when use_enu is true:
+#   x: X axis of the device frame
+#   y: -Y axis of the device frame
 #   z: -Z axis of the device frame
 geometry_msgs/Vector3 delta_velocity
 
 # X, Y, Z delta angle. Unit is 67108864 LSB for 1 rad.s^-1.
 #
-# NED convention:
+# SBG body frame convention (FRD - Forward-Right-Down), when use_enu is false:
 #   x: X axis of the device frame
 #   y: Y axis of the device frame
 #   z: Z axis of the device frame
 #
-# ENU convention:
-#   x: Y axis of the device frame
-#   y: X axis of the device frame
+# ROS body frame convention (FLU - Forward-Left-Up, per REP-103), when use_enu is true:
+#   x: X axis of the device frame
+#   y: -Y axis of the device frame
 #   z: -Z axis of the device frame
 geometry_msgs/Vector3 delta_angle
 

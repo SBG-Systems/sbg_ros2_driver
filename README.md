@@ -406,6 +406,17 @@ frame_id: "imu_link_ned"
 > [!NOTE]
 > This parameter has not impact on the configuration and will be inserted as-is within the header field. The recommended default parameters for ros are imu_link when use_enu is activated, and imu_link_ned when use_enu is inactive. You can also use another frame_id as needed.
 
+### GPS Frame ID
+GPS position, velocity and true heading logs are expressed at the GNSS antenna phase center and not at the IMU.
+The frame_id of the header of these messages (including `sensor_msgs/NavSatFix`) can be set with this parameter:
+```
+# GPS antenna frame name
+gps_frame_id: "gps_link"
+```
+
+> [!NOTE]
+> If this parameter is not set, it defaults to frame_id to keep the previous driver behavior. Set it to the frame of your GNSS antenna so consumers such as robot_localization navsat_transform_node can correctly compensate the antenna lever arm.
+
 ### Frame convention
 The frame convention can be set to NED or ENU:
 * The NED convention is SBG Systems native convention so no transformation is applied
