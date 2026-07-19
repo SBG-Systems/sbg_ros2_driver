@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+
 // File header
 #include "message_wrapper.h"
 
@@ -12,7 +14,12 @@
 #include <sbg_ros_helpers.h>
 
 // STL headers
+#include <cmath>
 #include <type_traits>
+
+#ifndef M_SQRT2
+#define M_SQRT2 1.41421356237309504880
+#endif
 
 using sbg::MessageWrapper;
 
