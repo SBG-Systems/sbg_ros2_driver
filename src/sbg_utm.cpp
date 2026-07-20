@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+
 // File header
 #include "sbg_utm.h"
 
