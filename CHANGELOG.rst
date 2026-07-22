@@ -2,8 +2,8 @@
 Changelog for package sbg_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.4.0 (2026-07-22)
+------------------
 * Use std::this_thread::sleep_for in log replay
 * Enable MSVC math constants
 * Proper integration of imu_short and remove dynamic tf-broadcaster for static transform
