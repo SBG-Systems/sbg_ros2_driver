@@ -5,6 +5,8 @@
 #include <iomanip>
 #include <fstream>
 #include <ctime>
+#include <chrono>
+#include <thread>
 
 // SbgECom headers
 #include <version/sbgVersion.h>
@@ -118,7 +120,7 @@ void SbgDevice::onLogReceived(SbgEComClass msg_class, SbgEComMsgId msg, const Sb
       log_replay_last_timestamp_ = timestamp;
     }
 
-    usleep(time_to_sleep);
+    std::this_thread::sleep_for(std::chrono::microseconds(time_to_sleep));
   }
 
   //

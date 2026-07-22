@@ -9,17 +9,14 @@
 
 float sbg::helpers::wrapAnglePi(float angle_rad)
 {
-  if (angle_rad > SBG_PI_F)
+  float wrapped_angle_rad = fmodf(angle_rad + SBG_PI_F, SBG_PI_F * 2.0f);
+
+  if (wrapped_angle_rad < 0.0f)
   {
-    return (SBG_PI_F * 2.0f - fmodf(angle_rad, SBG_PI_F * 2.0f));
+    wrapped_angle_rad += SBG_PI_F * 2.0f;
   }
 
-  if (angle_rad < -SBG_PI_F)
-  {
-    return (SBG_PI_F * 2.0f + fmodf(angle_rad, SBG_PI_F * 2.0f));
-  }
-
-  return angle_rad;
+  return wrapped_angle_rad - SBG_PI_F;
 }
 
 float sbg::helpers::wrapAngle360(float angle_deg)
@@ -153,8 +150,8 @@ sbg::SbgVector3d sbg::helpers::convertLLAtoECEF(double latitude, double longitud
   double latitude_rad = sbgDegToRadd(latitude);
   double longitude_rad = sbgDegToRadd(longitude);
   double compute_cte = pow(POLAR_RADIUS, 2) / pow(EQUATORIAL_RADIUS, 2);
-  double eccentricity = 1.0 - compute_cte;
-  double prime_vertical_radius = EQUATORIAL_RADIUS / sqrt(1.0 - (pow(eccentricity, 2) * pow(sin(latitude_rad), 2)));
+  double eccentricity_sq = 1.0 - compute_cte;
+  double prime_vertical_radius = EQUATORIAL_RADIUS / sqrt(1.0 - (eccentricity_sq * pow(sin(latitude_rad), 2)));
 
   sbg::SbgVector3d ecef_vector((prime_vertical_radius + altitude) * cos(latitude_rad) * cos(longitude_rad),
                                (prime_vertical_radius + altitude) * cos(latitude_rad) * sin(longitude_rad),

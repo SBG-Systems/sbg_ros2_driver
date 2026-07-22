@@ -81,8 +81,8 @@ void ConfigStore::loadSensorParameters(const rclcpp::Node& ref_node_handle)
   ref_node_handle.get_parameter_or<double>("sensorParameters.initAlt", init_condition_conf_.altitude, 100);
 
   init_condition_conf_.year     = getParameter<uint16_t>(ref_node_handle, "sensorParameters.year", 2018);
-  init_condition_conf_.month    = getParameter<uint8_t>(ref_node_handle, "sensorParameters.year", 03);
-  init_condition_conf_.day      = getParameter<uint8_t>(ref_node_handle, "sensorParameters.year", 10);
+  init_condition_conf_.month    = getParameter<uint8_t>(ref_node_handle, "sensorParameters.month", 03);
+  init_condition_conf_.day      = getParameter<uint8_t>(ref_node_handle, "sensorParameters.day", 10);
 
   motion_profile_model_info_ = getParameter<SbgEComMotionProfileStdIds>(ref_node_handle, "sensorParameters.motionProfile", SBG_ECOM_MOTION_PROFILE_GENERAL_PURPOSE);
 }
@@ -178,6 +178,10 @@ void ConfigStore::loadOutputFrameParameters(const rclcpp::Node& ref_node_handle)
   {
     ref_node_handle.get_parameter_or<std::string>("output.frame_id", frame_id_, "imu_link_ned");
   }
+
+  // GPS logs are expressed at the GNSS antenna phase center, not at the IMU.
+  // Fall back to frame_id to keep the previous behavior when unset.
+  ref_node_handle.get_parameter_or<std::string>("output.gps_frame_id", gps_frame_id_, frame_id_);
 }
 
 void ConfigStore::loadOutputTimeReference(const rclcpp::Node& ref_node_handle, const std::string& ref_key)
@@ -381,6 +385,11 @@ uint32_t ConfigStore::getReadingRateFrequency() const
 const std::string &ConfigStore::getFrameId() const
 {
   return frame_id_;
+}
+
+const std::string &ConfigStore::getGpsFrameId() const
+{
+  return gps_frame_id_;
 }
 
 bool ConfigStore::getUseEnu() const

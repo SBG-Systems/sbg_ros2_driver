@@ -2,6 +2,24 @@
 Changelog for package sbg_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use std::this_thread::sleep_for in log replay
+* Enable MSVC math constants
+* Proper integration of imu_short and remove dynamic tf-broadcaster for static transform
+* Add sensor fusion integration section to README
+* Document GNSS antenna and INS reference points in messages
+* Fix use_enu handling of body-frame EKF outputs
+* Fix body frame convention comments in IMU and Mag messages
+* Fix wrapAnglePi returning out-of-range or reflected angles
+* Add gps_frame_id parameter to fix GPS message frame ID
+* Revert "Fix transformations to use correct parents and children frames"
+* Use target_link_libraries instead of ament_target_dependencies to comply with new CMake standard
+* Fix ECEF prime vertical radius to use e^2
+* Fix month and day reading from wrong parameter key
+* FEAT: Better rollover handling to avoid issues with late sensor messages
+* Contributors: Braden Meyers, Fabian Freihube, Guido Linden, Samuel TOLEDANO, Tobias Fischer, michaelschleiss
+
 3.3.2 (2025-11-14)
 ------------------
 * Stop using CMake FetchContent to get sbgECom and update it to v5.3.2276-stable

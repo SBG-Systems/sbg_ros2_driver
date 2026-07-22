@@ -18,6 +18,7 @@ uint16 status
 uint32 tow
 
 # True heading angle (0 to 360 deg)
+# The heading is defined by the baseline from the main to the auxiliary GNSS antenna.
 # NED convention: Rotation about the down axis. Zero when the X axis is pointing North.
 # ENU convention: Rotation about the up axis. Zero when the X axis is pointing East. (opposite sign compared to NED)
 float32 true_heading

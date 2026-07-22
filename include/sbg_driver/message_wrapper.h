@@ -92,6 +92,7 @@ private:
   sbg_driver::msg::SbgUtcTime  	      last_sbg_utc_;
   bool                                first_valid_utc_;
   std::string                         frame_id_;
+  std::string                         gps_frame_id_;
   bool                                use_enu_;
   TimeReference                       time_reference_;
 
@@ -287,6 +288,13 @@ public:
   void setFrameId(const std::string &frame_id);
 
   /*!
+   * Set the GPS frame ID (frame of the GNSS antenna).
+   *
+   * \param[in]  gps_frame_id  GPS antenna frame ID.
+   */
+  void setGpsFrameId(const std::string &gps_frame_id);
+
+  /*!
    * Set use ENU.
    *
    * \param[in]  enu          If true publish data in the ENU convention.
@@ -368,9 +376,10 @@ public:
    * Create a SBG-ROS Ekf Rotation Acceleration message.
    *
    * \param[in] ref_log_ekf_rot_accel       SBG Ekf Rotation Acceleration log.
+   * \param[in] body_frame                  True if the log is expressed in the body frame, false for the navigation frame.
    * \return                                Ekf Rotation Acceleration message.
    */
-  const sbg_driver::msg::SbgEkfRotAccel createSbgEkfRotAccelMessage(const SbgEComLogEkfRotAccel& ref_log_ekf_rot_accel) const;
+  const sbg_driver::msg::SbgEkfRotAccel createSbgEkfRotAccelMessage(const SbgEComLogEkfRotAccel& ref_log_ekf_rot_accel, bool body_frame) const;
 
   /*!
    * Create a SBG-ROS event message.
