@@ -16,12 +16,13 @@ The driver supports the following features:
  - Publish standard ROS2 messages and more detailed specific SBG Systems topics
  - Subscribe and forward RTCM data to support DGPS/RTK mode with centimeters-level accuracy
  - Calibrate 2D/3D magnetic field using the on-board ELLIPSE algorithms
- - Configure ELLIPSE products using yaml files (see note below)
+ - Configure the device with the [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/), from a JSON settings file
 
 > [!NOTE]
-> While the ROS2 drivers can be used with all SBG Systems sensors, the drivers can only be used to configure the Ellipse family.
-> For other  INS such as EKINOX, APOGEE and QUANTA, please use the [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/)
-> For the PULSE-40, please use the sbgEcom encapsulation of the sbgInsRestApi: see our [Getting started Guide](https://support.sbg-systems.com/sc/imu/latest/getting-started)
+> Device settings are configured with the sbgInsRestApi, which covers the whole product range:
+> ELLIPSE, PULSE, EKINOX, APOGEE and QUANTA. Devices that don't support it, such as ELLIPSE
+> firmware v2 and before, are handled by a deprecated fallback described in
+> [Configure the SBG device](#configure-the-sbg-device).
 
 ## Installation
 ### Installation from Packages
@@ -64,37 +65,54 @@ ros2 launch sbg_driver sbg_device_mag_calibration_launch.py
 ```
 
 ## Config files
+The yaml configuration files cover the ROS2 side of the driver: which interface to use, frame
+conventions and IDs, time reference, odometry, RTCM and NMEA topics.
+
+The device settings are not described here. They live in a
+[sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/) JSON document referenced by the
+`ins.settingsFile` parameter — see [Configure the SBG device](#configure-the-sbg-device). Every
+SBG log the device sends is published, so there is nothing to declare per topic.
+
 ### Default config files
-Every configuration file is defined according to the same structure.  
+Every configuration file is defined according to the same structure, and differs only by the
+communication interface it sets up.
 
 * **sbg_device_uart_default.yaml**
-This config file is the default one for UART connection with the device.  
-It does not configure the device through the ROS2 node, so it has to be previously configured (manually or with the ROS2 node).  
-It defines a few outputs for the device:
-  * `/sbg/imu_data`, `/sbg/ekf_quat` at 25Hz
-  * ROS2 standard outputs `/imu/data`, `/imu/velocity`, `/imu/temp` at 25Hz
-  * `/sbg/status`, `/sbg/utc_time` and `/imu/utc_ref` at 1Hz.
+Default config file for a UART connection with the device.
 
 * **sbg_device_udp_default.yaml**
-This config file is the default one for an UDP connection with the device.  
-It does not configure the device through the ROS2 node, so it has to be previously configured (manually).  
-It defines a few outputs for the device:
-  * `/sbg/imu_data`, `/sbg/ekf_quat` at 25Hz
-  * ROS2 standard outputs `/imu/data`, `/imu/velocity`, `/imu/temp` at 25Hz
-  * `/sbg/status`, `/sbg/utc_time` and `/imu/utc_ref` at 1Hz.
+Default config file for an UDP connection with the device.
+
+* **sbg_device_file_default.yaml**
+Default config file to replay SBG data from a log file.
+
+None of them configures the device: `confWithRos` is `false`, so the device has to be configured
+beforehand.
 
 ### Example config files
+The examples differ by their ROS2 side settings (baudrate, odometry, ROS2 standard messages).
+Product specific device settings are no longer part of them.
+
 * **ellipse_A_default.yaml**
-Default config file for an Ellipse-A.
+Example config file for an Ellipse-A.
 
 * **ellipse_E_default.yaml**
-Default config file for an Ellipse-E with an external NMEA GNSS.
+Example config file for an Ellipse-E with an external NMEA GNSS.
 
 * **ellipse_N_default.yaml**
-Default config file for an Ellipse-N using internal GNSS.
+Example config file for an Ellipse-N using internal GNSS.
 
 * **ellipse_D_default.yaml**
-Default config file for an Ellipse-D using internal GNSS.
+Example config file for an Ellipse-D using internal GNSS. The only example that configures the
+device, showing the `ins.settingsFile` workflow.
+
+### Settings and legacy files
+* **settings/ellipse_example.json**
+Minimal sbgInsRestApi settings document, used by `ellipse_D_default.yaml`.
+
+* **legacy/sbg_device_uart_legacy.yaml**
+Reference for the deprecated yaml device configuration format, see
+[Deprecated: configuring from yaml parameters](#deprecated-configuring-from-yaml-parameters).
 
 ## Launch files
 ### Default launch files
@@ -284,20 +302,65 @@ Only ELLIPSE products support magnetic based heading and feature the on-board ma
 
 ## HowTo
 ### Configure the SBG device
-The SBG ROS2 driver allows the user to configure the SBG device before starting data parsing.  
-To do so, set the corresponding parameter in the used config file.
+The SBG ROS2 driver can configure the device before starting data parsing. The device settings
+are described by a [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/) JSON
+document, which the driver sends to the `api/v1/settings` endpoint at startup.
+
+Enable the configuration and point the driver at the settings file:
 
 ```
 # Configuration of the device with ROS2.
 confWithRos: true
+
+ins:
+  # sbgInsRestApi JSON settings file to apply at startup.
+  settingsFile: "/path/to/my_device_settings.json"
 ```
 
-Then, modify the desired parameters in the config file, using the [Firmware Reference Manual](https://support.sbg-systems.com/sc/dev/latest/firmware-documentation), to see which features are configurable, and which parameter values are available.
+The easiest way to write that file is to configure the device once, then export its settings.
+Use the device web interface, or the `sbgEComApi` command line tool shipped with sbgECom:
+
+```
+# Export the current settings of the device
+sbgEComApi -s /dev/ttyUSB0 -r 115200 api/v1/settings -g > my_device_settings.json
+
+# Only the settings that differ from the device defaults
+sbgEComApi -s /dev/ttyUSB0 -r 115200 "api/v1/settings?delta=true&format=pretty" -g
+```
+
+A partial document is accepted, so the file may hold only the fields to update. See
+[config/settings/ellipse_example.json](config/settings/ellipse_example.json) for a minimal
+example, and the [sbgInsRestApi reference](https://developer.sbg-systems.com/sbgInsRestApi/)
+for the settings available on your product and firmware version.
+
+The driver reads the device reply to know whether the new settings require a reboot. When they
+do, it saves them to the FLASH memory, reboots the device and reopens the communication
+interface, all before it starts publishing.
 
 > [!NOTE]
-> The confWithRos parameter will only impact the configuration of the SBG device sensor, not the configuration of the ROS2 drivers themselves. 
-> This means you can still configure RTCM corrections, reference frames, etc. when you set confWithRos to false.
-> The confWithRos parameter must be disabled for HPI and pulse-40 products.
+> `confWithRos` only impacts the configuration of the SBG device, not the configuration of the
+> ROS2 driver itself. RTCM corrections, reference frames, published topics, etc. are still
+> configured from the yaml file when `confWithRos` is false.
+
+#### Deprecated: configuring from yaml parameters
+Before this release the device settings were described by dedicated yaml parameters
+(`sensorParameters`, `imuAlignementLeverArm`, `aidingAssignment`, `gnss`, `odom`, `output.log_*`,
+...) and applied with sbgECom binary commands. Those commands are deprecated by sbgECom itself
+and only cover the ELLIPSE family.
+
+That path is still built by default and still works, so an existing configuration keeps running
+after upgrading, but it now logs a deprecation warning. It is only selected when the connected
+device does not support the sbgInsRestApi, which is the case for ELLIPSE firmware v2 and before.
+
+[config/legacy/sbg_device_uart_legacy.yaml](config/legacy/sbg_device_uart_legacy.yaml) is kept as
+a reference for that format. To build without the deprecated path at all:
+
+```
+colcon build --cmake-args -DSBG_USE_DEPRECATED_ECOM_CONFIG=OFF
+```
+
+The option will default to `OFF`, then be removed, in future releases. Migrate by exporting your
+device settings to a JSON file as described above.
 
 ### Configure for RTK/DGPS
 The `sbg_device` node can subscribe to [rtcm_msgs/Message](https://github.com/tilk/rtcm_msgs/blob/master/msg/Message.msg) topics to forward differential corrections to the INS internal GNSS receiver.
@@ -322,6 +385,17 @@ You can read more information about magnetic field calibration procedure from th
 
 The ROS2 driver provides a dedicated node to easily use ELLIPSE on board magnetic field calibration algorithms.  
 The ELLIPSE offers both a 2D and 3D magnetic field calibration mode.
+
+The procedure runs over the [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/). On
+devices that don't support it, such as ELLIPSE firmware v2 and before, the driver falls back to
+the deprecated sbgECom magnetic calibration commands, which requires a driver built with
+`SBG_USE_DEPRECATED_ECOM_CONFIG` (the current default).
+
+> [!NOTE]
+> The `calibration.bandwidth` parameter has been removed from the configuration files. It has no
+> effect on ELLIPSE firmware v3.0 and above and has no sbgInsRestApi equivalent. It is only read
+> on the deprecated fallback path, see
+> [config/legacy/sbg_device_uart_legacy.yaml](config/legacy/sbg_device_uart_legacy.yaml).
 
 1) Make sure you have selected the desired 2D or 3D magnetic field calibration mode (`calibration.mode` in the configuration `yaml` file).
 2) Start a new magnetic calibration session once you are ready to map the magnetic field:
@@ -474,12 +548,12 @@ output:
   # Frame of the IMU body (FLU) and frame of the GNSS antenna
   frame_id: "imu_link"
   gps_frame_id: "gps_link"
-  # SBG outputs required by the standard topics
-  log_imu_data: 8       # /imu/data, /imu/velocity
-  log_ekf_quat: 8       # /imu/data orientation
-  log_gps1_pos: 10001   # /imu/nav_sat_fix
-  log_utc_time: 200     # /imu/utc_ref
 ```
+
+Each standard topic is built from several SBG logs, and is only published once the logs it needs
+have been received. Make sure the device is configured to output them — `imuData` (or `imuShort`)
+and `ekfQuat` for `/imu/data` and `/imu/velocity`, `gps1Pos` for `/imu/nav_sat_fix`, `utcTime`
+for `/imu/utc_ref` — see [Configure the SBG device](#configure-the-sbg-device).
 
 ### Topics and frames
 
@@ -510,6 +584,7 @@ In order to contribute to the code, please use Pull requests to the `devel` bran
 If you have some feature requests, use the [Issue Tracker](https://github.com/SBG-Systems/sbg_ros2_driver/issues) as well.
 
 ## Known limitations
-> Baudrate configuration is not possible via ROS2 and can only be done in sbgCenter or using sbgECom library.
 > Device information is not displayed for Pulse-40.
-> GNSS and RTCM port configurations are not possible via ROS2.  
+> Every SBG log received is published, so topics are advertised for logs the connected device may never send.
+> The settings file is applied on every launch when `confWithRos` is true. If the device reports that the new settings require a reboot, this writes its FLASH memory and reboots it at each start.
+> Baudrate, GNSS and RTCM port configuration are set through the `ins.settingsFile` document, they have no dedicated ROS2 parameter.  

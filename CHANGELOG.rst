@@ -2,6 +2,18 @@
 Changelog for package sbg_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Configure the INS with the sbgInsRestApi (api/v1/settings) from a JSON settings file referenced by the new ins.settingsFile parameter
+* Remove the INS parameters from the yaml config files, only ROS related ones are left
+* Deprecate the sbgECom command configuration path, built behind the SBG_USE_DEPRECATED_ECOM_CONFIG option (ON by default) and used as a runtime fallback for devices without sbgInsRestApi support
+* Read the device information from the sbgInsRestApi api/v1/info endpoint, falling back to sbgEComCmdGetInfo
+* Run the magnetic calibration over the sbgInsRestApi, falling back to the sbgECom commands
+* Remove the output log rate parameters, every received SBG log is now published
+* Remove the magnetometer calibration bandwidth parameter, it has no sbgInsRestApi equivalent
+* Reopen the communication interface after an operation that reboots the device
+* Add a nlohmann_json dependency
+
 3.4.0 (2026-07-22)
 ------------------
 * Use std::this_thread::sleep_for in log replay
