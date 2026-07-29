@@ -92,27 +92,31 @@ private:
   uint32_t                                                                              max_messages_;
   std::string                                                                           frame_id_;
 
+  //
+  // All the publishers are advertised whatever the device configuration, so which SBG logs
+  // the device actually sends is tracked here. The ROS standard messages are built from
+  // several SBG logs and need to know which ones are available.
+  //
+  bool                                                                                  imu_data_received_;
+  bool                                                                                  imu_short_received_;
+  bool                                                                                  ekf_euler_received_;
+  bool                                                                                  ekf_quat_received_;
+  bool                                                                                  ekf_nav_received_;
+
   //---------------------------------------------------------------------//
   //- Private methods                                                   -//
   //---------------------------------------------------------------------//
 
   /*!
-   * Get the corresponding topic name output for the SBG output mode.
+   * Define the publishers for all the SBG logs.
    *
-   * \param[in] sbg_message_id          SBG message ID.
-   * \return                            Output topic name.
-   */
-  std::string getOutputTopicName(SbgEComMsgId sbg_message_id) const;
-
-  /*!
-   * Initialize the publisher for the specified SBG Id, and the output configuration.
+   * The device outputs are configured with the sbgInsRestApi rather than by the driver,
+   * so every log is published as soon as it is received and all the publishers are
+   * advertised whatever the device configuration.
    *
-   * \param[in] ref_ros_node_handle     Ros Node to advertise the publisher.
-   * \param[in] sbg_msg_id              Id of the SBG message.
-   * \param[in] output_conf             Output configuration.
-   * \param[in] ref_output_topic        Output topic for the publisher.
+   * \param[in] ref_ros_node_handle     Ros Node to advertise the publishers.
    */
-  void initPublisher(rclcpp::Node& ref_ros_node_handle, SbgEComMsgId sbg_msg_id, SbgEComOutputMode output_conf, const std::string &ref_output_topic);
+  void defineSbgPublishers(rclcpp::Node& ref_ros_node_handle);
 
   /*!
    * Define standard ROS publishers.

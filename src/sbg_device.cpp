@@ -8,9 +8,18 @@
 #include <chrono>
 #include <thread>
 
+// External headers
+#include <nlohmann/json.hpp>
+
 // SbgECom headers
 #include <version/sbgVersion.h>
+
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
 #include <commands/sbgEComCmdInterface.h>
+#endif
+
+// Project headers
+#include "settings_applier.h"
 
 using namespace std;
 using sbg::SbgDevice;
@@ -25,25 +34,6 @@ std::string timeToStr()
     return msg.str();
 }
 
-//
-// Static magnetometers maps definition.
-//
-std::map<SbgEComMagCalibQuality, std::string> SbgDevice::g_mag_calib_quality_ = { {SBG_ECOM_MAG_CALIB_QUAL_OPTIMAL, "Quality: optimal"},
-                                                                                  {SBG_ECOM_MAG_CALIB_QUAL_GOOD, "Quality: good"},
-                                                                                  {SBG_ECOM_MAG_CALIB_QUAL_POOR, "Quality: poor"},
-                                                                                  {SBG_ECOM_MAG_CALIB_QUAL_INVALID, "Quality: invalid"}};
-
-std::map<SbgEComMagCalibConfidence, std::string> SbgDevice::g_mag_calib_confidence_ = { {SBG_ECOM_MAG_CALIB_TRUST_HIGH, "Confidence: high"},
-                                                                                        {SBG_ECOM_MAG_CALIB_TRUST_MEDIUM, "Confidence: medium"},
-                                                                                        {SBG_ECOM_MAG_CALIB_TRUST_LOW, "Confidence: low"}};
-
-std::map<SbgEComMagCalibMode, std::string> SbgDevice::g_mag_calib_mode_ = { {SBG_ECOM_MAG_CALIB_MODE_2D, "Mode 2D"},
-                                                                            {SBG_ECOM_MAG_CALIB_MODE_3D, "Mode 3D"}};
-
-std::map<SbgEComMagCalibBandwidth, std::string> SbgDevice::g_mag_calib_bandwidth_ = {{SBG_ECOM_MAG_CALIB_HIGH_BW,   "High Bandwidth"},
-                                                                                     {SBG_ECOM_MAG_CALIB_MEDIUM_BW, "Medium Bandwidth"},
-                                                                                     {SBG_ECOM_MAG_CALIB_LOW_BW,    "Low Bandwidth"}};
-
 /*!
  * Class to handle a connected SBG device.
  */
@@ -53,8 +43,11 @@ std::map<SbgEComMagCalibBandwidth, std::string> SbgDevice::g_mag_calib_bandwidth
 
 SbgDevice::SbgDevice(rclcpp::Node& ref_node_handle):
 ref_node_(ref_node_handle),
+rest_client_(com_handle_),
+rest_api_supported_(false),
 mag_calibration_ongoing_(false),
 mag_calibration_done_(false),
+mag_calib_results_{},
 log_replay_last_timestamp_(0)
 {
   loadParameters();
@@ -140,7 +133,7 @@ void SbgDevice::loadParameters()
   config_store_.loadFromRosNodeHandle(n_private);
 }
 
-void SbgDevice::connect()
+void SbgDevice::openInterface(uint32_t baud_rate)
 {
   SbgErrorCode error_code;
   error_code = SBG_NO_ERROR;
@@ -150,8 +143,8 @@ void SbgDevice::connect()
   //
   if (config_store_.isInterfaceSerial())
   {
-    RCLCPP_INFO(ref_node_.get_logger(), "SBG_DRIVER - serial interface %s at %d bps", config_store_.getUartPortName().c_str(), config_store_.getBaudRate());
-    error_code = sbgInterfaceSerialCreate(&sbg_interface_, config_store_.getUartPortName().c_str(), config_store_.getBaudRate());
+    RCLCPP_INFO(ref_node_.get_logger(), "SBG_DRIVER - serial interface %s at %d bps", config_store_.getUartPortName().c_str(), baud_rate);
+    error_code = sbgInterfaceSerialCreate(&sbg_interface_, config_store_.getUartPortName().c_str(), baud_rate);
   }
   else if (config_store_.isInterfaceUdp())
   {
@@ -180,6 +173,22 @@ void SbgDevice::connect()
   {
     rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Init] Unable to initialize the SbgECom protocol - " + std::string(sbgErrorCodeToString(error_code)));
   }
+}
+
+void SbgDevice::reopenInterface(uint32_t baud_rate)
+{
+  sbgEComClose(&com_handle_);
+  sbgInterfaceDestroy(&sbg_interface_);
+
+  openInterface(baud_rate);
+}
+
+void SbgDevice::connect()
+{
+  SbgErrorCode error_code;
+  error_code = SBG_NO_ERROR;
+
+  openInterface(config_store_.getBaudRate());
 
   if (!config_store_.isInterfaceFile())
   {
@@ -197,10 +206,12 @@ void SbgDevice::connect()
     // is different from the one configured in the config file. Retry with different baudrates.
     error_code = findCurrentDeviceBaudrate();
 
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
     if (error_code == SBG_NO_ERROR && config_store_.checkConfigWithRos())
     {
       setDeviceBaudrate();
     }
+#endif
   }
 }
 
@@ -219,22 +230,7 @@ SbgErrorCode SbgDevice::findCurrentDeviceBaudrate()
       continue;
     }
 
-    sbgEComClose(&com_handle_);
-    sbgInterfaceDestroy(&sbg_interface_);
-
-    error_code = sbgInterfaceSerialCreate(&sbg_interface_, config_store_.getUartPortName().c_str(), br);
-
-    if (error_code != SBG_NO_ERROR)
-    {
-      rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Init] Unable to initialize the interface - " + std::string(sbgErrorCodeToString(error_code)));
-    }
-
-    error_code = sbgEComInit(&com_handle_, &sbg_interface_);
-
-    if (error_code != SBG_NO_ERROR)
-    {
-      rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Init] Unable to initialize the SbgECom protocol - " + std::string(sbgErrorCodeToString(error_code)));
-    }
+    reopenInterface(static_cast<uint32_t>(br));
 
     error_code = readDeviceInfo();
 
@@ -247,6 +243,8 @@ SbgErrorCode SbgDevice::findCurrentDeviceBaudrate()
 
   return error_code;
 }
+
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
 
 void SbgDevice::setDeviceBaudrate()
 {
@@ -275,27 +273,72 @@ void SbgDevice::setDeviceBaudrate()
     rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Reconfig] Unable to save settings on device - " + std::string(sbgErrorCodeToString(error_code)));
   }
 
-  sbgEComClose(&com_handle_);
-  sbgInterfaceDestroy(&sbg_interface_);
-
-  error_code = sbgInterfaceSerialCreate(&sbg_interface_, config_store_.getUartPortName().c_str(), config_store_.getBaudRate());
-
-  if (error_code != SBG_NO_ERROR)
-  {
-    rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Init] Unable to initialize the interface - " + std::string(sbgErrorCodeToString(error_code)));
-  }
-
-  error_code = sbgEComInit(&com_handle_, &sbg_interface_);
-
-  if (error_code != SBG_NO_ERROR)
-  {
-    rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Init] Unable to initialize the SbgECom protocol - " + std::string(sbgErrorCodeToString(error_code)));
-  }
+  reopenInterface(config_store_.getBaudRate());
 
   RCLCPP_INFO(ref_node_.get_logger(), "SBG_DRIVER - successfully reconfigured baudrate to %d", config_store_.getBaudRate());
 }
 
+#endif // SBG_USE_DEPRECATED_ECOM_CONFIG
+
 SbgErrorCode SbgDevice::readDeviceInfo()
+{
+  //
+  // The device information is read with the sbgInsRestApi, which also tells whether the
+  // connected device supports it at all. The deprecated command is used as a fallback for
+  // the devices that don't, such as ELLIPSE firmware v2 and before.
+  //
+  // The error code of the fallback is returned so that connect() can still detect a
+  // baudrate mismatch from a SBG_TIME_OUT.
+  //
+  rest_api_supported_ = (readDeviceInfoFromRestApi() == SBG_NO_ERROR);
+
+  if (rest_api_supported_)
+  {
+    return SBG_NO_ERROR;
+  }
+
+  return readDeviceInfoFromEComCommand();
+}
+
+SbgErrorCode SbgDevice::readDeviceInfoFromRestApi()
+{
+  //
+  // The device may already be streaming logs, discard them so that the reply is not
+  // preceded by a partial frame.
+  //
+  rest_client_.purgeIncoming();
+
+  const auto reply = rest_client_.get("/api/v1/info");
+
+  if (!reply.ok)
+  {
+    return (reply.error_code != SBG_NO_ERROR) ? reply.error_code : SBG_ERROR;
+  }
+
+  const auto info = nlohmann::json::parse(reply.content, nullptr, false);
+
+  if (info.is_discarded() || !info.is_object())
+  {
+    RCLCPP_ERROR(ref_node_.get_logger(), "SBG_DRIVER - The device information is not a valid JSON document");
+    return SBG_ERROR;
+  }
+
+  //
+  // The "mnfVersion" field was named "calibVersion" in the initial sbgInsRestApi implementation.
+  //
+  const auto mnf_version = info.contains("mnfVersion") ? info.value("mnfVersion", std::string()) : info.value("calibVersion", std::string());
+
+  RCLCPP_INFO(ref_node_.get_logger(), "SBG_DRIVER - productCode = %s", info.value("productCode", std::string()).c_str());
+  RCLCPP_INFO(ref_node_.get_logger(), "SBG_DRIVER - serialNumber = %s", info.value("serialNumber", std::string()).c_str());
+  RCLCPP_INFO(ref_node_.get_logger(), "SBG_DRIVER - hardwareRev = %s", info.value("hwRevision", std::string()).c_str());
+  RCLCPP_INFO(ref_node_.get_logger(), "SBG_DRIVER - mnfVersion = %s", mnf_version.c_str());
+  RCLCPP_INFO(ref_node_.get_logger(), "SBG_DRIVER - firmwareRev = %s", info.value("fmwVersion", std::string()).c_str());
+  RCLCPP_INFO(ref_node_.get_logger(), "SBG_DRIVER - bootloaderRev = %s", info.value("btVersion", std::string()).c_str());
+
+  return SBG_NO_ERROR;
+}
+
+SbgErrorCode SbgDevice::readDeviceInfoFromEComCommand()
 {
   SbgEComDeviceInfo device_info;
   SbgErrorCode      error_code;
@@ -350,11 +393,50 @@ void SbgDevice::initSubscribers()
 
 void SbgDevice::configure()
 {
-  if (config_store_.checkConfigWithRos())
+  if (!config_store_.checkConfigWithRos())
   {
+    return;
+  }
+
+  if (config_store_.isInterfaceFile())
+  {
+    RCLCPP_WARN(ref_node_.get_logger(), "SBG_DRIVER - [Config] confWithRos is enabled but the driver is replaying a log file, there is no device to configure.");
+    return;
+  }
+
+  if (!config_store_.getInsSettingsFile().empty())
+  {
+    if (!rest_api_supported_)
+    {
+      rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Config] The connected device doesn't support the sbgInsRestApi, the ins.settingsFile parameter can't be applied.");
+    }
+
+    SettingsApplier settings_applier(rest_client_);
+
+    if (settings_applier.applySettingsFile(config_store_.getInsSettingsFile()))
+    {
+      settings_applier.saveAndReboot();
+      reopenInterface(config_store_.getBaudRate());
+      readDeviceInfo();
+    }
+
+    return;
+  }
+
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
+  if (config_store_.hasLegacyInsParameters())
+  {
+    RCLCPP_WARN(ref_node_.get_logger(), "SBG_DRIVER - [Config] Configuring the device from yaml parameters is deprecated and will be removed in a future release.");
+    RCLCPP_WARN(ref_node_.get_logger(), "SBG_DRIVER - [Config] Export the device settings as a sbgInsRestApi JSON file and reference it with the ins.settingsFile parameter instead.");
+
     ConfigApplier configApplier(com_handle_);
     configApplier.applyConfiguration(config_store_);
+
+    return;
   }
+#endif
+
+  RCLCPP_WARN(ref_node_.get_logger(), "SBG_DRIVER - [Config] confWithRos is enabled but the ins.settingsFile parameter is empty, the device settings are left untouched.");
 }
 
 bool SbgDevice::processMagCalibration(const std::shared_ptr<std_srvs::srv::Trigger::Request> ref_ros_request, std::shared_ptr<std_srvs::srv::Trigger::Response> ref_ros_response)
@@ -429,124 +511,123 @@ bool SbgDevice::saveMagCalibration(const std::shared_ptr<std_srvs::srv::Trigger:
 
 bool SbgDevice::startMagCalibration()
 {
-  SbgErrorCode              error_code;
-  SbgEComMagCalibMode       mag_calib_mode;
-  SbgEComMagCalibBandwidth  mag_calib_bandwidth;
+  const SbgEComMagCalibMode mag_calib_mode = config_store_.getMagnetometerCalibMode();
 
-  mag_calib_mode      = config_store_.getMagnetometerCalibMode();
-  mag_calib_bandwidth = config_store_.getMagnetometerCalibBandwidth();
-
-  error_code = sbgEComCmdMagStartCalib(&com_handle_, mag_calib_mode, mag_calib_bandwidth);
-
-  if (error_code != SBG_NO_ERROR)
+  try
   {
-    RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Unable to start the magnetometer calibration : %s", sbgErrorCodeToString(error_code));
+    MagCalibration mag_calibration(rest_client_, com_handle_, rest_api_supported_);
+
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
+    mag_calibration.start(mag_calib_mode, config_store_.getMagnetometerCalibBandwidth());
+#else
+    mag_calibration.start(mag_calib_mode, SBG_ECOM_MAG_CALIB_HIGH_BW);
+#endif
+  }
+  catch (std::exception const& refE)
+  {
+    RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Unable to start the magnetometer calibration : %s", refE.what());
     return false;
   }
-  else
-  {
-    RCLCPP_INFO(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Start calibration");
-    RCLCPP_INFO(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Mode : %s", g_mag_calib_mode_[mag_calib_mode].c_str());
-    RCLCPP_INFO(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Bandwidth : %s", g_mag_calib_bandwidth_[mag_calib_bandwidth].c_str());
-    return true;
-  }
+
+  RCLCPP_INFO(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Start calibration");
+  RCLCPP_INFO(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Mode : %s", (mag_calib_mode == SBG_ECOM_MAG_CALIB_MODE_2D) ? "2D" : "3D");
+
+  return true;
 }
 
 bool SbgDevice::endMagCalibration()
 {
-  SbgErrorCode error_code;
-
-  error_code = sbgEComCmdMagComputeCalib(&com_handle_, &mag_calib_results_);
-
-  if (error_code != SBG_NO_ERROR)
+  try
   {
-    RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Unable to compute the magnetometer calibration results : %s", sbgErrorCodeToString(error_code));
+    MagCalibration mag_calibration(rest_client_, com_handle_, rest_api_supported_);
+
+    mag_calib_results_ = mag_calibration.compute(config_store_.getMagnetometerCalibMode());
+  }
+  catch (std::exception const& refE)
+  {
+    RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Unable to compute the magnetometer calibration results : %s", refE.what());
     return false;
   }
-  else
-  {
-    displayMagCalibrationStatusResult();
-    exportMagCalibrationResults();
 
-    return true;
-  }
+  displayMagCalibrationStatusResult();
+  exportMagCalibrationResults();
+
+  return true;
 }
 
 bool SbgDevice::uploadMagCalibrationToDevice()
 {
-  SbgErrorCode error_code;
-
-  if (mag_calib_results_.quality != SBG_ECOM_MAG_CALIB_QUAL_INVALID)
-  {
-    error_code = sbgEComCmdMagSetCalibData(&com_handle_, mag_calib_results_.offset, mag_calib_results_.matrix);
-
-    if (error_code != SBG_NO_ERROR)
-    {
-      RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Unable to set the magnetometers calibration data to the device : %s", sbgErrorCodeToString(error_code));
-      return false;
-    }
-    else
-    {
-      RCLCPP_INFO(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Saving data to the device");
-      ConfigApplier configApplier(com_handle_);
-      configApplier.saveConfiguration();
-      return true;
-    }
-  }
-  else
+  if (mag_calib_results_.quality == "invalid")
   {
     RCLCPP_ERROR(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - The calibration was invalid, it can't be uploaded on the device.");
     return false;
   }
+
+  try
+  {
+    MagCalibration mag_calibration(rest_client_, com_handle_, rest_api_supported_);
+
+    RCLCPP_INFO(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Saving data to the device");
+    mag_calibration.apply(mag_calib_results_);
+
+    //
+    // Saving the calibration reboots the device, the interface has to be reopened to keep
+    // communicating with it.
+    //
+    reopenInterface(config_store_.getBaudRate());
+  }
+  catch (std::exception const& refE)
+  {
+    RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Unable to set the magnetometers calibration data to the device : %s", refE.what());
+    return false;
+  }
+
+  return true;
 }
 
 void SbgDevice::displayMagCalibrationStatusResult() const
 {
-  RCLCPP_INFO(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Quality of the calibration %s", g_mag_calib_quality_[mag_calib_results_.quality].c_str());
-  RCLCPP_INFO(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Calibration results confidence %s", g_mag_calib_confidence_[mag_calib_results_.confidence].c_str());
-
-  SbgEComMagCalibMode mag_calib_mode;
-
-  mag_calib_mode = config_store_.getMagnetometerCalibMode();
+  RCLCPP_INFO(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Quality of the calibration %s", mag_calib_results_.quality.c_str());
+  RCLCPP_INFO(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Calibration results confidence %s", mag_calib_results_.trust.c_str());
 
   //
   // Check the magnetometers calibration status and display the warnings.
   //
-  if (mag_calib_results_.advancedStatus & SBG_ECOM_MAG_CALIB_NOT_ENOUGH_POINTS)
+  if (!mag_calib_results_.enough_points)
   {
     RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Not enough valid points. Maybe you are moving too fast");
   }
-  if (mag_calib_results_.advancedStatus & SBG_ECOM_MAG_CALIB_TOO_MUCH_DISTORTIONS)
+  if (mag_calib_results_.distortion_issue)
   {
     RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Unable to find a calibration solution. Maybe there are too much non static distortions");
   }
-  if (mag_calib_results_.advancedStatus & SBG_ECOM_MAG_CALIB_ALIGNMENT_ISSUE)
+  if (mag_calib_results_.alignment_issue)
   {
     RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - The magnetic calibration has troubles to correct the magnetometers and inertial frame alignment");
   }
-  if (mag_calib_mode == SBG_ECOM_MAG_CALIB_MODE_2D)
+  if (mag_calib_results_.is_2d)
   {
-    if (mag_calib_results_.advancedStatus & SBG_ECOM_MAG_CALIB_X_MOTION_ISSUE)
+    if (!mag_calib_results_.roll_motion_valid)
     {
       RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Too much roll motion for a 2D magnetic calibration");
     }
-    if (mag_calib_results_.advancedStatus & SBG_ECOM_MAG_CALIB_Y_MOTION_ISSUE)
+    if (!mag_calib_results_.pitch_motion_valid)
     {
       RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Too much pitch motion for a 2D magnetic calibration");
     }
   }
   else
   {
-    if (mag_calib_results_.advancedStatus & SBG_ECOM_MAG_CALIB_X_MOTION_ISSUE)
+    if (!mag_calib_results_.roll_motion_valid)
     {
       RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Not enough roll motion for a 3D magnetic calibration");
     }
-    if (mag_calib_results_.advancedStatus & SBG_ECOM_MAG_CALIB_Y_MOTION_ISSUE)
+    if (!mag_calib_results_.pitch_motion_valid)
     {
       RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Not enough pitch motion for a 3D magnetic calibration.");
     }
   }
-  if (mag_calib_results_.advancedStatus & SBG_ECOM_MAG_CALIB_Z_MOTION_ISSUE)
+  if (!mag_calib_results_.yaw_motion_valid)
   {
     RCLCPP_WARN(ref_node_.get_logger(), "SBG DRIVER [Mag Calib] - Not enough yaw motion to compute a valid magnetic calibration");
   }
@@ -554,34 +635,28 @@ void SbgDevice::displayMagCalibrationStatusResult() const
 
 void SbgDevice::exportMagCalibrationResults() const
 {
-  SbgEComMagCalibMode       mag_calib_mode;
-  SbgEComMagCalibBandwidth  mag_calib_bandwidth;
   ostringstream             mag_results_stream;
   string                    output_filename;
 
-  mag_calib_mode      = config_store_.getMagnetometerCalibMode();
-  mag_calib_bandwidth = config_store_.getMagnetometerCalibBandwidth();
-
   mag_results_stream << "SBG DRIVER [Mag Calib]" << endl;
   mag_results_stream << "======= Parameters =======" << endl;
-  mag_results_stream << "* CALIB_MODE = " << g_mag_calib_mode_[mag_calib_mode] << endl;
-  mag_results_stream << "* CALIB_BW = " << g_mag_calib_bandwidth_[mag_calib_bandwidth] << endl;
+  mag_results_stream << "* CALIB_MODE = " << (mag_calib_results_.is_2d ? "Mode 2D" : "Mode 3D") << endl;
 
   mag_results_stream << "======= Results =======" << endl;
-  mag_results_stream << g_mag_calib_quality_[mag_calib_results_.quality] << endl;
-  mag_results_stream << g_mag_calib_confidence_[mag_calib_results_.confidence] << endl;
+  mag_results_stream << "Quality: " << mag_calib_results_.quality << endl;
+  mag_results_stream << "Confidence: " << mag_calib_results_.trust << endl;
   mag_results_stream << "======= Infos =======" << endl;
-  mag_results_stream << "* Used points : " << mag_calib_results_.numPoints << "/" << mag_calib_results_.maxNumPoints << endl;
+  mag_results_stream << "* Used points : " << mag_calib_results_.num_points_used << "/" << mag_calib_results_.max_num_points << endl;
   mag_results_stream << "* Mean, Std, Max" << endl;
-  mag_results_stream << "[Before]\t" << mag_calib_results_.beforeMeanError << "\t" << mag_calib_results_.beforeStdError << "\t" << mag_calib_results_.beforeMaxError << endl;
-  mag_results_stream << "[After]\t" << mag_calib_results_.afterMeanError << "\t" << mag_calib_results_.afterStdError << "\t" << mag_calib_results_.afterMaxError << endl;
-  mag_results_stream << "[Accuracy]\t" << sbgRadToDegf(mag_calib_results_.meanAccuracy) << "\t" << sbgRadToDegf(mag_calib_results_.stdAccuracy) << "\t" << sbgRadToDegf(mag_calib_results_.maxAccuracy) << endl;
-  mag_results_stream << "* Offset\t" << mag_calib_results_.offset[0] << "\t" << mag_calib_results_.offset[1] << "\t" << mag_calib_results_.offset[2] << endl;
+  mag_results_stream << "[Before]\t" << mag_calib_results_.before_mean_error << "\t" << mag_calib_results_.before_std_error << "\t" << mag_calib_results_.before_max_error << endl;
+  mag_results_stream << "[After]\t" << mag_calib_results_.after_mean_error << "\t" << mag_calib_results_.after_std_error << "\t" << mag_calib_results_.after_max_error << endl;
+  mag_results_stream << "[Accuracy]\t" << sbgRadToDegf(mag_calib_results_.mean_accuracy) << "\t" << sbgRadToDegf(mag_calib_results_.std_accuracy) << "\t" << sbgRadToDegf(mag_calib_results_.max_accuracy) << endl;
+  mag_results_stream << "* Offset\t" << mag_calib_results_.hard_iron[0] << "\t" << mag_calib_results_.hard_iron[1] << "\t" << mag_calib_results_.hard_iron[2] << endl;
 
   mag_results_stream << "* Matrix" << endl;
-  mag_results_stream << mag_calib_results_.matrix[0] << "\t" << mag_calib_results_.matrix[1] << "\t" << mag_calib_results_.matrix[2] << endl;
-  mag_results_stream << mag_calib_results_.matrix[3] << "\t" << mag_calib_results_.matrix[4] << "\t" << mag_calib_results_.matrix[5] << endl;
-  mag_results_stream << mag_calib_results_.matrix[6] << "\t" << mag_calib_results_.matrix[7] << "\t" << mag_calib_results_.matrix[8] << endl;
+  mag_results_stream << mag_calib_results_.soft_iron[0] << "\t" << mag_calib_results_.soft_iron[1] << "\t" << mag_calib_results_.soft_iron[2] << endl;
+  mag_results_stream << mag_calib_results_.soft_iron[3] << "\t" << mag_calib_results_.soft_iron[4] << "\t" << mag_calib_results_.soft_iron[5] << endl;
+  mag_results_stream << mag_calib_results_.soft_iron[6] << "\t" << mag_calib_results_.soft_iron[7] << "\t" << mag_calib_results_.soft_iron[8] << endl;
 
   output_filename = "mag_calib_" + timeToStr() + ".txt";
   ofstream output_file(output_filename);

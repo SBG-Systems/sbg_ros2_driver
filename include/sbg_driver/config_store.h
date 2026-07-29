@@ -3,9 +3,13 @@
 *  \author       SBG Systems
 *  \date         13/03/2020
 *
-*  \brief        Class to handle the device configuration.
+*  \brief        Class to handle the driver configuration.
 *
 *  Methods to extract configuration values and load it to the ROS node.
+*
+*  Only the ROS side of the configuration is handled here. The device settings
+*  themselves are configured with the sbgInsRestApi, from the JSON settings file
+*  referenced by the ins.settingsFile parameter.
 *
 *  \section CodeCopyright Copyright Notice
 *  MIT License
@@ -40,8 +44,10 @@
 // ROS headers
 #include <rclcpp/rclcpp.hpp>
 
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
 // Project headers
 #include "sbg_vector3.h"
+#endif
 
 namespace sbg
 {
@@ -55,14 +61,17 @@ namespace sbg
   };
 
 /*!
- * Class to handle the device configuration.
+ * Class to handle the driver configuration.
  */
 class ConfigStore
 {
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
 public:
 
   /*!
    * Structure to define the SBG log output.
+   *
+   * \deprecated Only used by the deprecated sbgECom command configuration path.
    */
   struct SbgLogOutput
   {
@@ -70,11 +79,11 @@ public:
     SbgEComMsgId              message_id;
     SbgEComOutputMode         output_mode;
   };
+#endif
 
 private:
 
   std::string                 uart_port_name_;
-  SbgEComOutputPort           output_port_;
   uint32_t                    uart_baud_rate_;
   std::vector<int64_t>        uart_fallback_baud_rates_;
   bool                        serial_communication_;
@@ -88,29 +97,11 @@ private:
   bool                        file_communication_;
 
   bool                        configure_through_ros_;
+  std::string                 ins_settings_file_;
+  bool                        legacy_params_present_;
 
-  SbgEComInitConditionConf    init_condition_conf_;
-  SbgEComMotionProfileStdIds  motion_profile_model_info_;
-
-  SbgEComSensorAlignmentInfo  sensor_alignement_info_;
-  SbgVector3<float>           sensor_lever_arm_;
-
-  SbgEComAidingAssignConf     aiding_assignement_conf_;
-
-  SbgEComMagModelsStdId       mag_model_info_;
-  SbgEComMagRejectionConf     mag_rejection_conf_;
   SbgEComMagCalibMode         mag_calib_mode_;
-  SbgEComMagCalibBandwidth    mag_calib_bandwidth_;
 
-  SbgEComGnssModelsStdIds     gnss_model_info_;
-  SbgEComGnssInstallation     gnss_installation_;
-  SbgEComGnssRejectionConf    gnss_rejection_conf_;
-
-  SbgEComOdoConf              odometer_conf_;
-  SbgVector3<float>           odometer_lever_arm_;
-  SbgEComOdoRejectionConf     odometer_rejection_conf_;
-
-  std::vector<SbgLogOutput>   output_modes_;
   bool                        ros_standard_output_;
 
   TimeReference               time_reference_;
@@ -131,6 +122,37 @@ private:
 
   bool                        nmea_publish_;
   std::string                 nmea_full_topic_;
+
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
+  //
+  // Parameters below are only read by the deprecated sbgECom command configuration
+  // path, they are configured with the sbgInsRestApi otherwise.
+  //
+  SbgEComOutputPort           output_port_;
+
+  SbgEComMagCalibBandwidth    mag_calib_bandwidth_;
+
+  SbgEComInitConditionConf    init_condition_conf_;
+  SbgEComMotionProfileStdIds  motion_profile_model_info_;
+
+  SbgEComSensorAlignmentInfo  sensor_alignement_info_;
+  SbgVector3<float>           sensor_lever_arm_;
+
+  SbgEComAidingAssignConf     aiding_assignement_conf_;
+
+  SbgEComMagModelsStdId       mag_model_info_;
+  SbgEComMagRejectionConf     mag_rejection_conf_;
+
+  SbgEComGnssModelsStdIds     gnss_model_info_;
+  SbgEComGnssInstallation     gnss_installation_;
+  SbgEComGnssRejectionConf    gnss_rejection_conf_;
+
+  SbgEComOdoConf              odometer_conf_;
+  SbgVector3<float>           odometer_lever_arm_;
+  SbgEComOdoRejectionConf     odometer_rejection_conf_;
+
+  std::vector<SbgLogOutput>   output_modes_;
+#endif
 
   //---------------------------------------------------------------------//
   //- Private  methods                                                  -//
@@ -184,46 +206,18 @@ private:
   void loadCommunicationParameters(const rclcpp::Node& ref_node_handle);
 
   /*!
-   * Load sensor parameters.
+   * Load device configuration parameters.
    *
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
-  void loadSensorParameters(const rclcpp::Node& ref_node_handle);
+  void loadInsParameters(const rclcpp::Node& ref_node_handle);
 
   /*!
-   * Load IMU alignement parameters.
-   *
-   * \param[in] ref_node_handle   ROS nodeHandle.
-   */
-  void loadImuAlignementParameters(const rclcpp::Node& ref_node_handle);
-
-  /*!
-   * Load aiding assignement parameters.
-   *
-   * \param[in] ref_node_handle   ROS nodeHandle.
-   */
-  void loadAidingAssignementParameters(const rclcpp::Node& ref_node_handle);
-
-  /*!
-   * Load magnetometers parameters.
+   * Load magnetic calibration parameters.
    *
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
   void loadMagnetometersParameters(const rclcpp::Node& ref_node_handle);
-
-  /*!
-   * Load Gnss parameters.
-   *
-   * \param[in] ref_node_handle   ROS nodeHandle.
-   */
-  void loadGnssParameters(const rclcpp::Node& ref_node_handle);
-
-  /*!
-   * Load odometer parameters.
-   *
-   * \param[in] ref_node_handle   ROS nodeHandle.
-   */
-  void loadOdometerParameters(const rclcpp::Node& ref_node_handle);
 
   /*!
    * Load frame parameters.
@@ -231,16 +225,6 @@ private:
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
    void loadOutputFrameParameters(const rclcpp::Node& ref_node_handle);
-
-  /*!
-   * Load the output configuration.
-   *
-   * \param[in] ref_node_handle   ROS nodeHandle.
-   * \param[in] ref_key           String key for the output config.
-   * \param[in] sbg_msg_class     SBG message class.
-   * \param[in] sbg_msg_id        ID of the SBG log.
-   */
-  void loadOutputConfiguration(const rclcpp::Node& ref_node_handle, const std::string& ref_key, SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id);
 
   /*!
    * Load output time reference.
@@ -264,6 +248,76 @@ private:
    */
   void loadNmeaParameters(const rclcpp::Node& ref_node_handle);
 
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
+
+  /*!
+   * Load sensor parameters.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \param[in] ref_node_handle   ROS nodeHandle.
+   */
+  void loadSensorParameters(const rclcpp::Node& ref_node_handle);
+
+  /*!
+   * Load IMU alignement parameters.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \param[in] ref_node_handle   ROS nodeHandle.
+   */
+  void loadImuAlignementParameters(const rclcpp::Node& ref_node_handle);
+
+  /*!
+   * Load aiding assignement parameters.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \param[in] ref_node_handle   ROS nodeHandle.
+   */
+  void loadAidingAssignementParameters(const rclcpp::Node& ref_node_handle);
+
+  /*!
+   * Load Gnss parameters.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \param[in] ref_node_handle   ROS nodeHandle.
+   */
+  void loadGnssParameters(const rclcpp::Node& ref_node_handle);
+
+  /*!
+   * Load odometer parameters.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \param[in] ref_node_handle   ROS nodeHandle.
+   */
+  void loadOdometerParameters(const rclcpp::Node& ref_node_handle);
+
+  /*!
+   * Load the output configuration.
+   *
+   * \deprecated Configure the device outputs with the sbgInsRestApi instead.
+   *
+   * \param[in] ref_node_handle   ROS nodeHandle.
+   * \param[in] ref_key           String key for the output config.
+   * \param[in] sbg_msg_class     SBG message class.
+   * \param[in] sbg_msg_id        ID of the SBG log.
+   */
+  void loadOutputConfiguration(const rclcpp::Node& ref_node_handle, const std::string& ref_key, SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_id);
+
+  /*!
+   * Load all the deprecated device configuration parameters.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \param[in] ref_node_handle   ROS nodeHandle.
+   */
+  void loadDeprecatedInsParameters(const rclcpp::Node& ref_node_handle);
+
+#endif // SBG_USE_DEPRECATED_ECOM_CONFIG
+
 public:
 
   //---------------------------------------------------------------------//
@@ -280,11 +334,25 @@ public:
   //---------------------------------------------------------------------//
 
   /*!
-   * Check if the configuration should be done with ROS.
+   * Check if the device should be configured by the driver.
    *
    * \return                      True if the ROS driver has to configure the device.
    */
   bool checkConfigWithRos() const;
+
+  /*!
+   * Get the path to the sbgInsRestApi JSON settings file to apply to the device.
+   *
+   * \return                      Path to the settings file, empty if the device settings should be left untouched.
+   */
+  const std::string &getInsSettingsFile() const;
+
+  /*!
+   * Check if the configuration holds deprecated device configuration parameters.
+   *
+   * \return                      True if deprecated device configuration parameters are defined.
+   */
+  bool hasLegacyInsParameters() const;
 
   /*!
    * Check if the interface configuration is a serial interface.
@@ -313,13 +381,6 @@ public:
    * \return                      Fallback UART serial baudrates.
    */
   const std::vector<int64_t> getFallbackBaudRates() const;
-
-  /*!
-   * Get the output port of the device.
-   *
-   * \return                      SBG device output port.
-   */
-  SbgEComOutputPort getOutputPort() const;
 
   /*!
    * Check if the interface configuration is a UDP interface.
@@ -364,116 +425,11 @@ public:
   const std::string &getFile() const;
 
   /*!
-   * Get the initial conditions configuration.
-   *
-   * \return                                Initial conditions configuration.
-   */
-  const SbgEComInitConditionConf &getInitialConditions() const;
-
-  /*!
-   * Get the motion profile configuration.
-   *
-   * \return                                Motion profile configuration.
-   */
-  const SbgEComMotionProfileStdIds &getMotionProfile() const;
-
-  /*!
-   * Get the sensor alignement configuration.
-   *
-   * \return                                Sensor alignement configuration.
-   */
-  const SbgEComSensorAlignmentInfo &getSensorAlignement() const;
-
-  /*!
-   * Get the sensor lever arm.
-   *
-   * \return                                Sensor lever arm vector (in meters).
-   */
-  const SbgVector3<float> &getSensorLeverArm() const;
-
-  /*!
-   * Get the aiding assignement configuration.
-   *
-   * \return                                Aiding assignement configuration.
-   */
-  const SbgEComAidingAssignConf &getAidingAssignement() const;
-
-  /*!
-   * Get the magnetometer model configuration.
-   *
-   * \return                                Magnetometer model configuration.
-   */
-  const SbgEComMagModelsStdId &getMagnetometerModel() const;
-
-  /*!
-   * Get the magnetometer rejection configuration.
-   *
-   * \return                                Magnetometer rejection configuration.
-   */
-  const SbgEComMagRejectionConf &getMagnetometerRejection() const;
-
-  /*!
    * Get the magnetometer calibration mode.
    *
    * \return                                Magnetometer calibration mode.
    */
   const SbgEComMagCalibMode &getMagnetometerCalibMode() const;
-
-  /*!
-   * Get the magnetometer calibration bandwidth.
-   *
-   * \return                                Magnetometer calibration bandwidth.
-   */
-  const SbgEComMagCalibBandwidth &getMagnetometerCalibBandwidth() const;
-
-  /*!
-   * Get the Gnss model configuration.
-   *
-   * \return                                Gnss model configuration.
-   */
-  const SbgEComGnssModelsStdIds &getGnssModel() const;
-
-  /*!
-   * Get the Gnss installation configuration.
-   *
-   * \return                                Gnss installation configuration.
-   */
-  const SbgEComGnssInstallation &getGnssInstallation() const;
-
-  /*!
-   * Get the Gnss rejection configuration.
-   *
-   * \return                                Gnss rejection configuration.
-   */
-  const SbgEComGnssRejectionConf &getGnssRejection() const;
-
-  /*!
-   * Get the odometer configuration.
-   *
-   * \return                                Odometer configuration.
-   */
-  const SbgEComOdoConf &getOdometerConf() const;
-
-  /*!
-   * Get the odometer lever arm.
-   *
-   * \return                                Odometer lever arm vector (in meters).
-   */
-  const SbgVector3<float> &getOdometerLeverArm() const;
-
-  /*!
-   * Get the odometer rejection.
-   *
-   * \return                                Odometer rejection configuration.
-   */
-  const SbgEComOdoRejectionConf &getOdometerRejection() const;
-
-  /*!
-   * Get all the output modes.
-   *
-   * \return                      Output mode for this config store.
-   */
-  const std::vector<SbgLogOutput> &getOutputModes() const;
 
   /*!
    * Check if the ROS standard outputs are defined.
@@ -538,7 +494,7 @@ public:
    * \return                      Odometry base frame ID.
    */
   const std::string &getOdomBaseFrameId() const;
-  
+
   /*!
    * Get the odometry init frame ID.
    *
@@ -582,6 +538,155 @@ public:
    * \return                      String with NMEA namespace + topic.
    */
   const std::string &getNmeaFullTopic() const;
+
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
+
+  /*!
+   * Get the magnetometer calibration bandwidth.
+   *
+   * \deprecated The sbgInsRestApi has no such parameter, it is not used anymore by
+   *             the devices supporting it.
+   *
+   * \return                                Magnetometer calibration bandwidth.
+   */
+  const SbgEComMagCalibBandwidth &getMagnetometerCalibBandwidth() const;
+
+  /*!
+   * Get the output port of the device.
+   *
+   * \deprecated Configure the device outputs with the sbgInsRestApi instead.
+   *
+   * \return                      SBG device output port.
+   */
+  SbgEComOutputPort getOutputPort() const;
+
+  /*!
+   * Get the initial conditions configuration.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \return                                Initial conditions configuration.
+   */
+  const SbgEComInitConditionConf &getInitialConditions() const;
+
+  /*!
+   * Get the motion profile configuration.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \return                                Motion profile configuration.
+   */
+  const SbgEComMotionProfileStdIds &getMotionProfile() const;
+
+  /*!
+   * Get the sensor alignement configuration.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \return                                Sensor alignement configuration.
+   */
+  const SbgEComSensorAlignmentInfo &getSensorAlignement() const;
+
+  /*!
+   * Get the sensor lever arm.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \return                                Sensor lever arm vector (in meters).
+   */
+  const SbgVector3<float> &getSensorLeverArm() const;
+
+  /*!
+   * Get the aiding assignement configuration.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \return                                Aiding assignement configuration.
+   */
+  const SbgEComAidingAssignConf &getAidingAssignement() const;
+
+  /*!
+   * Get the magnetometer model configuration.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \return                                Magnetometer model configuration.
+   */
+  const SbgEComMagModelsStdId &getMagnetometerModel() const;
+
+  /*!
+   * Get the magnetometer rejection configuration.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \return                                Magnetometer rejection configuration.
+   */
+  const SbgEComMagRejectionConf &getMagnetometerRejection() const;
+
+  /*!
+   * Get the Gnss model configuration.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \return                                Gnss model configuration.
+   */
+  const SbgEComGnssModelsStdIds &getGnssModel() const;
+
+  /*!
+   * Get the Gnss installation configuration.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \return                                Gnss installation configuration.
+   */
+  const SbgEComGnssInstallation &getGnssInstallation() const;
+
+  /*!
+   * Get the Gnss rejection configuration.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \return                                Gnss rejection configuration.
+   */
+  const SbgEComGnssRejectionConf &getGnssRejection() const;
+
+  /*!
+   * Get the odometer configuration.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \return                                Odometer configuration.
+   */
+  const SbgEComOdoConf &getOdometerConf() const;
+
+  /*!
+   * Get the odometer lever arm.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \return                                Odometer lever arm vector (in meters).
+   */
+  const SbgVector3<float> &getOdometerLeverArm() const;
+
+  /*!
+   * Get the odometer rejection.
+   *
+   * \deprecated Configure the device with the sbgInsRestApi instead.
+   *
+   * \return                                Odometer rejection configuration.
+   */
+  const SbgEComOdoRejectionConf &getOdometerRejection() const;
+
+  /*!
+   * Get all the output modes.
+   *
+   * \deprecated Configure the device outputs with the sbgInsRestApi instead.
+   *
+   * \return                      Output mode for this config store.
+   */
+  const std::vector<SbgLogOutput> &getOutputModes() const;
+
+#endif // SBG_USE_DEPRECATED_ECOM_CONFIG
 
   //---------------------------------------------------------------------//
   //- Operations                                                        -//

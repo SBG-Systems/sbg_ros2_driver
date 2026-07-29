@@ -3,10 +3,16 @@
 *  \author       SBG Systems
 *  \date         13/03/2020
 *
-*  \brief        Apply configuration to the device.
+*  \brief        Apply configuration to the device using deprecated sbgECom commands.
 *
 *  Class takes a configuration from config_store and send all commands to the
 *  device to apply it.
+*
+*  \deprecated   All device settings are now managed with the sbgInsRestApi, see
+*                the SettingsApplier class. This class is only kept to configure
+*                devices that don't support the sbgInsRestApi, such as ELLIPSE
+*                firmware v2 and before, and is only built when the
+*                SBG_USE_DEPRECATED_ECOM_CONFIG option is enabled.
 *
 *  \section CodeCopyright Copyright Notice
 *  MIT License
@@ -34,6 +40,8 @@
 
 #ifndef CONFIG_APPLIER_H
 #define CONFIG_APPLIER_H
+
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
 
 // Standard headers
 #include <limits>
@@ -210,5 +218,7 @@ public:
   void saveConfiguration();
 };
 }
+
+#endif // SBG_USE_DEPRECATED_ECOM_CONFIG
 
 #endif // CONFIG_APPLIER_H
