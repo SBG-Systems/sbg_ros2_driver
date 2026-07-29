@@ -34,7 +34,6 @@
 
 // Standard headers
 #include <iostream>
-#include <map>
 #include <string>
 
 // ROS headers
@@ -45,7 +44,9 @@
 // Project headers
 #include <config_applier.h>
 #include <config_store.h>
+#include <mag_calibration.h>
 #include <message_publisher.h>
+#include <rest_api_client.h>
 
 namespace sbg
 {
@@ -57,15 +58,6 @@ class SbgDevice
 private:
 
   //---------------------------------------------------------------------//
-  //- Static members definition                                         -//
-  //---------------------------------------------------------------------//
-
-  static std::map<SbgEComMagCalibQuality, std::string>      g_mag_calib_quality_;
-  static std::map<SbgEComMagCalibConfidence, std::string>   g_mag_calib_confidence_;
-  static std::map<SbgEComMagCalibMode, std::string>         g_mag_calib_mode_;
-  static std::map<SbgEComMagCalibBandwidth, std::string>    g_mag_calib_bandwidth_;
-
-  //---------------------------------------------------------------------//
   //- Private variables                                                 -//
   //---------------------------------------------------------------------//
 
@@ -75,11 +67,14 @@ private:
   MessagePublisher                                          message_publisher_;
   ConfigStore                                               config_store_;
 
+  RestApiClient                                             rest_client_;
+  bool                                                      rest_api_supported_;
+
   uint32_t                                                  rate_frequency_;
 
   bool                                                      mag_calibration_ongoing_;
   bool                                                      mag_calibration_done_;
-  SbgEComMagCalibResults                                    mag_calib_results_;
+  MagCalibResults                                           mag_calib_results_;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr        calib_service_;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr        calib_save_service_;
 
@@ -125,11 +120,47 @@ private:
   void connect();
 
   /*!
+   * Create the communication interface from the configuration and initialize the sbgECom protocol.
+   *
+   * \param[in] baud_rate         Serial baudrate to open the interface with. Ignored for the other interfaces.
+   * \throw                       Unable to open the interface.
+   */
+  void openInterface(uint32_t baud_rate);
+
+  /*!
+   * Close then reopen the communication interface and the sbgECom protocol.
+   *
+   * Used after an operation that reboots the device, and to switch the serial baudrate.
+   *
+   * \param[in] baud_rate         Serial baudrate to reopen the interface with. Ignored for the other interfaces.
+   * \throw                       Unable to reopen the interface.
+   */
+  void reopenInterface(uint32_t baud_rate);
+
+  /*!
    * Read the device informations.
+   *
+   * The sbgInsRestApi api/v1/info endpoint is used first. If the connected device doesn't
+   * support it, the deprecated sbgEComCmdGetInfo command is used instead and the error
+   * code of that command is returned, so that the baudrate detection keeps working.
    *
    * \return                      SBG_NO_ERROR if reading device info succeeded.
    */
   SbgErrorCode readDeviceInfo();
+
+  /*!
+   * Read and log the device informations using the sbgInsRestApi.
+   *
+   * \return                      SBG_NO_ERROR if reading device info succeeded.
+   */
+  SbgErrorCode readDeviceInfoFromRestApi();
+
+  /*!
+   * Read and log the device informations using the deprecated sbgEComCmdGetInfo command.
+   *
+   * \return                      SBG_NO_ERROR if reading device info succeeded.
+   */
+  SbgErrorCode readDeviceInfoFromEComCommand();
 
   /*!
    * Find the baudrate currently configured on the device.
@@ -139,12 +170,19 @@ private:
    */
   SbgErrorCode findCurrentDeviceBaudrate();
 
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
+
   /*!
    * Use the current baudrate to set the baudrate configured in the config file.
+   *
+   * \deprecated Set the device baudrate with the sbgInsRestApi, from the settings file
+   *             referenced by the ins.settingsFile parameter.
    *
    * \throw                       Unable to read the device information.
    */
   void setDeviceBaudrate();
+
+#endif // SBG_USE_DEPRECATED_ECOM_CONFIG
 
   /*!
    * Get the SBG version as a string.

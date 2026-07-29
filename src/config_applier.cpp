@@ -1,6 +1,8 @@
 // File header
 #include <config_applier.h>
 
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
+
 using sbg::ConfigApplier;
 
 /*!
@@ -454,3 +456,5 @@ void ConfigApplier::saveConfiguration()
     RCLCPP_INFO(rclcpp::get_logger("Config"), "SBG_DRIVER - Settings saved and device rebooted.");
   }
 }
+
+#endif // SBG_USE_DEPRECATED_ECOM_CONFIG
