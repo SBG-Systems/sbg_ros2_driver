@@ -25,6 +25,7 @@
   <depend>tf2_msgs</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>nmea_msgs</depend>
+  <depend>nlohmann-json-dev</depend>
 
   <build_depend>urdf</build_depend>
 
