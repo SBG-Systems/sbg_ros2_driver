@@ -1,0 +1,10 @@
+{
+  "output": {
+    "comA": {
+      "messages": {
+        "imuShort": "40ms",
+        "ekfEuler": "40ms"
+      }
+    }
+  }
+}
