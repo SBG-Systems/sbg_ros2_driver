@@ -15,6 +15,12 @@ find_package(tf2_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(nmea_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
+find_package(nlohmann_json REQUIRED)
+
+## Build the deprecated sbgECom command device configuration path.
+## Only needed for devices that don't support the sbgInsRestApi, such as ELLIPSE firmware
+## v2 and before. This option will default to OFF then be removed in a future release.
+option(SBG_USE_DEPRECATED_ECOM_CONFIG "Build the deprecated sbgECom command device configuration path" ON)
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -33,6 +39,7 @@ set (USED_LIBRARIES
   ${tf2_msgs_TARGETS}
   ${tf2_geometry_msgs_TARGETS}
   ${nmea_msgs_TARGETS}
+  nlohmann_json::nlohmann_json
 )
 
 set (msg_files
@@ -94,14 +101,20 @@ include_directories(
 
 ## Define common resources.
 set (SBG_COMMON_RESOURCES
-  src/config_applier.cpp
+  src/mag_calibration.cpp
   src/message_publisher.cpp
   src/message_wrapper.cpp
   src/config_store.cpp
+  src/rest_api_client.cpp
   src/sbg_device.cpp
   src/sbg_utm.cpp
   src/sbg_ros_helpers.cpp
+  src/settings_applier.cpp
 )
+
+if(SBG_USE_DEPRECATED_ECOM_CONFIG)
+  list(APPEND SBG_COMMON_RESOURCES src/config_applier.cpp)
+endif()
 
 ## Declare a C++ executable
 add_executable(sbg_device ${SBG_COMMON_RESOURCES} src/main.cpp)
@@ -118,6 +131,11 @@ if(WIN32)
 target_compile_options(sbg_device_mag PRIVATE)
 else()
 target_compile_options(sbg_device_mag PRIVATE -Wall -Wextra)
+endif()
+
+if(SBG_USE_DEPRECATED_ECOM_CONFIG)
+  target_compile_definitions(sbg_device PRIVATE SBG_USE_DEPRECATED_ECOM_CONFIG)
+  target_compile_definitions(sbg_device_mag PRIVATE SBG_USE_DEPRECATED_ECOM_CONFIG)
 endif()
 
 ## Specify libraries to link a library or executable target against
@@ -184,6 +202,8 @@ ament_export_dependencies(
     tf2_ros
     tf2_msgs
     tf2_geometry_msgs
+    nmea_msgs
+    nlohmann_json
     rosidl_default_runtime
 )
 
