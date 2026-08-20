@@ -2,12 +2,12 @@
 # Example configuration for an Ellipse-D (dual-antenna GNSS).
 #
 # This is the only example that configures the device, to demonstrate the sbgInsRestApi
-# workflow: ins.settingsFile below points at a JSON settings document that is applied to
-# the api/v1/settings endpoint at startup.
+# workflow: ins.settingsFile below points at a JSON settings export document that is applied
+# to the api/v1/settings/import endpoint at startup.
 #
-# Note: The shipped example settings file only sets a couple of output messages. Export the
+# Note: The shipped example settings file only sets a subset of the device settings. Export the
 #       settings of a configured device to get a complete starting point:
-#         sbgEComApi -s /dev/ttyUSB0 -r 921600 api/v1/settings -g
+#         sbgEComApi -s /dev/ttyUSB0 -r 921600 api/v1/settings/export -g
 #
 /**:
   ros__parameters:

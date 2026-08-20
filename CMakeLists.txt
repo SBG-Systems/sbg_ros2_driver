@@ -16,6 +16,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(nmea_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(CURL REQUIRED)
 
 ## Build the deprecated sbgECom command device configuration path.
 ## Only needed for devices that don't support the sbgInsRestApi, such as ELLIPSE firmware
@@ -40,6 +41,7 @@ set (USED_LIBRARIES
   ${tf2_geometry_msgs_TARGETS}
   ${nmea_msgs_TARGETS}
   nlohmann_json::nlohmann_json
+  CURL::libcurl
 )
 
 set (msg_files

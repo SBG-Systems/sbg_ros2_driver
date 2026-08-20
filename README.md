@@ -35,6 +35,8 @@ User can install the sbg_ros2_driver through the standard ROS2 installation syst
 #### Dependencies
 * [Robot Operating System (ROS2)](https://docs.ros.org/)
 * [sbgECom C Library](https://github.com/SBG-Systems/sbgECom) (embeds v4.0.1987-stable - compatible with ELLIPSE firmware 2.5 and above)
+* [nlohmann/json](https://github.com/nlohmann/json) (rosdep key `nlohmann-json-dev`)
+* [libcurl](https://curl.se/libcurl/) (rosdep key `libcurl-dev`)
 
 #### Building
 1. Clone the repository (use a Release version)
@@ -108,7 +110,7 @@ device, showing the `ins.settingsFile` workflow.
 
 ### Settings and legacy files
 * **settings/ellipse_example.json**
-Minimal sbgInsRestApi settings document, used by `ellipse_D_default.yaml`.
+Minimal sbgInsRestApi settings export document, used by `ellipse_D_default.yaml`.
 
 * **legacy/sbg_device_uart_legacy.yaml**
 Reference for the deprecated yaml device configuration format, see
@@ -304,7 +306,9 @@ Only ELLIPSE products support magnetic based heading and feature the on-board ma
 ### Configure the SBG device
 The SBG ROS2 driver can configure the device before starting data parsing. The device settings
 are described by a [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/) JSON
-document, which the driver sends to the `api/v1/settings` endpoint at startup.
+export document, which the driver sends to the `api/v1/settings/import` endpoint at startup. That
+endpoint migrates the document to the firmware of the connected device, so the same file keeps
+working after a firmware upgrade.
 
 Enable the configuration and point the driver at the settings file:
 
@@ -322,20 +326,25 @@ Use the device web interface, or the `sbgEComApi` command line tool shipped with
 
 ```
 # Export the current settings of the device
-sbgEComApi -s /dev/ttyUSB0 -r 115200 api/v1/settings -g > my_device_settings.json
+sbgEComApi -s /dev/ttyUSB0 -r 115200 api/v1/settings/export -g > my_device_settings.json
 
 # Only the settings that differ from the device defaults
-sbgEComApi -s /dev/ttyUSB0 -r 115200 "api/v1/settings?delta=true&format=pretty" -g
+sbgEComApi -s /dev/ttyUSB0 -r 115200 "api/v1/settings/export?delta=true&format=pretty" -g
 ```
 
-A partial document is accepted, so the file may hold only the fields to update. See
+The exported document holds the settings in a `settings` object, which may list either the full
+settings or only the fields to update. See
 [config/settings/ellipse_example.json](config/settings/ellipse_example.json) for a minimal
 example, and the [sbgInsRestApi reference](https://developer.sbg-systems.com/sbgInsRestApi/)
 for the settings available on your product and firmware version.
 
-The driver reads the device reply to know whether the new settings require a reboot. When they
-do, it saves them to the FLASH memory, reboots the device and reopens the communication
-interface, all before it starts publishing.
+A device reached over Ethernet is configured by uploading the document to its HTTP server on port
+80, which must be reachable from the machine running the driver. On a serial interface, the document
+goes through the sbgECom API tunnel instead.
+
+The device saves the imported settings to its FLASH memory and reboots. The driver waits for the
+device to boot, reopens the communication interface and reads the device information again, all
+before it starts publishing.
 
 > [!NOTE]
 > `confWithRos` only impacts the configuration of the SBG device, not the configuration of the

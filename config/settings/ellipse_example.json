@@ -1,10 +1,72 @@
 {
-  "output": {
-    "comA": {
-      "messages": {
-        "imuShort": "40ms",
-        "ekfEuler": "40ms"
-      }
-    }
-  }
+	"id": "sbgSettings",
+	"version": "1.2.0.0",
+	"settings": {
+		"insFilter": {
+			"validityThresholds": {
+				"rollPitch": 0.5,
+				"heading": 2.0,
+				"velocity": 1.5,
+				"position": 3.0
+			}
+		},
+		"aiding": {
+			"gnss1": {
+				"model":			"internal",
+				"source":			"internal",
+				"sync":				"internal"
+			},
+			"magnetometer": {
+				"source":			"internal",
+				"model":			"internalNormal",
+				"useMagData":		"never"
+			},
+			"airData": {
+				"source":			"internal",
+				"model":			"internal",
+				"useAirSpeed":		"never",
+				"useAltitude":		"never"
+			}
+		},
+		"clock": {
+			"source":				"gnss"
+		},
+		"gnss": {
+			"pvt": {
+				"ppp":				false,
+				"sbas":				true
+			},
+			"security": {
+				"im":				"normal",
+				"osnma":			"loose"
+			},
+			"tracking": {
+				"bds":				true,
+				"gal":				true,
+				"glo":				true,
+				"gps":				true,
+				"qzss":				true
+			}
+		},
+		"output": {
+			"comA": {
+				"messages": {
+					"status":		"1000ms",
+					"utcTime":		"1000ms",
+					"imuShort":		"40ms",
+					"mag":			"40ms",
+					"ekfQuat":		"40ms",
+					"ekfNav":		"40ms",
+					"shipMotion":	"100ms",
+					"gps1Vel":		"onChange",
+					"gps1Pos":		"onChange",
+					"gps1Hdt":		"onChange",
+					"airData":		"onChange"
+				}
+			}
+		},
+		"ports": {
+			"comA": { "mode": "rs232", "baudrate": 115200 }
+		}
+	}
 }

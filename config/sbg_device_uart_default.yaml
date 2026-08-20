@@ -29,10 +29,11 @@
     ins:
       # Path to a sbgInsRestApi JSON settings file to apply to the device at startup.
       # Note: Only used when confWithRos is true. Leave empty to skip the device configuration.
-      #       The file content is sent as is to the api/v1/settings endpoint, so it may hold
-      #       either the full settings or only the fields to update.
+      #       The file content is sent as is to the api/v1/settings/import endpoint, so it must
+      #       be an export document, holding either the full settings or only the fields to
+      #       update.
       #       Export the settings of a configured device to get a starting point:
-      #         sbgEComApi -s /dev/ttyUSB0 -r 115200 api/v1/settings -g
+      #         sbgEComApi -s /dev/ttyUSB0 -r 115200 api/v1/settings/export -g
       settingsFile: ""
 
     # Uart configuration

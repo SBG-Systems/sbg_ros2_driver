@@ -29,10 +29,12 @@
     ins:
       # Path to a sbgInsRestApi JSON settings file to apply to the device at startup.
       # Note: Only used when confWithRos is true. Leave empty to skip the device configuration.
-      #       The file content is sent as is to the api/v1/settings endpoint, so it may hold
-      #       either the full settings or only the fields to update.
+      #       The file content is sent as is to the api/v1/settings/import endpoint, so it must
+      #       be an export document, holding either the full settings or only the fields to
+      #       update. The file is uploaded to the HTTP server of the device, on ipConf.ipAddress
+      #       port 80, which must be reachable from the machine running the driver.
       #       Export the settings of a configured device to get a starting point:
-      #         sbgEComApi -a <IP_ADDR> -I <UDP_PORT_IN> -O <UDP_PORT_OUT> api/v1/settings -g
+      #         sbgEComApi -a <IP_ADDR> -I <UDP_PORT_IN> -O <UDP_PORT_OUT> api/v1/settings/export -g
       settingsFile: ""
 
     # Udp configuration

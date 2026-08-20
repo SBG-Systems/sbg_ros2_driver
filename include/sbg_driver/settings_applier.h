@@ -5,9 +5,10 @@
 *
 *  \brief        Apply device settings using the sbgInsRestApi.
 *
-*  The settings are provided as a sbgInsRestApi JSON document, as exported by the
-*  device web interface or by the sbgEComApi command line tool, and are sent to
-*  the api/v1/settings endpoint.
+*  The settings are provided as a sbgInsRestApi JSON export document, as exported by
+*  the device web interface or by the sbgEComApi command line tool, and are sent to
+*  the api/v1/settings/import endpoint, either through the sbgECom API tunnel or as
+*  an HTTP file upload for devices reached over Ethernet.
 *
 *  \section CodeCopyright Copyright Notice
 *  MIT License
@@ -52,6 +53,7 @@ class SettingsApplier
 private:
 
   RestApiClient&  ref_client_;
+  std::string     http_host_;
 
 public:
 
@@ -63,8 +65,11 @@ public:
    * Default constructor.
    *
    * \param[in] ref_client                  sbgInsRestApi client.
+   * \param[in] ref_http_host               Host name or IP address of the device HTTP server, used to
+   *                                        import the settings. If empty, the settings are imported
+   *                                        through the sbgECom API tunnel.
    */
-  explicit SettingsApplier(RestApiClient &ref_client);
+  explicit SettingsApplier(RestApiClient &ref_client, const std::string &ref_http_host = "");
 
   //---------------------------------------------------------------------//
   //- Operations                                                        -//
@@ -73,14 +78,22 @@ public:
   /*!
    * Apply a sbgInsRestApi JSON settings file to the device.
    *
-   * The file content is sent as is to the api/v1/settings endpoint, so it may
-   * hold either the full settings or only the fields to update.
+   * The file content is sent as is to the api/v1/settings/import endpoint, which
+   * migrates the document to the firmware of the connected device. It must be a
+   * complete export document, its settings object may hold either the full
+   * settings or only the fields to update.
+   *
+   * The document is uploaded to the device HTTP server when a host has been given to
+   * the constructor, and sent through the sbgECom API tunnel otherwise.
+   *
+   * The device saves the imported settings to its FLASH memory and reboots, which
+   * leaves the communication interface closed, the caller is responsible for
+   * reopening it.
    *
    * \param[in] ref_path                    Path to the JSON settings file.
-   * \return                                True if the device has to be rebooted for the settings to take effect.
    * \throw                                 Unable to read the file, or to apply the settings.
    */
-  bool applySettingsFile(const std::string& ref_path);
+  void applySettingsFile(const std::string& ref_path);
 
   /*!
    * Save the current settings to the device FLASH memory and reboot it.

@@ -4,7 +4,8 @@ Changelog for package sbg_driver
 
 Forthcoming
 -----------
-* Configure the INS with the sbgInsRestApi (api/v1/settings) from a JSON settings file referenced by the new ins.settingsFile parameter
+* Configure the INS with the sbgInsRestApi (api/v1/settings/import) from a JSON settings export document referenced by the new ins.settingsFile parameter, uploaded to the HTTP server of the device on an Ethernet interface and sent through the sbgECom API tunnel on a serial one
+* Add a libcurl dependency
 * Remove the INS parameters from the yaml config files, only ROS related ones are left
 * Deprecate the sbgECom command configuration path, built behind the SBG_USE_DEPRECATED_ECOM_CONFIG option (ON by default) and used as a runtime fallback for devices without sbgInsRestApi support
 * Read the device information from the sbgInsRestApi api/v1/info endpoint, falling back to sbgEComCmdGetInfo

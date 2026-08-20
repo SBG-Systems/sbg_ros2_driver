@@ -411,14 +411,25 @@ void SbgDevice::configure()
       rclcpp::exceptions::throw_from_rcl_error(RCL_RET_ERROR, "SBG_DRIVER - [Config] The connected device doesn't support the sbgInsRestApi, the ins.settingsFile parameter can't be applied.");
     }
 
-    SettingsApplier settings_applier(rest_client_);
+    //
+    // Devices reached over Ethernet import the settings through their HTTP server, the sbgECom
+    // API tunnel can't carry the file upload the endpoint expects.
+    //
+    std::string http_host;
 
-    if (settings_applier.applySettingsFile(config_store_.getInsSettingsFile()))
+    if (config_store_.isInterfaceUdp())
     {
-      settings_applier.saveAndReboot();
-      reopenInterface(config_store_.getBaudRate());
-      readDeviceInfo();
+      char ip[16];
+
+      sbgNetworkIpToString(config_store_.getIpAddress(), ip, sizeof(ip));
+      http_host = ip;
     }
+
+    SettingsApplier settings_applier(rest_client_, http_host);
+
+    settings_applier.applySettingsFile(config_store_.getInsSettingsFile());
+    reopenInterface(config_store_.getBaudRate());
+    readDeviceInfo();
 
     return;
   }
