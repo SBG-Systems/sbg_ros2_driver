@@ -226,6 +226,7 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_index_cpp REQUIRED)
+  find_package(launch_testing_ament_cmake REQUIRED)
 
   ## external/sbgECom is bundled upstream code and is not part of the ROS driver's lint scope.
   ## The linters match exclusions per file, so the whole subtree is listed explicitly.
@@ -249,6 +250,15 @@ if(BUILD_TESTING)
   ## Check that launch, config, urdf and meshes resources are actually installed
   ament_add_gtest(test_install_resources test/test_install_resources.cpp)
   target_link_libraries(test_install_resources ament_index_cpp::ament_index_cpp)
+
+  ## The integration test replays a recorded sbgECom stream through the sbg_device
+  ## executable. Its resources are installed so that the test resolves them from the
+  ## install space rather than from the source tree.
+  install(DIRECTORY test/config test/data
+    DESTINATION share/${PROJECT_NAME}/test
+  )
+
+  add_launch_test(test/test_replay_launch.py TIMEOUT 240)
 endif()
 
 ament_package()
