@@ -224,6 +224,8 @@ ament_export_include_directories(
 ## reformatting change.
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_index_cpp REQUIRED)
 
   ## external/sbgECom is bundled upstream code and is not part of the ROS driver's lint scope.
   ## The linters match exclusions per file, so the whole subtree is listed explicitly.
@@ -231,6 +233,22 @@ if(BUILD_TESTING)
   set(AMENT_LINT_AUTO_FILE_EXCLUDE ${_external_files})
 
   ament_lint_auto_find_test_dependencies()
+
+  ament_add_gtest(test_sbg_ros_helpers test/test_sbg_ros_helpers.cpp)
+  target_link_libraries(test_sbg_ros_helpers sbg_driver_core)
+
+  ament_add_gtest(test_sbg_utm test/test_sbg_utm.cpp)
+  target_link_libraries(test_sbg_utm sbg_driver_core)
+
+  ament_add_gtest(test_message_wrapper test/test_message_wrapper.cpp)
+  target_link_libraries(test_message_wrapper sbg_driver_core)
+
+  ament_add_gtest(test_config_store test/test_config_store.cpp)
+  target_link_libraries(test_config_store sbg_driver_core)
+
+  ## Check that launch, config, urdf and meshes resources are actually installed
+  ament_add_gtest(test_install_resources test/test_install_resources.cpp)
+  target_link_libraries(test_install_resources ament_index_cpp::ament_index_cpp)
 endif()
 
 ament_package()
