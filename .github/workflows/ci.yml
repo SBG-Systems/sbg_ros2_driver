@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Resolve dependencies with rosdep, then run colcon build, colcon test and
+  # colcon test-result --verbose for each supported ROS 2 distribution.
+  # Linters run as part of colcon test through ament_lint_auto.
+  #
+  # The containers only ship the CI tooling, not ROS itself, so rosdep install
+  # validates that package.xml declares every dependency the driver needs.
+  build-test:
+    name: build-test (${{ matrix.ros_distribution }})
+    runs-on: ubuntu-24.04
+    container:
+      image: ${{ matrix.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Humble Hawksbill - Ubuntu 22.04 (May 2022 - May 2027)
+          - ros_distribution: humble
+            container: rostooling/setup-ros-docker:ubuntu-jammy-latest
+
+          # Jazzy Jalisco - Ubuntu 24.04 (May 2024 - May 2029)
+          - ros_distribution: jazzy
+            container: rostooling/setup-ros-docker:ubuntu-noble-latest
+
+          # Lyrical Luth - Ubuntu 26.04 (May 2026 - May 2031)
+          - ros_distribution: lyrical
+            container: rostooling/setup-ros-docker:ubuntu-resolute-latest
+
+    steps:
+      - name: Build and test sbg_driver
+        uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          package-name: sbg_driver
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          # Coverage collection is out of scope for this first CI iteration.
+          coverage-result: false
