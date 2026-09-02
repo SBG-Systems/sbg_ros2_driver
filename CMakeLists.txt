@@ -28,7 +28,7 @@ option(SBG_USE_DEPRECATED_ECOM_CONFIG "Build the deprecated sbgECom command devi
 ################################################
 
 ## Generate messages in the 'msg' folder
-set (USED_LIBRARIES
+set(USED_LIBRARIES
   rclcpp::rclcpp
   ${sensor_msgs_TARGETS}
   ${std_msgs_TARGETS}
@@ -44,7 +44,7 @@ set (USED_LIBRARIES
   CURL::libcurl
 )
 
-set (msg_files
+set(msg_files
   "msg/SbgGpsVelStatus.msg"
   "msg/SbgGpsPosStatus.msg"
   "msg/SbgMagStatus.msg"
@@ -102,7 +102,7 @@ include_directories(
 )
 
 ## Define common resources.
-set (SBG_COMMON_RESOURCES
+set(SBG_COMMON_RESOURCES
   src/mag_calibration.cpp
   src/message_publisher.cpp
   src/message_wrapper.cpp
@@ -162,7 +162,7 @@ endif()
 
 ## Mark executables and/or libraries for installation
 install(TARGETS sbg_device sbg_device_mag
-   DESTINATION lib/${PROJECT_NAME}
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 ## Mark cpp header files for installation
@@ -215,8 +215,22 @@ ament_export_include_directories(
     include
 )
 
-ament_package()
-
 #############
 ## Testing ##
 #############
+
+## ament_uncrustify, ament_cpplint and ament_copyright are not enabled yet: the driver
+## sources predate the ament code style and turning them on requires a dedicated
+## reformatting change.
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+
+  ## external/sbgECom is bundled upstream code and is not part of the ROS driver's lint scope.
+  ## The linters match exclusions per file, so the whole subtree is listed explicitly.
+  file(GLOB_RECURSE _external_files "${CMAKE_CURRENT_SOURCE_DIR}/external/*")
+  set(AMENT_LINT_AUTO_FILE_EXCLUDE ${_external_files})
+
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()
