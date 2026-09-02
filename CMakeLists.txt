@@ -261,27 +261,42 @@ if(BUILD_TESTING)
     DESTINATION share/${PROJECT_NAME}/test
   )
 
-  ## The launch test starts a plain python3, which then loads the rosidl extension modules.
-  ## When the build is instrumented those modules carry AddressSanitizer, and ASan refuses to
-  ## initialize from a library loaded after the process has started. Preloading its runtime
-  ## fixes the load order. Nothing is added to the environment of a normal build.
-  set(SBG_LAUNCH_TEST_ARGS "")
-
-  if(CMAKE_C_FLAGS MATCHES "-fsanitize=[^ ]*address" OR CMAKE_CXX_FLAGS MATCHES "-fsanitize=[^ ]*address")
+  ## Ask the compiler where one of its runtime libraries lives, for LD_PRELOAD.
+  function(sbg_resolve_runtime_library ref_output_var ref_library_name)
     execute_process(
-      COMMAND ${CMAKE_C_COMPILER} -print-file-name=libasan.so
-      RESULT_VARIABLE SBG_ASAN_RUNTIME_RESULT
-      OUTPUT_VARIABLE SBG_ASAN_RUNTIME
+      COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=${ref_library_name}
+      RESULT_VARIABLE resolve_result
+      OUTPUT_VARIABLE resolved_path
       OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
-    if(NOT SBG_ASAN_RUNTIME_RESULT EQUAL 0 OR NOT IS_ABSOLUTE "${SBG_ASAN_RUNTIME}")
-      message(FATAL_ERROR "AddressSanitizer is enabled but its runtime could not be resolved: "
-        "${CMAKE_C_COMPILER} -print-file-name=libasan.so returned '${SBG_ASAN_RUNTIME}'")
+    if(NOT resolve_result EQUAL 0 OR NOT IS_ABSOLUTE "${resolved_path}" OR NOT EXISTS "${resolved_path}")
+      message(FATAL_ERROR "Could not resolve ${ref_library_name}: ${CMAKE_CXX_COMPILER} "
+        "-print-file-name=${ref_library_name} returned '${resolved_path}'")
     endif()
 
-    message(STATUS "Launch tests will preload the AddressSanitizer runtime ${SBG_ASAN_RUNTIME}")
-    list(APPEND SBG_LAUNCH_TEST_ARGS ENV "LD_PRELOAD=${SBG_ASAN_RUNTIME}")
+    set(${ref_output_var} "${resolved_path}" PARENT_SCOPE)
+  endfunction()
+
+  ## The launch test starts a plain python3, which then loads the rosidl extension modules.
+  ## When the build is instrumented those modules carry AddressSanitizer, and ASan refuses to
+  ## initialize from a library loaded after the process has started, so its runtime has to be
+  ## preloaded.
+  ##
+  ## The C++ runtime has to be preloaded as well: python3 doesn't link it, so ASan would find
+  ## no __cxa_throw to chain its interceptor to, and would abort the moment a library loaded
+  ## later throws, which Fast DDS does while opening its transports. The ASan runtime must
+  ## stay first in the list, otherwise it is back to being loaded too late.
+  ##
+  ## Nothing is added to the environment of a normal build.
+  set(SBG_LAUNCH_TEST_ARGS "")
+
+  if(CMAKE_C_FLAGS MATCHES "-fsanitize=[^ ]*address" OR CMAKE_CXX_FLAGS MATCHES "-fsanitize=[^ ]*address")
+    sbg_resolve_runtime_library(SBG_ASAN_RUNTIME libasan.so)
+    sbg_resolve_runtime_library(SBG_CXX_RUNTIME libstdc++.so.6)
+
+    message(STATUS "Launch tests will preload ${SBG_ASAN_RUNTIME} and ${SBG_CXX_RUNTIME}")
+    list(APPEND SBG_LAUNCH_TEST_ARGS ENV "LD_PRELOAD=${SBG_ASAN_RUNTIME}:${SBG_CXX_RUNTIME}")
   endif()
 
   add_launch_test(test/test_replay_launch.py TIMEOUT 240 ${SBG_LAUNCH_TEST_ARGS})
