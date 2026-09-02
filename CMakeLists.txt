@@ -151,9 +151,9 @@ target_compile_options(sbg_driver_core PRIVATE)
 target_compile_options(sbg_device PRIVATE)
 target_compile_options(sbg_device_mag PRIVATE)
 else()
-target_compile_options(sbg_driver_core PRIVATE -Wall -Wextra)
-target_compile_options(sbg_device PRIVATE -Wall -Wextra)
-target_compile_options(sbg_device_mag PRIVATE -Wall -Wextra)
+target_compile_options(sbg_driver_core PRIVATE -Wall -Wextra -Wpedantic)
+target_compile_options(sbg_device PRIVATE -Wall -Wextra -Wpedantic)
+target_compile_options(sbg_device_mag PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
 #############
