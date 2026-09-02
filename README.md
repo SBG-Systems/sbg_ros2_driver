@@ -1,4 +1,6 @@
 # sbg_driver
+[![CI](https://github.com/SBG-Systems/sbg_ros2_driver/actions/workflows/ci.yml/badge.svg)](https://github.com/SBG-Systems/sbg_ros2_driver/actions/workflows/ci.yml)
+
 ROS2 driver package for SBG Systems IMU, AHRS and INS.  
 This driver package uses the [sbgECom binary protocol](https://github.com/SBG-Systems/sbgECom) to read data and configure SBG Systems devices.  
 
@@ -52,6 +54,17 @@ cd ../..
 colcon build
 source install/setup.bash
 ```
+
+#### Testing
+The unit tests and the ament linters are run through the standard colcon test tooling:
+
+```
+colcon test --packages-select sbg_driver
+colcon test-result --verbose
+```
+
+The same steps run on GitHub Actions for every pull request and every push to `master`, against
+ROS2 Humble (Ubuntu 22.04), Jazzy (Ubuntu 24.04) and Lyrical (Ubuntu 26.04).
 
 
 ## Usage
