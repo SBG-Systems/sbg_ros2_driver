@@ -118,41 +118,43 @@ if(SBG_USE_DEPRECATED_ECOM_CONFIG)
   list(APPEND SBG_COMMON_RESOURCES src/config_applier.cpp)
 endif()
 
-## Declare a C++ executable
-add_executable(sbg_device ${SBG_COMMON_RESOURCES} src/main.cpp)
-add_dependencies(sbg_device ${PROJECT_NAME})
-if(WIN32)
-target_compile_options(sbg_device PRIVATE)
-else()
-target_compile_options(sbg_device PRIVATE -Wall -Wextra)
-endif()
+rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
-add_executable(sbg_device_mag ${SBG_COMMON_RESOURCES} src/main_mag.cpp)
-add_dependencies(sbg_device_mag ${PROJECT_NAME})
-if(WIN32)
-target_compile_options(sbg_device_mag PRIVATE)
-else()
-target_compile_options(sbg_device_mag PRIVATE -Wall -Wextra)
-endif()
-
-if(SBG_USE_DEPRECATED_ECOM_CONFIG)
-  target_compile_definitions(sbg_device PRIVATE SBG_USE_DEPRECATED_ECOM_CONFIG)
-  target_compile_definitions(sbg_device_mag PRIVATE SBG_USE_DEPRECATED_ECOM_CONFIG)
-endif()
+## Declare the driver library, shared by the executables and the tests
+add_library(sbg_driver_core STATIC ${SBG_COMMON_RESOURCES})
+add_dependencies(sbg_driver_core ${PROJECT_NAME})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(sbg_device sbgECom)
-target_link_libraries(sbg_device_mag sbgECom)
+target_link_libraries(sbg_driver_core PUBLIC sbgECom)
+target_link_libraries(sbg_driver_core PUBLIC ${USED_LIBRARIES})
+target_link_libraries(sbg_driver_core PUBLIC "${cpp_typesupport_target}")
 
-target_link_libraries(sbg_device ${USED_LIBRARIES}) 
-target_link_libraries(sbg_device_mag ${USED_LIBRARIES})
+if(SBG_USE_DEPRECATED_ECOM_CONFIG)
+  target_compile_definitions(sbg_driver_core PUBLIC SBG_USE_DEPRECATED_ECOM_CONFIG)
+endif()
 
-rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
-target_link_libraries(sbg_device "${cpp_typesupport_target}")
-target_link_libraries(sbg_device_mag "${cpp_typesupport_target}")
+set_property(TARGET sbg_driver_core PROPERTY CXX_STANDARD 14)
+
+## Declare a C++ executable
+add_executable(sbg_device src/main.cpp)
+target_link_libraries(sbg_device sbg_driver_core)
+
+add_executable(sbg_device_mag src/main_mag.cpp)
+target_link_libraries(sbg_device_mag sbg_driver_core)
 
 set_property(TARGET sbg_device PROPERTY CXX_STANDARD 14)
 set_property(TARGET sbg_device_mag PROPERTY CXX_STANDARD 14)
+
+## The warning policy only applies to the driver, not to the bundled sbgECom
+if(WIN32)
+target_compile_options(sbg_driver_core PRIVATE)
+target_compile_options(sbg_device PRIVATE)
+target_compile_options(sbg_device_mag PRIVATE)
+else()
+target_compile_options(sbg_driver_core PRIVATE -Wall -Wextra)
+target_compile_options(sbg_device PRIVATE -Wall -Wextra)
+target_compile_options(sbg_device_mag PRIVATE -Wall -Wextra)
+endif()
 
 #############
 ## Install ##
