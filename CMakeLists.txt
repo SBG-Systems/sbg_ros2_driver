@@ -241,6 +241,9 @@ if(BUILD_TESTING)
   ament_add_gtest(test_sbg_utm test/test_sbg_utm.cpp)
   target_link_libraries(test_sbg_utm sbg_driver_core)
 
+  ament_add_gtest(test_sbg_stream_buffer test/test_sbg_stream_buffer.cpp)
+  target_link_libraries(test_sbg_stream_buffer sbgECom)
+
   ament_add_gtest(test_message_wrapper test/test_message_wrapper.cpp)
   target_link_libraries(test_message_wrapper sbg_driver_core)
 
