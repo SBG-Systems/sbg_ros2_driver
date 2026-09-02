@@ -35,6 +35,11 @@
   <exec_depend>xacro</exec_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
 
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_cmake_cppcheck</test_depend>
+  <test_depend>ament_cmake_lint_cmake</test_depend>
+  <test_depend>ament_cmake_xmllint</test_depend>
+
   <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
