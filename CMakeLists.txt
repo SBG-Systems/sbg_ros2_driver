@@ -296,7 +296,15 @@ if(BUILD_TESTING)
     sbg_resolve_runtime_library(SBG_CXX_RUNTIME libstdc++.so.6)
 
     message(STATUS "Launch tests will preload ${SBG_ASAN_RUNTIME} and ${SBG_CXX_RUNTIME}")
-    list(APPEND SBG_LAUNCH_TEST_ARGS ENV "LD_PRELOAD=${SBG_ASAN_RUNTIME}:${SBG_CXX_RUNTIME}")
+
+    ## rosidl_typesupport_cpp caches the type support library for the lifetime of the process,
+    ## so creating a node is enough for LeakSanitizer to report it. Only that loader is
+    ## suppressed, see test/lsan_suppressions.supp: leaks in the driver are still reported.
+    list(APPEND SBG_LAUNCH_TEST_ARGS
+      ENV
+      "LD_PRELOAD=${SBG_ASAN_RUNTIME}:${SBG_CXX_RUNTIME}"
+      "LSAN_OPTIONS=suppressions=${CMAKE_CURRENT_SOURCE_DIR}/test/lsan_suppressions.supp:print_suppressions=0"
+    )
   endif()
 
   add_launch_test(test/test_replay_launch.py TIMEOUT 240 ${SBG_LAUNCH_TEST_ARGS})

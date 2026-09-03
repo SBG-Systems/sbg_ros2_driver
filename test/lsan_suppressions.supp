@@ -1,0 +1,28 @@
+# LeakSanitizer suppressions for the replay integration test.
+#
+# Only the ROS type support loader is suppressed here. Everything else stays under leak
+# detection: a leak in the driver, in the bundled sbgECom or anywhere else in sbg_device is
+# still reported and still fails the test.
+#
+# rosidl_typesupport_cpp resolves the type support library once per process, through
+# rcpputils::SharedLibrary, and keeps the handle and its path alive for the lifetime of the
+# process on purpose. There is no API to release them, so the blocks are still reachable at
+# exit rather than lost, and creating a single rclcpp::Node is enough to allocate them:
+#
+#   Direct leak of 64 byte(s) in 1 object(s) allocated from:
+#     #0  operator new(unsigned long)
+#     #1  (/opt/ros/lyrical/lib/librosidl_typesupport_cpp.so+0x1a69)
+#     #10 rcl_node_init
+#     #11 rclcpp::node_interfaces::NodeBase::NodeBase(...)
+#     #12 rclcpp::Node::Node(...)
+#     #20 main src/main.cpp:8
+#
+#   Indirect leak of 80 byte(s) in 1 object(s) allocated from:
+#     #1  rcutils_strndup
+#     #2  rcutils_load_shared_library
+#     #3  rcpputils::SharedLibrary::SharedLibrary(...)
+#     #4  (/opt/ros/lyrical/lib/librosidl_typesupport_cpp.so+0x1a7b)
+#
+# Both entries below are taken from those stacks and nothing more.
+leak:librosidl_typesupport_cpp
+leak:rcutils_load_shared_library
