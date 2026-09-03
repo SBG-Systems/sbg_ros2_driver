@@ -26,3 +26,20 @@
 # Both entries below are taken from those stacks and nothing more.
 leak:librosidl_typesupport_cpp
 leak:rcutils_load_shared_library
+
+# The launch_testing orchestrator is a plain python3 that this job does not audit: it only
+# exists to start the driver, and none of this repository's C++ runs in it. Its runtime is
+# instrumented solely because the ASan runtime has to be preloaded for it to load the
+# instrumented rosidl extension modules at all. CPython keeps imported modules alive in
+# sys.modules for the lifetime of the process, so its import machinery is reported at exit:
+#
+#   Direct leak of 76738 byte(s) in 32 object(s) allocated from:
+#     #0  malloc
+#     #1  (/usr/bin/python3.14+0x53d638)
+#     #14 PyImport_ImportModuleLevelObject
+#     #21 PyEval_EvalCode
+#
+# This entry silences allocations attributed to the interpreter binary. It does not affect the
+# sbg_device process, which is audited separately and never has interpreter frames on its
+# stacks, so leaks in the driver and in the bundled sbgECom are still reported.
+leak:/usr/bin/python3
