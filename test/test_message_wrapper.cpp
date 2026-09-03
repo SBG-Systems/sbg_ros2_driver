@@ -13,6 +13,22 @@ namespace
   constexpr double  ANGLE_TOLERANCE   = 1.0e-5;
   constexpr double  QUAT_TOLERANCE    = 1.0e-9;
 
+  //
+  // Odometry reference position, deliberately on the central meridian of UTM zone 32: the
+  // convergence angle is zero there, which keeps the covariance expectations analytical.
+  //
+  constexpr double  ODOM_LATITUDE     = 45.0;
+  constexpr double  ODOM_LONGITUDE    = 9.0;
+  constexpr double  ODOM_ALTITUDE     = 100.0;
+  constexpr double  ODOM_STEP_DEG     = 0.001;
+
+  //
+  // The projection agrees with the closed form expectations below to better than 10 um over
+  // the displacements used here, so a millimetre is a meaningful tolerance.
+  //
+  constexpr double  METER_TOLERANCE   = 1.0e-3;
+  constexpr double  CROSS_TOLERANCE   = 1.0e-2;
+
   /*!
    * Create a fully valid UTC log, so that the message wrapper synchronizes on the UTC time.
    */
@@ -67,6 +83,110 @@ namespace
     log.deltaAngle[2]       = 0.375f;
 
     return log;
+  }
+
+  /*!
+   * Expected easting displacement for a small longitude step, in meters.
+   *
+   * First order transverse Mercator: k0 * nu * cos(lat) * dlon, with nu the prime vertical
+   * radius of curvature. Written out here on purpose, so the expectation doesn't come from
+   * the projection under test.
+   */
+  double expectedEastingDelta(double latitude_deg, double delta_longitude_deg)
+  {
+    constexpr double  WGS84_A     = 6378137.0;
+    constexpr double  WGS84_E     = 0.0818191908;
+    constexpr double  UTM_K0      = 0.9996;
+
+    const double latitude_rad = latitude_deg * M_PI / 180.0;
+    const double eccentricity_sq = WGS84_E * WGS84_E;
+    const double sin_latitude = std::sin(latitude_rad);
+    const double prime_vertical = WGS84_A / std::sqrt(1.0 - eccentricity_sq * sin_latitude * sin_latitude);
+
+    return UTM_K0 * prime_vertical * std::cos(latitude_rad) * (delta_longitude_deg * M_PI / 180.0);
+  }
+
+  /*!
+   * Expected northing displacement for a small latitude step, in meters.
+   *
+   * First order meridian arc: k0 * rho * dlat, with rho the meridional radius of curvature.
+   */
+  double expectedNorthingDelta(double latitude_deg, double delta_latitude_deg)
+  {
+    constexpr double  WGS84_A     = 6378137.0;
+    constexpr double  WGS84_E     = 0.0818191908;
+    constexpr double  UTM_K0      = 0.9996;
+
+    const double latitude_rad = latitude_deg * M_PI / 180.0;
+    const double eccentricity_sq = WGS84_E * WGS84_E;
+    const double sin_latitude = std::sin(latitude_rad);
+    const double denominator = 1.0 - eccentricity_sq * sin_latitude * sin_latitude;
+    const double meridional = WGS84_A * (1.0 - eccentricity_sq) / (denominator * std::sqrt(denominator));
+
+    return UTM_K0 * meridional * (delta_latitude_deg * M_PI / 180.0);
+  }
+
+  /*!
+   * Create an Ekf navigation message with distinct accuracies on each axis.
+   */
+  sbg_driver::msg::SbgEkfNav createNavMessage(double latitude, double longitude, double altitude)
+  {
+    sbg_driver::msg::SbgEkfNav nav_message;
+
+    nav_message.time_stamp  = 1000;
+    nav_message.latitude    = latitude;
+    nav_message.longitude   = longitude;
+    nav_message.altitude    = altitude;
+
+    nav_message.velocity.x  = 1.0;
+    nav_message.velocity.y  = 2.0;
+    nav_message.velocity.z  = 3.0;
+
+    nav_message.velocity_accuracy.x = 0.25;
+    nav_message.velocity_accuracy.y = 0.5;
+    nav_message.velocity_accuracy.z = 0.75;
+
+    //
+    // Equal east and north accuracies on purpose: the production code mixes them through the
+    // convergence angle, and this test is not the place to pin down that mapping.
+    //
+    nav_message.position_accuracy.x = 3.0;
+    nav_message.position_accuracy.y = 3.0;
+    nav_message.position_accuracy.z = 5.0;
+
+    return nav_message;
+  }
+
+  /*!
+   * Create an Ekf Euler message with distinct accuracies on each axis.
+   */
+  sbg_driver::msg::SbgEkfEuler createEulerMessage()
+  {
+    sbg_driver::msg::SbgEkfEuler euler_message;
+
+    euler_message.time_stamp  = 1000;
+    euler_message.angle.x     = 0.25;
+    euler_message.angle.y     = -0.125;
+    euler_message.angle.z     = 0.5;
+    euler_message.accuracy.x  = 2.0;
+    euler_message.accuracy.y  = 3.0;
+    euler_message.accuracy.z  = 4.0;
+
+    return euler_message;
+  }
+
+  /*!
+   * Configure a wrapper for the odometry output, with deterministic frames.
+   */
+  void configureForOdometry(sbg::MessageWrapper &ref_wrapper, bool publish_tf)
+  {
+    ref_wrapper.setUseEnu(true);
+    ref_wrapper.setFrameId("imu_link_test");
+    ref_wrapper.setOdomEnable(true);
+    ref_wrapper.setOdomPublishTf(publish_tf);
+    ref_wrapper.setOdomFrameId("odom_test");
+    ref_wrapper.setOdomBaseFrameId("base_link_test");
+    ref_wrapper.setOdomInitFrameId("map_test");
   }
 
   class MessageWrapperTest : public ::testing::Test
@@ -579,4 +699,580 @@ TEST_F(MessageWrapperTest, insTimestampHandlesDeviceTimestampRollover)
   const auto imu_message = wrapper.createSbgImuDataMessage(createImuLog(0x100));
 
   EXPECT_EQ(rclcpp::Time(imu_message.header.stamp).nanoseconds(), 1672531200000512000LL);
+}
+
+//---------------------------------------------------------------------//
+//- ROS odometry and UTM projection                                   -//
+//---------------------------------------------------------------------//
+
+TEST_F(MessageWrapperTest, odometryFirstFixIsTheOrigin)
+{
+  sbg::MessageWrapper           wrapper;
+  sbg_driver::msg::SbgImuData   imu_message;
+
+  configureForOdometry(wrapper, false);
+
+  imu_message.time_stamp = 2000;
+
+  const auto odo_message = wrapper.createRosOdoMessage(
+    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), createEulerMessage());
+
+  //
+  // The first navigation fix latches the UTM reference, so it is reported at the origin.
+  //
+  EXPECT_NEAR(odo_message.pose.pose.position.x, 0.0, METER_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.pose.position.y, 0.0, METER_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.pose.position.z, 0.0, METER_TOLERANCE);
+}
+
+TEST_F(MessageWrapperTest, odometryReportsDisplacementFromTheFirstFix)
+{
+  sbg::MessageWrapper           wrapper;
+  sbg_driver::msg::SbgImuData   imu_message;
+
+  configureForOdometry(wrapper, false);
+
+  imu_message.time_stamp = 2000;
+
+  const auto euler_message = createEulerMessage();
+
+  wrapper.createRosOdoMessage(
+    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), euler_message);
+
+  //
+  // A step north, with a 10 m altitude gain.
+  //
+  const auto north_message = wrapper.createRosOdoMessage(
+    imu_message,
+    createNavMessage(ODOM_LATITUDE + ODOM_STEP_DEG, ODOM_LONGITUDE, ODOM_ALTITUDE + 10.0),
+    euler_message);
+
+  EXPECT_NEAR(north_message.pose.pose.position.x, 0.0, CROSS_TOLERANCE);
+  EXPECT_NEAR(north_message.pose.pose.position.y,
+              expectedNorthingDelta(ODOM_LATITUDE, ODOM_STEP_DEG), METER_TOLERANCE);
+  EXPECT_NEAR(north_message.pose.pose.position.z, 10.0, METER_TOLERANCE);
+
+  //
+  // A step east, back at the reference altitude.
+  //
+  const auto east_message = wrapper.createRosOdoMessage(
+    imu_message,
+    createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE + ODOM_STEP_DEG, ODOM_ALTITUDE),
+    euler_message);
+
+  EXPECT_NEAR(east_message.pose.pose.position.x,
+              expectedEastingDelta(ODOM_LATITUDE, ODOM_STEP_DEG), METER_TOLERANCE);
+  EXPECT_NEAR(east_message.pose.pose.position.y, 0.0, CROSS_TOLERANCE);
+  EXPECT_NEAR(east_message.pose.pose.position.z, 0.0, METER_TOLERANCE);
+
+  //
+  // Back to the reference position: the origin was latched on the first fix and is never
+  // re-initialized, so this has to land on the origin again.
+  //
+  const auto back_message = wrapper.createRosOdoMessage(
+    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), euler_message);
+
+  EXPECT_NEAR(back_message.pose.pose.position.x, 0.0, METER_TOLERANCE);
+  EXPECT_NEAR(back_message.pose.pose.position.y, 0.0, METER_TOLERANCE);
+  EXPECT_NEAR(back_message.pose.pose.position.z, 0.0, METER_TOLERANCE);
+}
+
+TEST_F(MessageWrapperTest, odometryUsesTheConfiguredFrames)
+{
+  sbg::MessageWrapper           wrapper;
+  sbg_driver::msg::SbgImuData   imu_message;
+
+  configureForOdometry(wrapper, false);
+
+  imu_message.time_stamp = 2000;
+
+  const auto odo_message = wrapper.createRosOdoMessage(
+    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), createEulerMessage());
+
+  EXPECT_EQ(odo_message.header.frame_id, "odom_test");
+
+  //
+  // The twist is reported in the child frame, which the driver sets to the device frame.
+  //
+  EXPECT_EQ(odo_message.child_frame_id, "imu_link_test");
+}
+
+TEST_F(MessageWrapperTest, odometryFillsPoseAndTwistCovariance)
+{
+  sbg::MessageWrapper           wrapper;
+  sbg_driver::msg::SbgImuData   imu_message;
+
+  configureForOdometry(wrapper, false);
+
+  imu_message.time_stamp = 2000;
+
+  const auto odo_message = wrapper.createRosOdoMessage(
+    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), createEulerMessage());
+
+  //
+  // On the zone central meridian the convergence angle is zero, so the horizontal position
+  // variances are the squared horizontal accuracies. They are equal here, which keeps the
+  // check independent of how east and north are mapped onto the grid axes.
+  //
+  EXPECT_NEAR(odo_message.pose.covariance[0], 9.0, METER_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[7], 9.0, METER_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[14], 25.0, METER_TOLERANCE);
+
+  //
+  // Orientation variances come from the Ekf Euler accuracies.
+  //
+  EXPECT_NEAR(odo_message.pose.covariance[21], 4.0, METER_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[28], 9.0, METER_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[35], 16.0, METER_TOLERANCE);
+
+  //
+  // The twist carries the navigation velocity and its squared accuracies. The angular part
+  // has no reported accuracy.
+  //
+  EXPECT_DOUBLE_EQ(odo_message.twist.twist.linear.x, 1.0);
+  EXPECT_DOUBLE_EQ(odo_message.twist.twist.linear.y, 2.0);
+  EXPECT_DOUBLE_EQ(odo_message.twist.twist.linear.z, 3.0);
+
+  EXPECT_NEAR(odo_message.twist.covariance[0], 0.0625, METER_TOLERANCE);
+  EXPECT_NEAR(odo_message.twist.covariance[7], 0.25, METER_TOLERANCE);
+  EXPECT_NEAR(odo_message.twist.covariance[14], 0.5625, METER_TOLERANCE);
+
+  EXPECT_DOUBLE_EQ(odo_message.twist.covariance[21], 0.0);
+  EXPECT_DOUBLE_EQ(odo_message.twist.covariance[28], 0.0);
+  EXPECT_DOUBLE_EQ(odo_message.twist.covariance[35], 0.0);
+}
+
+TEST_F(MessageWrapperTest, odometryPassesTheOrientationThrough)
+{
+  sbg::MessageWrapper           wrapper;
+  sbg_driver::msg::SbgImuData   imu_message;
+
+  configureForOdometry(wrapper, false);
+
+  imu_message.time_stamp = 2000;
+
+  const tf2::Quaternion orientation(0.5, 0.5, 0.5, 0.5);
+
+  const auto odo_message = wrapper.createRosOdoMessage(
+    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE),
+    orientation, createEulerMessage());
+
+  EXPECT_NEAR(odo_message.pose.pose.orientation.x, 0.5, QUAT_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.pose.orientation.y, 0.5, QUAT_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.pose.orientation.z, 0.5, QUAT_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.pose.orientation.w, 0.5, QUAT_TOLERANCE);
+}
+
+TEST_F(MessageWrapperTest, odometryFromImuShortMatchesImuData)
+{
+  sbg::MessageWrapper            wrapper_data;
+  sbg::MessageWrapper            wrapper_short;
+  sbg_driver::msg::SbgImuData    imu_message;
+  sbg_driver::msg::SbgImuShort   imu_short_message;
+
+  configureForOdometry(wrapper_data, false);
+  configureForOdometry(wrapper_short, false);
+
+  imu_message.time_stamp        = 2000;
+  imu_short_message.time_stamp  = 2000;
+
+  const tf2::Quaternion orientation(0.0, 0.0, 0.0, 1.0);
+  const auto euler_message = createEulerMessage();
+  const auto nav_message = createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE);
+
+  wrapper_data.createRosOdoMessage(imu_message, nav_message, orientation, euler_message);
+  wrapper_short.createRosOdoMessage(imu_short_message, nav_message, orientation, euler_message);
+
+  const auto stepped_nav = createNavMessage(
+    ODOM_LATITUDE + ODOM_STEP_DEG, ODOM_LONGITUDE + ODOM_STEP_DEG, ODOM_ALTITUDE + 10.0);
+
+  const auto from_data = wrapper_data.createRosOdoMessage(
+    imu_message, stepped_nav, orientation, euler_message);
+  const auto from_short = wrapper_short.createRosOdoMessage(
+    imu_short_message, stepped_nav, orientation, euler_message);
+
+  //
+  // Both overloads share the whole projection, covariance and frame logic. The angular
+  // velocity is the only part that differs, and it is not compared here: the short IMU
+  // message carries raw delta angle counts.
+  //
+  EXPECT_EQ(from_short.header.frame_id, from_data.header.frame_id);
+  EXPECT_EQ(from_short.child_frame_id, from_data.child_frame_id);
+
+  EXPECT_NEAR(from_short.pose.pose.position.x, from_data.pose.pose.position.x, METER_TOLERANCE);
+  EXPECT_NEAR(from_short.pose.pose.position.y, from_data.pose.pose.position.y, METER_TOLERANCE);
+  EXPECT_NEAR(from_short.pose.pose.position.z, from_data.pose.pose.position.z, METER_TOLERANCE);
+
+  EXPECT_DOUBLE_EQ(from_short.twist.twist.linear.x, from_data.twist.twist.linear.x);
+  EXPECT_DOUBLE_EQ(from_short.twist.twist.linear.y, from_data.twist.twist.linear.y);
+  EXPECT_DOUBLE_EQ(from_short.twist.twist.linear.z, from_data.twist.twist.linear.z);
+
+  for (size_t i = 0; i < 36; i++)
+  {
+    EXPECT_DOUBLE_EQ(from_short.pose.covariance[i], from_data.pose.covariance[i]) << "pose " << i;
+    EXPECT_DOUBLE_EQ(from_short.twist.covariance[i], from_data.twist.covariance[i]) << "twist " << i;
+  }
+}
+
+TEST_F(MessageWrapperTest, odometryIsUnchangedWhenTransformsArePublished)
+{
+  sbg::MessageWrapper           wrapper_without_tf;
+  sbg::MessageWrapper           wrapper_with_tf;
+  sbg_driver::msg::SbgImuData   imu_message;
+
+  configureForOdometry(wrapper_without_tf, false);
+  configureForOdometry(wrapper_with_tf, true);
+
+  imu_message.time_stamp = 2000;
+
+  const tf2::Quaternion orientation(0.0, 0.0, 0.0, 1.0);
+  const auto euler_message = createEulerMessage();
+  const auto nav_message = createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE);
+  const auto stepped_nav = createNavMessage(
+    ODOM_LATITUDE + ODOM_STEP_DEG, ODOM_LONGITUDE, ODOM_ALTITUDE);
+
+  wrapper_without_tf.createRosOdoMessage(imu_message, nav_message, orientation, euler_message);
+  wrapper_with_tf.createRosOdoMessage(imu_message, nav_message, orientation, euler_message);
+
+  const auto without_tf = wrapper_without_tf.createRosOdoMessage(
+    imu_message, stepped_nav, orientation, euler_message);
+  const auto with_tf = wrapper_with_tf.createRosOdoMessage(
+    imu_message, stepped_nav, orientation, euler_message);
+
+  //
+  // Broadcasting the initial and the odometry transforms must not alter the message. The
+  // transforms mirror the pose below, which is asserted here.
+  //
+  EXPECT_EQ(with_tf.header.frame_id, without_tf.header.frame_id);
+  EXPECT_EQ(with_tf.child_frame_id, without_tf.child_frame_id);
+
+  EXPECT_NEAR(with_tf.pose.pose.position.x, without_tf.pose.pose.position.x, METER_TOLERANCE);
+  EXPECT_NEAR(with_tf.pose.pose.position.y, without_tf.pose.pose.position.y, METER_TOLERANCE);
+  EXPECT_NEAR(with_tf.pose.pose.position.z, without_tf.pose.pose.position.z, METER_TOLERANCE);
+
+  EXPECT_NEAR(with_tf.pose.pose.orientation.w, without_tf.pose.pose.orientation.w, QUAT_TOLERANCE);
+}
+
+//---------------------------------------------------------------------//
+//- EKF rotation rate and acceleration, three frame paths             -//
+//---------------------------------------------------------------------//
+
+namespace
+{
+  /*!
+   * Create an Ekf rotation rate and acceleration log with asymmetric axes.
+   */
+  SbgEComLogEkfRotAccel createEkfRotAccelLog()
+  {
+    SbgEComLogEkfRotAccel log{};
+
+    log.timeStamp         = 1000;
+
+    log.rate[0]           = 1.0f;
+    log.rate[1]           = 2.0f;
+    log.rate[2]           = 3.0f;
+
+    log.acceleration[0]   = -4.0f;
+    log.acceleration[1]   = 5.0f;
+    log.acceleration[2]   = -6.0f;
+
+    return log;
+  }
+}
+
+TEST_F(MessageWrapperTest, ekfRotAccelKeepsAxesInNed)
+{
+  sbg::MessageWrapper wrapper;
+
+  wrapper.setUseEnu(false);
+
+  const auto body_message = wrapper.createSbgEkfRotAccelMessage(createEkfRotAccelLog(), true);
+  const auto nav_message = wrapper.createSbgEkfRotAccelMessage(createEkfRotAccelLog(), false);
+
+  //
+  // In NED both the body and the navigation frame logs are passed through untouched.
+  //
+  for (const auto &message : {body_message, nav_message})
+  {
+    EXPECT_DOUBLE_EQ(message.rate.x, 1.0);
+    EXPECT_DOUBLE_EQ(message.rate.y, 2.0);
+    EXPECT_DOUBLE_EQ(message.rate.z, 3.0);
+
+    EXPECT_DOUBLE_EQ(message.acceleration.x, -4.0);
+    EXPECT_DOUBLE_EQ(message.acceleration.y, 5.0);
+    EXPECT_DOUBLE_EQ(message.acceleration.z, -6.0);
+  }
+}
+
+TEST_F(MessageWrapperTest, ekfRotAccelFlipsYAndZInEnuBodyFrame)
+{
+  sbg::MessageWrapper wrapper;
+
+  wrapper.setUseEnu(true);
+
+  const auto message = wrapper.createSbgEkfRotAccelMessage(createEkfRotAccelLog(), true);
+
+  //
+  // Body frame, FRD to FLU: X is kept, Y and Z change sign. No axis is swapped.
+  //
+  EXPECT_DOUBLE_EQ(message.rate.x, 1.0);
+  EXPECT_DOUBLE_EQ(message.rate.y, -2.0);
+  EXPECT_DOUBLE_EQ(message.rate.z, -3.0);
+
+  EXPECT_DOUBLE_EQ(message.acceleration.x, -4.0);
+  EXPECT_DOUBLE_EQ(message.acceleration.y, -5.0);
+  EXPECT_DOUBLE_EQ(message.acceleration.z, 6.0);
+}
+
+TEST_F(MessageWrapperTest, ekfRotAccelSwapsAxesInEnuNavigationFrame)
+{
+  sbg::MessageWrapper wrapper;
+
+  wrapper.setUseEnu(true);
+
+  const auto message = wrapper.createSbgEkfRotAccelMessage(createEkfRotAccelLog(), false);
+
+  //
+  // Navigation frame, NED to ENU: X and Y are swapped and Z changes sign.
+  //
+  EXPECT_DOUBLE_EQ(message.rate.x, 2.0);
+  EXPECT_DOUBLE_EQ(message.rate.y, 1.0);
+  EXPECT_DOUBLE_EQ(message.rate.z, -3.0);
+
+  EXPECT_DOUBLE_EQ(message.acceleration.x, 5.0);
+  EXPECT_DOUBLE_EQ(message.acceleration.y, -4.0);
+  EXPECT_DOUBLE_EQ(message.acceleration.z, 6.0);
+}
+
+//---------------------------------------------------------------------//
+//- EKF body velocity                                                 -//
+//---------------------------------------------------------------------//
+
+namespace
+{
+  /*!
+   * Create an Ekf body velocity log with asymmetric axes.
+   */
+  SbgEComLogEkfVelBody createEkfVelBodyLog()
+  {
+    SbgEComLogEkfVelBody log{};
+
+    log.timeStamp           = 1000;
+
+    log.velocity[0]         = 1.0f;
+    log.velocity[1]         = 2.0f;
+    log.velocity[2]         = 3.0f;
+
+    log.velocityStdDev[0]   = 0.25f;
+    log.velocityStdDev[1]   = 0.5f;
+    log.velocityStdDev[2]   = 0.75f;
+
+    return log;
+  }
+}
+
+TEST_F(MessageWrapperTest, ekfVelBodyKeepsAxesInNed)
+{
+  sbg::MessageWrapper wrapper;
+
+  wrapper.setUseEnu(false);
+
+  const auto message = wrapper.createSbgEkfVelBodyMessage(createEkfVelBodyLog());
+
+  EXPECT_DOUBLE_EQ(message.velocity.x, 1.0);
+  EXPECT_DOUBLE_EQ(message.velocity.y, 2.0);
+  EXPECT_DOUBLE_EQ(message.velocity.z, 3.0);
+
+  EXPECT_DOUBLE_EQ(message.velocity_accuracy.x, 0.25);
+  EXPECT_DOUBLE_EQ(message.velocity_accuracy.y, 0.5);
+  EXPECT_DOUBLE_EQ(message.velocity_accuracy.z, 0.75);
+}
+
+TEST_F(MessageWrapperTest, ekfVelBodyFlipsYAndZInEnu)
+{
+  sbg::MessageWrapper wrapper;
+
+  wrapper.setUseEnu(true);
+
+  const auto message = wrapper.createSbgEkfVelBodyMessage(createEkfVelBodyLog());
+
+  //
+  // Body frame, so Y and Z change sign and no axis is swapped.
+  //
+  EXPECT_DOUBLE_EQ(message.velocity.x, 1.0);
+  EXPECT_DOUBLE_EQ(message.velocity.y, -2.0);
+  EXPECT_DOUBLE_EQ(message.velocity.z, -3.0);
+
+  //
+  // Standard deviations describe a magnitude, they are never negated nor reordered.
+  //
+  EXPECT_DOUBLE_EQ(message.velocity_accuracy.x, 0.25);
+  EXPECT_DOUBLE_EQ(message.velocity_accuracy.y, 0.5);
+  EXPECT_DOUBLE_EQ(message.velocity_accuracy.z, 0.75);
+}
+
+//---------------------------------------------------------------------//
+//- Magnetometer                                                      -//
+//---------------------------------------------------------------------//
+
+namespace
+{
+  /*!
+   * Create a magnetometer log with asymmetric axes and a known status bitmask.
+   */
+  SbgEComLogMag createMagLog()
+  {
+    SbgEComLogMag log{};
+
+    log.timeStamp           = 1000;
+    log.status              = SBG_ECOM_MAG_MAG_X_BIT | SBG_ECOM_MAG_MAG_Z_BIT
+                            | SBG_ECOM_MAG_ACCEL_Y_BIT | SBG_ECOM_MAG_CALIBRATION_OK;
+
+    log.magnetometers[0]    = 0.25f;
+    log.magnetometers[1]    = 0.5f;
+    log.magnetometers[2]    = 0.75f;
+
+    log.accelerometers[0]   = 1.0f;
+    log.accelerometers[1]   = 2.0f;
+    log.accelerometers[2]   = 3.0f;
+
+    return log;
+  }
+}
+
+TEST_F(MessageWrapperTest, magKeepsAxesInNed)
+{
+  sbg::MessageWrapper wrapper;
+
+  wrapper.setUseEnu(false);
+
+  const auto message = wrapper.createSbgMagMessage(createMagLog());
+
+  EXPECT_DOUBLE_EQ(message.mag.x, 0.25);
+  EXPECT_DOUBLE_EQ(message.mag.y, 0.5);
+  EXPECT_DOUBLE_EQ(message.mag.z, 0.75);
+
+  EXPECT_DOUBLE_EQ(message.accel.x, 1.0);
+  EXPECT_DOUBLE_EQ(message.accel.y, 2.0);
+  EXPECT_DOUBLE_EQ(message.accel.z, 3.0);
+}
+
+TEST_F(MessageWrapperTest, magFlipsYAndZInEnu)
+{
+  sbg::MessageWrapper wrapper;
+
+  wrapper.setUseEnu(true);
+
+  const auto message = wrapper.createSbgMagMessage(createMagLog());
+
+  //
+  // Both the magnetic field and the companion accelerometers are body frame vectors, so Y
+  // and Z change sign.
+  //
+  EXPECT_DOUBLE_EQ(message.mag.x, 0.25);
+  EXPECT_DOUBLE_EQ(message.mag.y, -0.5);
+  EXPECT_DOUBLE_EQ(message.mag.z, -0.75);
+
+  EXPECT_DOUBLE_EQ(message.accel.x, 1.0);
+  EXPECT_DOUBLE_EQ(message.accel.y, -2.0);
+  EXPECT_DOUBLE_EQ(message.accel.z, -3.0);
+}
+
+TEST_F(MessageWrapperTest, magDecodesTheStatusBitmask)
+{
+  sbg::MessageWrapper wrapper;
+
+  const auto message = wrapper.createSbgMagMessage(createMagLog());
+
+  EXPECT_TRUE(message.status.mag_x);
+  EXPECT_FALSE(message.status.mag_y);
+  EXPECT_TRUE(message.status.mag_z);
+
+  EXPECT_FALSE(message.status.accel_x);
+  EXPECT_TRUE(message.status.accel_y);
+  EXPECT_FALSE(message.status.accel_z);
+
+  EXPECT_FALSE(message.status.mags_in_range);
+  EXPECT_FALSE(message.status.accels_in_range);
+  EXPECT_TRUE(message.status.calibration);
+}
+
+//---------------------------------------------------------------------//
+//- Ship motion                                                       -//
+//---------------------------------------------------------------------//
+
+namespace
+{
+  /*!
+   * Create a ship motion log with asymmetric axes and a known status bitmask.
+   */
+  SbgEComLogShipMotion createShipMotionLog()
+  {
+    SbgEComLogShipMotion log{};
+
+    log.timeStamp         = 1000;
+    log.status            = SBG_ECOM_SHIP_MOTION_HEAVE_VALID | SBG_ECOM_SHIP_MOTION_SURGE_SWAY_VALID
+                          | SBG_ECOM_SHIP_MOTION_ACCEL_VALID;
+    log.mainHeavePeriod   = 7.5f;
+
+    log.shipMotion[0]     = 1.0f;
+    log.shipMotion[1]     = 2.0f;
+    log.shipMotion[2]     = 3.0f;
+
+    log.shipAccel[0]      = -4.0f;
+    log.shipAccel[1]      = 5.0f;
+    log.shipAccel[2]      = -6.0f;
+
+    log.shipVel[0]        = 0.25f;
+    log.shipVel[1]        = -0.5f;
+    log.shipVel[2]        = 0.75f;
+
+    return log;
+  }
+}
+
+TEST_F(MessageWrapperTest, shipMotionIsPassedThroughInBothConventions)
+{
+  sbg::MessageWrapper wrapper_ned;
+  sbg::MessageWrapper wrapper_enu;
+
+  wrapper_ned.setUseEnu(false);
+  wrapper_enu.setUseEnu(true);
+
+  const auto ned_message = wrapper_ned.createSbgShipMotionMessage(createShipMotionLog());
+  const auto enu_message = wrapper_enu.createSbgShipMotionMessage(createShipMotionLog());
+
+  //
+  // This documents the current behavior: surge, sway and heave and their derivatives are
+  // reported exactly as the device sends them, with no NED to ENU conversion, unlike every
+  // other body frame vector the driver publishes.
+  //
+  for (const auto &message : {ned_message, enu_message})
+  {
+    EXPECT_DOUBLE_EQ(message.ship_motion.x, 1.0);
+    EXPECT_DOUBLE_EQ(message.ship_motion.y, 2.0);
+    EXPECT_DOUBLE_EQ(message.ship_motion.z, 3.0);
+
+    EXPECT_DOUBLE_EQ(message.acceleration.x, -4.0);
+    EXPECT_DOUBLE_EQ(message.acceleration.y, 5.0);
+    EXPECT_DOUBLE_EQ(message.acceleration.z, -6.0);
+
+    EXPECT_DOUBLE_EQ(message.velocity.x, 0.25);
+    EXPECT_DOUBLE_EQ(message.velocity.y, -0.5);
+    EXPECT_DOUBLE_EQ(message.velocity.z, 0.75);
+  }
+}
+
+TEST_F(MessageWrapperTest, shipMotionDecodesTheStatusBitmask)
+{
+  sbg::MessageWrapper wrapper;
+
+  const auto message = wrapper.createSbgShipMotionMessage(createShipMotionLog());
+
+  EXPECT_TRUE(message.status.heave_valid);
+  EXPECT_FALSE(message.status.heave_vel_aided);
+  EXPECT_TRUE(message.status.surge_sway_included);
+  EXPECT_FALSE(message.status.period_valid);
+  EXPECT_FALSE(message.status.swell_mode);
+  EXPECT_TRUE(message.status.accel_valid);
 }
