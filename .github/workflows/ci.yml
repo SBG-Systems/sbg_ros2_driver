@@ -82,3 +82,91 @@ jobs:
                 ]
               }
             }
+
+  # Run the same test suite once more on Lyrical with gcov instrumentation and publish a
+  # coverage report for the driver's own sources. The percentage is informational: no
+  # threshold is enforced, but the job fails if the build, the tests or the report
+  # generation fail.
+  #
+  # Kept separate from the sanitizers job on purpose, so gcov and ASan/UBSan
+  # instrumentation never mix.
+  coverage:
+    name: coverage (lyrical)
+    runs-on: ubuntu-24.04
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-resolute-latest
+
+    steps:
+      - name: Install gcovr
+        run: |
+          apt-get update
+          apt-get install --no-install-recommends -y gcovr
+
+      - name: Build and test sbg_driver with coverage instrumentation
+        id: build
+        uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          package-name: sbg_driver
+          target-ros2-distro: lyrical
+          # gcovr is run explicitly below instead of colcon lcov-result, which
+          # action-ros-ci invokes with the return code ignored and would therefore hide a
+          # coverage collection failure.
+          coverage-result: false
+          colcon-defaults: |
+            {
+              "build": {
+                "cmake-args": [
+                  "-DCMAKE_BUILD_TYPE=Debug",
+                  "-DCMAKE_C_FLAGS=--coverage -fprofile-abs-path",
+                  "-DCMAKE_CXX_FLAGS=--coverage -fprofile-abs-path",
+                  "-DCMAKE_EXE_LINKER_FLAGS=--coverage",
+                  "-DCMAKE_SHARED_LINKER_FLAGS=--coverage"
+                ]
+              }
+            }
+
+      - name: Collect coverage
+        run: |
+          workspace="${GITHUB_WORKSPACE}/${{ steps.build.outputs.ros-workspace-directory-name }}"
+          package="$(dirname "$(find "${workspace}/src" -name package.xml | head -n 1)")"
+
+          echo "package source directory: ${package}"
+          mkdir -p coverage/html
+
+          # The two --filter entries are an allow list, and they are what keeps /usr,
+          # /opt/ros, the build and install trees, the generated interfaces,
+          # external/sbgECom and test/ out of the primary report. gcovr matches filters
+          # against absolute paths, hence the ${package} prefix.
+          gcovr --root "${package}" "${workspace}/build/sbg_driver" \
+            --filter "${package}/src/" \
+            --filter "${package}/include/" \
+            --print-summary \
+            --txt coverage/coverage-summary.txt \
+            --xml coverage/coverage-cobertura.xml \
+            --lcov coverage/coverage.lcov \
+            --html-details coverage/html/index.html
+
+          # gcovr only warns when everything is filtered out, so treat an empty report as
+          # a failure: it means the collection did not work.
+          if ! grep -q '<class ' coverage/coverage-cobertura.xml; then
+            echo "::error::no driver source file ended up in the coverage report"
+            exit 1
+          fi
+
+          # Secondary report, driver plus the bundled sbgECom, for reference only.
+          gcovr --root "${package}" "${workspace}/build/sbg_driver" \
+            --filter "${package}/" \
+            --txt coverage/coverage-summary-with-sbgecom.txt
+
+          {
+            echo '## Coverage - driver sources only'
+            echo '```'
+            cat coverage/coverage-summary.txt
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload the coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-lyrical
+          path: coverage
