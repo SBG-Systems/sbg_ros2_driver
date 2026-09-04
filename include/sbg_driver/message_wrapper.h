@@ -242,6 +242,26 @@ private:
   const geometry_msgs::msg::TwistStamped createRosTwistStampedMessage(const sbg::SbgVector3f& body_vel, const sbg_driver::msg::SbgImuShort& ref_sbg_imu_msg) const;
 
   /*!
+   * Fill the position part of a ROS odometry pose covariance, in the UTM grid frame.
+   *
+   * The Ekf Nav accuracies are the standard deviations of the position error along the true
+   * east, north and vertical axes, and are reported without any correlation. The odometry
+   * position is expressed in the UTM grid frame, whose north differs from the true north by
+   * the meridian convergence angle, so the horizontal covariance has to be rotated:
+   *
+   *   C' = R * C * transpose(R)
+   *
+   * That keeps the trace and the determinant, and creates a cross covariance as soon as the
+   * convergence angle is not zero and the two horizontal accuracies differ.
+   *
+   * Only the indices 0, 1, 6, 7 and 14 are written, the orientation block is left untouched.
+   *
+   * \param[in]  ref_ekf_nav_msg      SBG-ROS Ekf Nav message, in the ENU convention.
+   * \param[out] ref_pose_covariance  Pose covariance to fill, ROS row major 6x6 layout.
+   */
+  void fillOdoPositionCovariance(const sbg_driver::msg::SbgEkfNav &ref_ekf_nav_msg, std::array<double, 36> &ref_pose_covariance) const;
+
+  /*!
    * Convert the raw delta angle of a SBG-ROS short IMU message into an angular velocity.
    *
    * The short IMU logs carry the gyroscope output as scaled integers, using either the

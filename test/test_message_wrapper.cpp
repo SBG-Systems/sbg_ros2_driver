@@ -30,6 +30,19 @@ namespace
   constexpr double  CROSS_TOLERANCE   = 1.0e-2;
 
   //
+  // Second reference position, well off the central meridian, so the meridian convergence
+  // angle is clearly not zero. 45 deg north, 12.5 deg east falls in UTM zone 33, whose
+  // central meridian is 15 deg, giving
+  //   gamma = atan(tan(12.5 - 15) * sin(45)) = -0.030863145672 rad = -1.768328 deg
+  // computed once offline so these tests do not depend on the driver computing it.
+  //
+  constexpr double  OFF_MERIDIAN_LATITUDE   = 45.0;
+  constexpr double  OFF_MERIDIAN_LONGITUDE  = 12.5;
+  constexpr double  CONVERGENCE_ANGLE       = -0.030863145672;
+
+  constexpr double  COVARIANCE_TOLERANCE    = 1.0e-9;
+
+  //
   // sbgECom short IMU gyroscope scale factors, in LSB per rad.s-1. They are derived from their
   // documented definitions rather than copied from the driver: the standard scale is 2^26, and
   // the high range one spreads the full int32 range over 10000 deg.s-1.
@@ -155,8 +168,8 @@ namespace
     nav_message.velocity_accuracy.z = 0.75;
 
     //
-    // Equal east and north accuracies on purpose: the production code mixes them through the
-    // convergence angle, and this test is not the place to pin down that mapping.
+    // Equal east and north accuracies, so the shared odometry expectations stay independent
+    // of the convergence angle rotation. The dedicated covariance tests use asymmetric ones.
     //
     nav_message.position_accuracy.x = 3.0;
     nav_message.position_accuracy.y = 3.0;
@@ -195,6 +208,23 @@ namespace
     ref_wrapper.setOdomFrameId("odom_test");
     ref_wrapper.setOdomBaseFrameId("base_link_test");
     ref_wrapper.setOdomInitFrameId("map_test");
+  }
+
+  /*!
+   * Create a navigation message with asymmetric horizontal accuracies, so an east and north
+   * mix-up cannot go unnoticed.
+   *
+   * sigma east = 3 m, sigma north = 4 m, sigma vertical = 5 m.
+   */
+  sbg_driver::msg::SbgEkfNav createNavMessageForCovariance(double latitude, double longitude)
+  {
+    sbg_driver::msg::SbgEkfNav nav_message = createNavMessage(latitude, longitude, ODOM_ALTITUDE);
+
+    nav_message.position_accuracy.x = 3.0;
+    nav_message.position_accuracy.y = 4.0;
+    nav_message.position_accuracy.z = 5.0;
+
+    return nav_message;
   }
 
   /*!
@@ -1129,6 +1159,133 @@ TEST_F(MessageWrapperTest, odometryWithTransformPublishingMatchesExpectedValues)
   //
   SCOPED_TRACE("transform publishing enabled");
   expectNorthStepOdometry(odo_message);
+}
+
+//---------------------------------------------------------------------//
+//- Odometry position covariance, projected onto the UTM grid         -//
+//---------------------------------------------------------------------//
+
+TEST_F(MessageWrapperTest, odometryPositionCovarianceOnTheCentralMeridian)
+{
+  sbg::MessageWrapper           wrapper;
+  sbg_driver::msg::SbgImuData   imu_message;
+
+  configureForOdometry(wrapper, false);
+
+  imu_message.time_stamp = 2000;
+
+  const auto odo_message = wrapper.createRosOdoMessage(
+    imu_message, createNavMessageForCovariance(ODOM_LATITUDE, ODOM_LONGITUDE),
+    tf2::Quaternion(0.0, 0.0, 0.0, 1.0), createEulerMessage());
+
+  //
+  // On the zone central meridian the convergence angle is zero, so the grid axes coincide
+  // with the true east and north ones: the variances land on the matching axis untouched and
+  // there is no cross covariance. X is the easting, so it gets the east accuracy squared.
+  //
+  EXPECT_NEAR(odo_message.pose.covariance[0], 9.0, COVARIANCE_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[7], 16.0, COVARIANCE_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[14], 25.0, COVARIANCE_TOLERANCE);
+
+  EXPECT_NEAR(odo_message.pose.covariance[1], 0.0, COVARIANCE_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[6], 0.0, COVARIANCE_TOLERANCE);
+}
+
+TEST_F(MessageWrapperTest, odometryPositionCovarianceOffTheCentralMeridian)
+{
+  sbg::MessageWrapper           wrapper;
+  sbg_driver::msg::SbgImuData   imu_message;
+
+  configureForOdometry(wrapper, false);
+
+  imu_message.time_stamp = 2000;
+
+  const auto odo_message = wrapper.createRosOdoMessage(
+    imu_message, createNavMessageForCovariance(OFF_MERIDIAN_LATITUDE, OFF_MERIDIAN_LONGITUDE),
+    tf2::Quaternion(0.0, 0.0, 0.0, 1.0), createEulerMessage());
+
+  //
+  // Build R * C * transpose(R) explicitly here, rather than reusing the closed form the
+  // driver evaluates, so an algebra mistake on either side shows up.
+  //
+  const double cos_gamma = std::cos(CONVERGENCE_ANGLE);
+  const double sin_gamma = std::sin(CONVERGENCE_ANGLE);
+
+  const double rotation[2][2]   = {{cos_gamma, -sin_gamma}, {sin_gamma, cos_gamma}};
+  const double covariance[2][2] = {{9.0, 0.0}, {0.0, 16.0}};
+
+  double rotated_left[2][2] = {{0.0, 0.0}, {0.0, 0.0}};
+  double expected[2][2]     = {{0.0, 0.0}, {0.0, 0.0}};
+
+  for (size_t i = 0; i < 2; i++)
+  {
+    for (size_t j = 0; j < 2; j++)
+    {
+      for (size_t k = 0; k < 2; k++)
+      {
+        rotated_left[i][j] += rotation[i][k] * covariance[k][j];
+      }
+    }
+  }
+
+  for (size_t i = 0; i < 2; i++)
+  {
+    for (size_t j = 0; j < 2; j++)
+    {
+      for (size_t k = 0; k < 2; k++)
+      {
+        expected[i][j] += rotated_left[i][k] * rotation[j][k];
+      }
+    }
+  }
+
+  EXPECT_NEAR(odo_message.pose.covariance[0], expected[0][0], COVARIANCE_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[1], expected[0][1], COVARIANCE_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[6], expected[1][0], COVARIANCE_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[7], expected[1][1], COVARIANCE_TOLERANCE);
+
+  //
+  // The cross covariance is what a standard deviation rotation used to drop. It is small but
+  // unmistakably not zero here.
+  //
+  EXPECT_GT(std::fabs(odo_message.pose.covariance[1]), 0.2);
+  EXPECT_DOUBLE_EQ(odo_message.pose.covariance[1], odo_message.pose.covariance[6]);
+
+  //
+  // A rotation preserves the trace and the determinant, whatever its angle and sign. These
+  // hold for any correct projection and are independent of the expression used above.
+  //
+  EXPECT_NEAR(odo_message.pose.covariance[0] + odo_message.pose.covariance[7], 25.0, COVARIANCE_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[0] * odo_message.pose.covariance[7]
+            - odo_message.pose.covariance[1] * odo_message.pose.covariance[6], 144.0, 1.0e-6);
+
+  //
+  // The vertical axis is not affected by the horizontal rotation.
+  //
+  EXPECT_NEAR(odo_message.pose.covariance[14], 25.0, COVARIANCE_TOLERANCE);
+}
+
+TEST_F(MessageWrapperTest, odometryPositionCovarianceIsRotationInvariantWhenIsotropic)
+{
+  sbg::MessageWrapper           wrapper;
+  sbg_driver::msg::SbgImuData   imu_message;
+
+  configureForOdometry(wrapper, false);
+
+  imu_message.time_stamp = 2000;
+
+  //
+  // createNavMessage() reports the same accuracy east and north, and a rotation cannot change
+  // an isotropic covariance, even well off the central meridian.
+  //
+  const auto odo_message = wrapper.createRosOdoMessage(
+    imu_message, createNavMessage(OFF_MERIDIAN_LATITUDE, OFF_MERIDIAN_LONGITUDE, ODOM_ALTITUDE),
+    tf2::Quaternion(0.0, 0.0, 0.0, 1.0), createEulerMessage());
+
+  EXPECT_NEAR(odo_message.pose.covariance[0], 9.0, COVARIANCE_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[7], 9.0, COVARIANCE_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[1], 0.0, COVARIANCE_TOLERANCE);
+  EXPECT_NEAR(odo_message.pose.covariance[6], 0.0, COVARIANCE_TOLERANCE);
 }
 
 //---------------------------------------------------------------------//

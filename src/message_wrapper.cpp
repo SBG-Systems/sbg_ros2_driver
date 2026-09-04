@@ -1073,6 +1073,41 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
   return imu_ros_message;
 }
 
+void MessageWrapper::fillOdoPositionCovariance(const sbg_driver::msg::SbgEkfNav &ref_ekf_nav_msg, std::array<double, 36> &ref_pose_covariance) const
+{
+  //
+  // Meridian convergence angle, positive when the grid north is clockwise from the true
+  // north, which happens east of the zone central meridian in the northern hemisphere. The
+  // true east and north axes therefore map onto the grid axes through a rotation of that
+  // angle:
+  //
+  //   R = | cos(gamma)  -sin(gamma) |
+  //       | sin(gamma)   cos(gamma) |
+  //
+  const double  convergence_angle = atan(tan(sbgDegToRadd(ref_ekf_nav_msg.longitude) - sbgDegToRadd(utm_.getMeridian()))
+                                       * sin(sbgDegToRadd(ref_ekf_nav_msg.latitude)));
+  const double  cos_convergence = cos(convergence_angle);
+  const double  sin_convergence = sin(convergence_angle);
+
+  const double  variance_east  = ref_ekf_nav_msg.position_accuracy.x * ref_ekf_nav_msg.position_accuracy.x;
+  const double  variance_north = ref_ekf_nav_msg.position_accuracy.y * ref_ekf_nav_msg.position_accuracy.y;
+  const double  variance_up    = ref_ekf_nav_msg.position_accuracy.z * ref_ekf_nav_msg.position_accuracy.z;
+
+  //
+  // Rotating the covariance matrix rather than the standard deviations, so the cross terms
+  // are reported instead of being dropped.
+  //
+  const double  variance_x  = variance_east * cos_convergence * cos_convergence + variance_north * sin_convergence * sin_convergence;
+  const double  variance_y  = variance_east * sin_convergence * sin_convergence + variance_north * cos_convergence * cos_convergence;
+  const double  covariance_xy = (variance_east - variance_north) * sin_convergence * cos_convergence;
+
+  ref_pose_covariance[0*6 + 0] = variance_x;
+  ref_pose_covariance[0*6 + 1] = covariance_xy;
+  ref_pose_covariance[1*6 + 0] = covariance_xy;
+  ref_pose_covariance[1*6 + 1] = variance_y;
+  ref_pose_covariance[2*6 + 2] = variance_up;
+}
+
 const geometry_msgs::msg::Vector3 MessageWrapper::convertImuShortAngularVelocity(const sbg_driver::msg::SbgImuShort& ref_sbg_imu_msg) const
 {
   geometry_msgs::msg::Vector3   angular_velocity;
@@ -1170,21 +1205,8 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   odo_ros_msg.pose.pose.position.y = easting_northing[1] - first_valid_northing_;
   odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - first_valid_altitude_;
 
-  // Compute convergence angle.
-  double longitudeRad      = sbgDegToRadd(ref_ekf_nav_msg.longitude);
-  double latitudeRad       = sbgDegToRadd(ref_ekf_nav_msg.latitude);
-  double central_meridian  = sbgDegToRadd(utm_.getMeridian());
-  double convergence_angle = atan(tan(longitudeRad - central_meridian) * sin(latitudeRad));
-
-  // Convert position standard deviations to UTM frame.
-  double std_east  = ref_ekf_nav_msg.position_accuracy.x;
-  double std_north = ref_ekf_nav_msg.position_accuracy.y;
-  double std_x = std_north * cos(convergence_angle) - std_east * sin(convergence_angle);
-  double std_y = std_north * sin(convergence_angle) + std_east * cos(convergence_angle);
-  double std_z = ref_ekf_nav_msg.position_accuracy.z;
-  odo_ros_msg.pose.covariance[0*6 + 0] = std_x * std_x;
-  odo_ros_msg.pose.covariance[1*6 + 1] = std_y * std_y;
-  odo_ros_msg.pose.covariance[2*6 + 2] = std_z * std_z;
+  // Project the position covariance onto the UTM grid axes.
+  fillOdoPositionCovariance(ref_ekf_nav_msg, odo_ros_msg.pose.covariance);
   odo_ros_msg.pose.covariance[3*6 + 3] = pow(ref_ekf_euler_msg.accuracy.x, 2);
   odo_ros_msg.pose.covariance[4*6 + 4] = pow(ref_ekf_euler_msg.accuracy.y, 2);
   odo_ros_msg.pose.covariance[5*6 + 5] = pow(ref_ekf_euler_msg.accuracy.z, 2);
@@ -1275,21 +1297,8 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   odo_ros_msg.pose.pose.position.y = easting_northing[1] - first_valid_northing_;
   odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - first_valid_altitude_;
 
-  // Compute convergence angle.
-  double longitudeRad      = sbgDegToRadd(ref_ekf_nav_msg.longitude);
-  double latitudeRad       = sbgDegToRadd(ref_ekf_nav_msg.latitude);
-  double central_meridian  = sbgDegToRadd(utm_.getMeridian());
-  double convergence_angle = atan(tan(longitudeRad - central_meridian) * sin(latitudeRad));
-
-  // Convert position standard deviations to UTM frame.
-  double std_east  = ref_ekf_nav_msg.position_accuracy.x;
-  double std_north = ref_ekf_nav_msg.position_accuracy.y;
-  double std_x = std_north * cos(convergence_angle) - std_east * sin(convergence_angle);
-  double std_y = std_north * sin(convergence_angle) + std_east * cos(convergence_angle);
-  double std_z = ref_ekf_nav_msg.position_accuracy.z;
-  odo_ros_msg.pose.covariance[0*6 + 0] = std_x * std_x;
-  odo_ros_msg.pose.covariance[1*6 + 1] = std_y * std_y;
-  odo_ros_msg.pose.covariance[2*6 + 2] = std_z * std_z;
+  // Project the position covariance onto the UTM grid axes.
+  fillOdoPositionCovariance(ref_ekf_nav_msg, odo_ros_msg.pose.covariance);
   odo_ros_msg.pose.covariance[3*6 + 3] = pow(ref_ekf_euler_msg.accuracy.x, 2);
   odo_ros_msg.pose.covariance[4*6 + 4] = pow(ref_ekf_euler_msg.accuracy.y, 2);
   odo_ros_msg.pose.covariance[5*6 + 5] = pow(ref_ekf_euler_msg.accuracy.z, 2);
