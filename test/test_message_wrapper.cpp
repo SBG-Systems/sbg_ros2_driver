@@ -1566,39 +1566,75 @@ namespace
   }
 }
 
-TEST_F(MessageWrapperTest, shipMotionIsPassedThroughInBothConventions)
+TEST_F(MessageWrapperTest, shipMotionKeepsAxesInNed)
 {
   sbg::MessageWrapper wrapper;
 
-  //
-  // The ship motion conversion is stateless, so one wrapper can be reconfigured between the
-  // two conventions instead of running two nodes at once.
-  //
   wrapper.setUseEnu(false);
-  const auto ned_message = wrapper.createSbgShipMotionMessage(createShipMotionLog());
+
+  const auto message = wrapper.createSbgShipMotionMessage(createShipMotionLog());
+
+  //
+  // NED is the SBG Systems native convention, so surge/sway/heave and their derivatives are
+  // reported exactly as the device sends them, with the vertical axis positive down.
+  //
+  EXPECT_DOUBLE_EQ(message.ship_motion.x, 1.0);
+  EXPECT_DOUBLE_EQ(message.ship_motion.y, 2.0);
+  EXPECT_DOUBLE_EQ(message.ship_motion.z, 3.0);
+
+  EXPECT_DOUBLE_EQ(message.acceleration.x, -4.0);
+  EXPECT_DOUBLE_EQ(message.acceleration.y, 5.0);
+  EXPECT_DOUBLE_EQ(message.acceleration.z, -6.0);
+
+  EXPECT_DOUBLE_EQ(message.velocity.x, 0.25);
+  EXPECT_DOUBLE_EQ(message.velocity.y, -0.5);
+  EXPECT_DOUBLE_EQ(message.velocity.z, 0.75);
+}
+
+TEST_F(MessageWrapperTest, shipMotionFlipsYAndZInEnu)
+{
+  sbg::MessageWrapper wrapper;
 
   wrapper.setUseEnu(true);
-  const auto enu_message = wrapper.createSbgShipMotionMessage(createShipMotionLog());
+
+  const auto message = wrapper.createSbgShipMotionMessage(createShipMotionLog());
 
   //
-  // This documents the current behavior: surge, sway and heave and their derivatives are
-  // reported exactly as the device sends them, with no NED to ENU conversion, unlike every
-  // other body frame vector the driver publishes.
+  // Surge/sway/heave, and the longitudinal/lateral/vertical accelerations and velocities, are
+  // body frame vectors: the device reports them in FRD (Forward-Right-Down) and the ENU
+  // convention reports them in FLU (Forward-Left-Up) per REP-103, so sway and heave change
+  // sign while surge is kept. Heave therefore becomes positive up.
   //
-  for (const auto &message : {ned_message, enu_message})
-  {
-    EXPECT_DOUBLE_EQ(message.ship_motion.x, 1.0);
-    EXPECT_DOUBLE_EQ(message.ship_motion.y, 2.0);
-    EXPECT_DOUBLE_EQ(message.ship_motion.z, 3.0);
+  EXPECT_DOUBLE_EQ(message.ship_motion.x, 1.0);
+  EXPECT_DOUBLE_EQ(message.ship_motion.y, -2.0);
+  EXPECT_DOUBLE_EQ(message.ship_motion.z, -3.0);
 
-    EXPECT_DOUBLE_EQ(message.acceleration.x, -4.0);
-    EXPECT_DOUBLE_EQ(message.acceleration.y, 5.0);
-    EXPECT_DOUBLE_EQ(message.acceleration.z, -6.0);
+  EXPECT_DOUBLE_EQ(message.acceleration.x, -4.0);
+  EXPECT_DOUBLE_EQ(message.acceleration.y, -5.0);
+  EXPECT_DOUBLE_EQ(message.acceleration.z, 6.0);
 
-    EXPECT_DOUBLE_EQ(message.velocity.x, 0.25);
-    EXPECT_DOUBLE_EQ(message.velocity.y, -0.5);
-    EXPECT_DOUBLE_EQ(message.velocity.z, 0.75);
-  }
+  EXPECT_DOUBLE_EQ(message.velocity.x, 0.25);
+  EXPECT_DOUBLE_EQ(message.velocity.y, 0.5);
+  EXPECT_DOUBLE_EQ(message.velocity.z, -0.75);
+}
+
+TEST_F(MessageWrapperTest, shipMotionUsesTheSameBodyConventionAsTheOtherBodyFrameLogs)
+{
+  sbg::MessageWrapper wrapper;
+
+  wrapper.setUseEnu(true);
+
+  const auto ship_motion_message = wrapper.createSbgShipMotionMessage(createShipMotionLog());
+  const auto vel_body_message = wrapper.createSbgEkfVelBodyMessage(createEkfVelBodyLog());
+
+  //
+  // Both logs carry a body frame vector with the same 1, 2, 3 pattern on input, so the ENU
+  // conversion has to treat them identically. This is what the driver got wrong: ship motion
+  // was the only body frame output left unconverted.
+  //
+  EXPECT_DOUBLE_EQ(ship_motion_message.ship_motion.x, vel_body_message.velocity.x);
+  EXPECT_DOUBLE_EQ(ship_motion_message.ship_motion.y, vel_body_message.velocity.y);
+  EXPECT_DOUBLE_EQ(ship_motion_message.ship_motion.z, vel_body_message.velocity.z);
 }
 
 TEST_F(MessageWrapperTest, shipMotionDecodesTheStatusBitmask)

@@ -878,17 +878,13 @@ const sbg_driver::msg::SbgShipMotion MessageWrapper::createSbgShipMotionMessage(
   ship_motion_message.time_stamp    = ref_log_ship_motion.timeStamp;
   ship_motion_message.status        = createShipMotionStatusMessage(ref_log_ship_motion);
 
-  ship_motion_message.ship_motion.x   = ref_log_ship_motion.shipMotion[0];
-  ship_motion_message.ship_motion.y   = ref_log_ship_motion.shipMotion[1];
-  ship_motion_message.ship_motion.z   = ref_log_ship_motion.shipMotion[2];
-
-  ship_motion_message.acceleration.x  = ref_log_ship_motion.shipAccel[0];
-  ship_motion_message.acceleration.y  = ref_log_ship_motion.shipAccel[1];
-  ship_motion_message.acceleration.z  = ref_log_ship_motion.shipAccel[2];
-
-  ship_motion_message.velocity.x      = ref_log_ship_motion.shipVel[0];
-  ship_motion_message.velocity.y      = ref_log_ship_motion.shipVel[1];
-  ship_motion_message.velocity.z      = ref_log_ship_motion.shipVel[2];
+  //
+  // Surge/sway/heave and their derivatives are body frame vectors, so they follow the
+  // configured frame convention like every other body frame output of the driver.
+  //
+  ship_motion_message.ship_motion   = convertBodyFrameVector(ref_log_ship_motion.shipMotion);
+  ship_motion_message.acceleration  = convertBodyFrameVector(ref_log_ship_motion.shipAccel);
+  ship_motion_message.velocity      = convertBodyFrameVector(ref_log_ship_motion.shipVel);
 
   return ship_motion_message;
 }
@@ -1071,6 +1067,26 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
   }
 
   return imu_ros_message;
+}
+
+const geometry_msgs::msg::Vector3 MessageWrapper::convertBodyFrameVector(const float (&ref_vector)[3]) const
+{
+  geometry_msgs::msg::Vector3 vector;
+
+  vector.x = ref_vector[0];
+
+  if (use_enu_)
+  {
+    vector.y = -ref_vector[1];
+    vector.z = -ref_vector[2];
+  }
+  else
+  {
+    vector.y = ref_vector[1];
+    vector.z = ref_vector[2];
+  }
+
+  return vector;
 }
 
 void MessageWrapper::fillOdoPositionCovariance(const sbg_driver::msg::SbgEkfNav &ref_ekf_nav_msg, std::array<double, 36> &ref_pose_covariance) const

@@ -4,6 +4,7 @@ Changelog for package sbg_driver
 
 Forthcoming
 -----------
+* Fix use_enu handling of the ship motion output, its body frame vectors were the only ones left unconverted
 * Configure the INS with the sbgInsRestApi (api/v1/settings/import) from a JSON settings export document referenced by the new ins.settingsFile parameter, uploaded to the HTTP server of the device on an Ethernet interface and sent through the sbgECom API tunnel on a serial one
 * Add a libcurl dependency
 * Remove the INS parameters from the yaml config files, only ROS related ones are left

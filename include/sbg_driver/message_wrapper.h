@@ -242,6 +242,18 @@ private:
   const geometry_msgs::msg::TwistStamped createRosTwistStampedMessage(const sbg::SbgVector3f& body_vel, const sbg_driver::msg::SbgImuShort& ref_sbg_imu_msg) const;
 
   /*!
+   * Convert a body frame vector of a SBG log to the configured frame convention.
+   *
+   * SBG Systems expresses body frame vectors in FRD (Forward-Right-Down), which the ENU
+   * convention reports in FLU (Forward-Left-Up) as per REP-103, so the Y and Z axes change
+   * sign. The NED convention is the native one and is passed through.
+   *
+   * \param[in] ref_vector          X, Y, Z body frame vector, in the SBG FRD convention.
+   * \return                        Vector in the configured frame convention.
+   */
+  const geometry_msgs::msg::Vector3 convertBodyFrameVector(const float (&ref_vector)[3]) const;
+
+  /*!
    * Fill the position part of a ROS odometry pose covariance, in the UTM grid frame.
    *
    * The Ekf Nav accuracies are the standard deviations of the position error along the true
