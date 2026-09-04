@@ -1,0 +1,39 @@
+/**:
+  ros__parameters:
+    # Configuration used by the replay integration test (test/test_replay_launch.py).
+    #
+    # The fileConf.path parameter is intentionally left as a placeholder: the launch test
+    # overrides it with the path of the recording installed in the package share directory.
+    # Everything else is fixed here so that the test is deterministic and never touches a
+    # serial port, a network interface or an HTTP server.
+
+    driver:
+      # Node frequency (Hz)
+      frequency: 400
+
+    odometry:
+      # Odometry needs a valid navigation solution, which the recording doesn't provide.
+      enable: false
+
+    # There is no device to configure when replaying a log file.
+    confWithRos: false
+
+    # File interface, the path is set by the launch test.
+    fileConf:
+      path: 'set_by_the_launch_test'
+
+    output:
+      # ENU convention, which also enables the ROS standard messages.
+      use_enu: true
+      # Deterministic frames, the test asserts on both of them.
+      frame_id: "imu_link"
+      gps_frame_id: "gnss_link"
+      # ROS time reference, so the header stamps don't depend on the recorded UTC logs.
+      time_reference: "ros"
+      ros_standard: true
+
+    rtcm:
+      subscribe: false
+
+    nmea:
+      publish: false

@@ -28,7 +28,7 @@ option(SBG_USE_DEPRECATED_ECOM_CONFIG "Build the deprecated sbgECom command devi
 ################################################
 
 ## Generate messages in the 'msg' folder
-set (USED_LIBRARIES
+set(USED_LIBRARIES
   rclcpp::rclcpp
   ${sensor_msgs_TARGETS}
   ${std_msgs_TARGETS}
@@ -44,7 +44,7 @@ set (USED_LIBRARIES
   CURL::libcurl
 )
 
-set (msg_files
+set(msg_files
   "msg/SbgGpsVelStatus.msg"
   "msg/SbgGpsPosStatus.msg"
   "msg/SbgMagStatus.msg"
@@ -102,7 +102,7 @@ include_directories(
 )
 
 ## Define common resources.
-set (SBG_COMMON_RESOURCES
+set(SBG_COMMON_RESOURCES
   src/mag_calibration.cpp
   src/message_publisher.cpp
   src/message_wrapper.cpp
@@ -118,41 +118,43 @@ if(SBG_USE_DEPRECATED_ECOM_CONFIG)
   list(APPEND SBG_COMMON_RESOURCES src/config_applier.cpp)
 endif()
 
-## Declare a C++ executable
-add_executable(sbg_device ${SBG_COMMON_RESOURCES} src/main.cpp)
-add_dependencies(sbg_device ${PROJECT_NAME})
-if(WIN32)
-target_compile_options(sbg_device PRIVATE)
-else()
-target_compile_options(sbg_device PRIVATE -Wall -Wextra)
-endif()
+rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
-add_executable(sbg_device_mag ${SBG_COMMON_RESOURCES} src/main_mag.cpp)
-add_dependencies(sbg_device_mag ${PROJECT_NAME})
-if(WIN32)
-target_compile_options(sbg_device_mag PRIVATE)
-else()
-target_compile_options(sbg_device_mag PRIVATE -Wall -Wextra)
-endif()
-
-if(SBG_USE_DEPRECATED_ECOM_CONFIG)
-  target_compile_definitions(sbg_device PRIVATE SBG_USE_DEPRECATED_ECOM_CONFIG)
-  target_compile_definitions(sbg_device_mag PRIVATE SBG_USE_DEPRECATED_ECOM_CONFIG)
-endif()
+## Declare the driver library, shared by the executables and the tests
+add_library(sbg_driver_core STATIC ${SBG_COMMON_RESOURCES})
+add_dependencies(sbg_driver_core ${PROJECT_NAME})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(sbg_device sbgECom)
-target_link_libraries(sbg_device_mag sbgECom)
+target_link_libraries(sbg_driver_core PUBLIC sbgECom)
+target_link_libraries(sbg_driver_core PUBLIC ${USED_LIBRARIES})
+target_link_libraries(sbg_driver_core PUBLIC "${cpp_typesupport_target}")
 
-target_link_libraries(sbg_device ${USED_LIBRARIES}) 
-target_link_libraries(sbg_device_mag ${USED_LIBRARIES})
+if(SBG_USE_DEPRECATED_ECOM_CONFIG)
+  target_compile_definitions(sbg_driver_core PUBLIC SBG_USE_DEPRECATED_ECOM_CONFIG)
+endif()
 
-rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
-target_link_libraries(sbg_device "${cpp_typesupport_target}")
-target_link_libraries(sbg_device_mag "${cpp_typesupport_target}")
+set_property(TARGET sbg_driver_core PROPERTY CXX_STANDARD 14)
+
+## Declare a C++ executable
+add_executable(sbg_device src/main.cpp)
+target_link_libraries(sbg_device sbg_driver_core)
+
+add_executable(sbg_device_mag src/main_mag.cpp)
+target_link_libraries(sbg_device_mag sbg_driver_core)
 
 set_property(TARGET sbg_device PROPERTY CXX_STANDARD 14)
 set_property(TARGET sbg_device_mag PROPERTY CXX_STANDARD 14)
+
+## The warning policy only applies to the driver, not to the bundled sbgECom
+if(WIN32)
+target_compile_options(sbg_driver_core PRIVATE)
+target_compile_options(sbg_device PRIVATE)
+target_compile_options(sbg_device_mag PRIVATE)
+else()
+target_compile_options(sbg_driver_core PRIVATE -Wall -Wextra -Wpedantic)
+target_compile_options(sbg_device PRIVATE -Wall -Wextra -Wpedantic)
+target_compile_options(sbg_device_mag PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
 #############
 ## Install ##
@@ -160,7 +162,7 @@ set_property(TARGET sbg_device_mag PROPERTY CXX_STANDARD 14)
 
 ## Mark executables and/or libraries for installation
 install(TARGETS sbg_device sbg_device_mag
-   DESTINATION lib/${PROJECT_NAME}
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 ## Mark cpp header files for installation
@@ -213,8 +215,99 @@ ament_export_include_directories(
     include
 )
 
-ament_package()
-
 #############
 ## Testing ##
 #############
+
+## ament_uncrustify, ament_cpplint and ament_copyright are not enabled yet: the driver
+## sources predate the ament code style and turning them on requires a dedicated
+## reformatting change.
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_index_cpp REQUIRED)
+  find_package(launch_testing_ament_cmake REQUIRED)
+
+  ## external/sbgECom is bundled upstream code and is not part of the ROS driver's lint scope.
+  ## The linters match exclusions per file, so the whole subtree is listed explicitly.
+  file(GLOB_RECURSE _external_files "${CMAKE_CURRENT_SOURCE_DIR}/external/*")
+  set(AMENT_LINT_AUTO_FILE_EXCLUDE ${_external_files})
+
+  ament_lint_auto_find_test_dependencies()
+
+  ament_add_gtest(test_sbg_ros_helpers test/test_sbg_ros_helpers.cpp)
+  target_link_libraries(test_sbg_ros_helpers sbg_driver_core)
+
+  ament_add_gtest(test_sbg_utm test/test_sbg_utm.cpp)
+  target_link_libraries(test_sbg_utm sbg_driver_core)
+
+  ament_add_gtest(test_sbg_stream_buffer test/test_sbg_stream_buffer.cpp)
+  target_link_libraries(test_sbg_stream_buffer sbgECom)
+
+  ament_add_gtest(test_message_wrapper test/test_message_wrapper.cpp)
+  target_link_libraries(test_message_wrapper sbg_driver_core)
+
+  ament_add_gtest(test_config_store test/test_config_store.cpp)
+  target_link_libraries(test_config_store sbg_driver_core)
+
+  ## Check that launch, config, urdf and meshes resources are actually installed
+  ament_add_gtest(test_install_resources test/test_install_resources.cpp)
+  target_link_libraries(test_install_resources ament_index_cpp::ament_index_cpp)
+
+  ## The integration test replays a recorded sbgECom stream through the sbg_device
+  ## executable. Its resources are installed so that the test resolves them from the
+  ## install space rather than from the source tree.
+  install(DIRECTORY test/config test/data
+    DESTINATION share/${PROJECT_NAME}/test
+  )
+
+  ## Ask the compiler where one of its runtime libraries lives, for LD_PRELOAD.
+  function(sbg_resolve_runtime_library ref_output_var ref_library_name)
+    execute_process(
+      COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=${ref_library_name}
+      RESULT_VARIABLE resolve_result
+      OUTPUT_VARIABLE resolved_path
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    if(NOT resolve_result EQUAL 0 OR NOT IS_ABSOLUTE "${resolved_path}" OR NOT EXISTS "${resolved_path}")
+      message(FATAL_ERROR "Could not resolve ${ref_library_name}: ${CMAKE_CXX_COMPILER} "
+        "-print-file-name=${ref_library_name} returned '${resolved_path}'")
+    endif()
+
+    set(${ref_output_var} "${resolved_path}" PARENT_SCOPE)
+  endfunction()
+
+  ## The launch test starts a plain python3, which then loads the rosidl extension modules.
+  ## When the build is instrumented those modules carry AddressSanitizer, and ASan refuses to
+  ## initialize from a library loaded after the process has started, so its runtime has to be
+  ## preloaded.
+  ##
+  ## The C++ runtime has to be preloaded as well: python3 doesn't link it, so ASan would find
+  ## no __cxa_throw to chain its interceptor to, and would abort the moment a library loaded
+  ## later throws, which Fast DDS does while opening its transports. The ASan runtime must
+  ## stay first in the list, otherwise it is back to being loaded too late.
+  ##
+  ## Nothing is added to the environment of a normal build.
+  set(SBG_LAUNCH_TEST_ARGS "")
+
+  if(CMAKE_C_FLAGS MATCHES "-fsanitize=[^ ]*address" OR CMAKE_CXX_FLAGS MATCHES "-fsanitize=[^ ]*address")
+    sbg_resolve_runtime_library(SBG_ASAN_RUNTIME libasan.so)
+    sbg_resolve_runtime_library(SBG_CXX_RUNTIME libstdc++.so.6)
+
+    message(STATUS "Launch tests will preload ${SBG_ASAN_RUNTIME} and ${SBG_CXX_RUNTIME}")
+
+    ## rosidl_typesupport_cpp caches the type support library for the lifetime of the process,
+    ## so creating a node is enough for LeakSanitizer to report it. Only that loader is
+    ## suppressed, see test/lsan_suppressions.supp: leaks in the driver are still reported.
+    list(APPEND SBG_LAUNCH_TEST_ARGS
+      ENV
+      "LD_PRELOAD=${SBG_ASAN_RUNTIME}:${SBG_CXX_RUNTIME}"
+      "LSAN_OPTIONS=suppressions=${CMAKE_CURRENT_SOURCE_DIR}/test/lsan_suppressions.supp:print_suppressions=0"
+    )
+  endif()
+
+  add_launch_test(test/test_replay_launch.py TIMEOUT 240 ${SBG_LAUNCH_TEST_ARGS})
+endif()
+
+ament_package()

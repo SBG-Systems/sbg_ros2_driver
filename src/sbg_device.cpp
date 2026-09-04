@@ -86,6 +86,21 @@ SbgErrorCode SbgDevice::onLogReceivedCallback(SbgEComHandle* p_handle, SbgEComCl
   SbgDevice *p_sbg_device;
   p_sbg_device = (SbgDevice*)(p_user_arg);
 
+  //
+  // sbgEComHandle() loops over sbgEComHandleOneLog() until it returns SBG_NOT_READY, so it
+  // only comes back once the interface has no more data to offer. A file interface always
+  // has data until EOF, which would keep the driver inside sbgECom for the whole recording
+  // and delay the shutdown well past the SIGINT and SIGTERM grace periods.
+  //
+  // Returning SBG_NOT_READY once ROS is shutting down is the only value that breaks that
+  // loop: sbgEComHandleOneLog() forwards the callback return code unchanged, and any other
+  // error code makes sbgEComHandle() keep processing logs.
+  //
+  if (!rclcpp::ok())
+  {
+    return SBG_NOT_READY;
+  }
+
   p_sbg_device->onLogReceived(msg_class, msg, *p_log_data);
 
   return SBG_NO_ERROR;
@@ -98,6 +113,8 @@ void SbgDevice::onLogReceived(SbgEComClass msg_class, SbgEComMsgId msg, const Sb
   //
   if (config_store_.isInterfaceFile())
   {
+    constexpr uint32_t  MAX_SLEEP_SLICE_US = 100000;    /*!< Longest uninterruptible replay sleep, in us. */
+
     uint32_t time_to_sleep = 0;
     uint32_t timestamp = message_publisher_.getTimestamp(msg_class, msg, ref_sbg_data);
 
@@ -113,7 +130,18 @@ void SbgDevice::onLogReceived(SbgEComClass msg_class, SbgEComMsgId msg, const Sb
       log_replay_last_timestamp_ = timestamp;
     }
 
-    std::this_thread::sleep_for(std::chrono::microseconds(time_to_sleep));
+    //
+    // Sleep by slices so that a large gap between two recorded timestamps can't hold the
+    // shutdown back. The total sleep duration is unchanged, so the replay keeps the timing
+    // of the recording.
+    //
+    while ((time_to_sleep > 0) && rclcpp::ok())
+    {
+      const uint32_t sleep_slice = (time_to_sleep > MAX_SLEEP_SLICE_US) ? MAX_SLEEP_SLICE_US : time_to_sleep;
+
+      std::this_thread::sleep_for(std::chrono::microseconds(sleep_slice));
+      time_to_sleep -= sleep_slice;
+    }
   }
 
   //

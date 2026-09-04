@@ -878,17 +878,13 @@ const sbg_driver::msg::SbgShipMotion MessageWrapper::createSbgShipMotionMessage(
   ship_motion_message.time_stamp    = ref_log_ship_motion.timeStamp;
   ship_motion_message.status        = createShipMotionStatusMessage(ref_log_ship_motion);
 
-  ship_motion_message.ship_motion.x   = ref_log_ship_motion.shipMotion[0];
-  ship_motion_message.ship_motion.y   = ref_log_ship_motion.shipMotion[1];
-  ship_motion_message.ship_motion.z   = ref_log_ship_motion.shipMotion[2];
-
-  ship_motion_message.acceleration.x  = ref_log_ship_motion.shipAccel[0];
-  ship_motion_message.acceleration.y  = ref_log_ship_motion.shipAccel[1];
-  ship_motion_message.acceleration.z  = ref_log_ship_motion.shipAccel[2];
-
-  ship_motion_message.velocity.x      = ref_log_ship_motion.shipVel[0];
-  ship_motion_message.velocity.y      = ref_log_ship_motion.shipVel[1];
-  ship_motion_message.velocity.z      = ref_log_ship_motion.shipVel[2];
+  //
+  // Surge/sway/heave and their derivatives are body frame vectors, so they follow the
+  // configured frame convention like every other body frame output of the driver.
+  //
+  ship_motion_message.ship_motion   = convertBodyFrameVector(ref_log_ship_motion.shipMotion);
+  ship_motion_message.acceleration  = convertBodyFrameVector(ref_log_ship_motion.shipAccel);
+  ship_motion_message.velocity      = convertBodyFrameVector(ref_log_ship_motion.shipVel);
 
   return ship_motion_message;
 }
@@ -1040,18 +1036,7 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
 
   imu_ros_message.header = createRosHeader(ref_sbg_imu_msg.time_stamp);
 
-  if (ref_sbg_imu_msg.imu_status.imu_gyros_use_high_scale)
-  {
-    imu_ros_message.angular_velocity.x          = ref_sbg_imu_msg.delta_angle.x / SBG_ECOM_LOG_IMU_GYRO_SCALE_HIGH;
-    imu_ros_message.angular_velocity.y          = ref_sbg_imu_msg.delta_angle.y / SBG_ECOM_LOG_IMU_GYRO_SCALE_HIGH;
-    imu_ros_message.angular_velocity.z          = ref_sbg_imu_msg.delta_angle.z / SBG_ECOM_LOG_IMU_GYRO_SCALE_HIGH;
-  }
-  else
-  {
-    imu_ros_message.angular_velocity.x          = ref_sbg_imu_msg.delta_angle.x / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
-    imu_ros_message.angular_velocity.y          = ref_sbg_imu_msg.delta_angle.y / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
-    imu_ros_message.angular_velocity.z          = ref_sbg_imu_msg.delta_angle.z / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
-  }
+  imu_ros_message.angular_velocity            = convertImuShortAngularVelocity(ref_sbg_imu_msg);
 
   imu_ros_message.linear_acceleration.x       = ref_sbg_imu_msg.delta_velocity.x / SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD;
   imu_ros_message.linear_acceleration.y       = ref_sbg_imu_msg.delta_velocity.y / SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD;
@@ -1082,6 +1067,82 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
   }
 
   return imu_ros_message;
+}
+
+const geometry_msgs::msg::Vector3 MessageWrapper::convertBodyFrameVector(const float (&ref_vector)[3]) const
+{
+  geometry_msgs::msg::Vector3 vector;
+
+  vector.x = ref_vector[0];
+
+  if (use_enu_)
+  {
+    vector.y = -ref_vector[1];
+    vector.z = -ref_vector[2];
+  }
+  else
+  {
+    vector.y = ref_vector[1];
+    vector.z = ref_vector[2];
+  }
+
+  return vector;
+}
+
+void MessageWrapper::fillOdoPositionCovariance(const sbg_driver::msg::SbgEkfNav &ref_ekf_nav_msg, std::array<double, 36> &ref_pose_covariance) const
+{
+  //
+  // Meridian convergence angle, positive when the grid north is clockwise from the true
+  // north, which happens east of the zone central meridian in the northern hemisphere. The
+  // true east and north axes therefore map onto the grid axes through a rotation of that
+  // angle:
+  //
+  //   R = | cos(gamma)  -sin(gamma) |
+  //       | sin(gamma)   cos(gamma) |
+  //
+  const double  convergence_angle = atan(tan(sbgDegToRadd(ref_ekf_nav_msg.longitude) - sbgDegToRadd(utm_.getMeridian()))
+                                       * sin(sbgDegToRadd(ref_ekf_nav_msg.latitude)));
+  const double  cos_convergence = cos(convergence_angle);
+  const double  sin_convergence = sin(convergence_angle);
+
+  const double  variance_east  = ref_ekf_nav_msg.position_accuracy.x * ref_ekf_nav_msg.position_accuracy.x;
+  const double  variance_north = ref_ekf_nav_msg.position_accuracy.y * ref_ekf_nav_msg.position_accuracy.y;
+  const double  variance_up    = ref_ekf_nav_msg.position_accuracy.z * ref_ekf_nav_msg.position_accuracy.z;
+
+  //
+  // Rotating the covariance matrix rather than the standard deviations, so the cross terms
+  // are reported instead of being dropped.
+  //
+  const double  variance_x  = variance_east * cos_convergence * cos_convergence + variance_north * sin_convergence * sin_convergence;
+  const double  variance_y  = variance_east * sin_convergence * sin_convergence + variance_north * cos_convergence * cos_convergence;
+  const double  covariance_xy = (variance_east - variance_north) * sin_convergence * cos_convergence;
+
+  ref_pose_covariance[0*6 + 0] = variance_x;
+  ref_pose_covariance[0*6 + 1] = covariance_xy;
+  ref_pose_covariance[1*6 + 0] = covariance_xy;
+  ref_pose_covariance[1*6 + 1] = variance_y;
+  ref_pose_covariance[2*6 + 2] = variance_up;
+}
+
+const geometry_msgs::msg::Vector3 MessageWrapper::convertImuShortAngularVelocity(const sbg_driver::msg::SbgImuShort& ref_sbg_imu_msg) const
+{
+  geometry_msgs::msg::Vector3   angular_velocity;
+  float                         gyro_scale;
+
+  if (ref_sbg_imu_msg.imu_status.imu_gyros_use_high_scale)
+  {
+    gyro_scale = SBG_ECOM_LOG_IMU_GYRO_SCALE_HIGH;
+  }
+  else
+  {
+    gyro_scale = SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
+  }
+
+  angular_velocity.x = ref_sbg_imu_msg.delta_angle.x / gyro_scale;
+  angular_velocity.y = ref_sbg_imu_msg.delta_angle.y / gyro_scale;
+  angular_velocity.z = ref_sbg_imu_msg.delta_angle.z / gyro_scale;
+
+  return angular_velocity;
 }
 
 void MessageWrapper::fillTransform(const std::string &ref_parent_frame_id, const std::string &ref_child_frame_id, const geometry_msgs::msg::Pose &ref_pose, geometry_msgs::msg::TransformStamped &refTransformStamped)
@@ -1160,21 +1221,8 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   odo_ros_msg.pose.pose.position.y = easting_northing[1] - first_valid_northing_;
   odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - first_valid_altitude_;
 
-  // Compute convergence angle.
-  double longitudeRad      = sbgDegToRadd(ref_ekf_nav_msg.longitude);
-  double latitudeRad       = sbgDegToRadd(ref_ekf_nav_msg.latitude);
-  double central_meridian  = sbgDegToRadd(utm_.getMeridian());
-  double convergence_angle = atan(tan(longitudeRad - central_meridian) * sin(latitudeRad));
-
-  // Convert position standard deviations to UTM frame.
-  double std_east  = ref_ekf_nav_msg.position_accuracy.x;
-  double std_north = ref_ekf_nav_msg.position_accuracy.y;
-  double std_x = std_north * cos(convergence_angle) - std_east * sin(convergence_angle);
-  double std_y = std_north * sin(convergence_angle) + std_east * cos(convergence_angle);
-  double std_z = ref_ekf_nav_msg.position_accuracy.z;
-  odo_ros_msg.pose.covariance[0*6 + 0] = std_x * std_x;
-  odo_ros_msg.pose.covariance[1*6 + 1] = std_y * std_y;
-  odo_ros_msg.pose.covariance[2*6 + 2] = std_z * std_z;
+  // Project the position covariance onto the UTM grid axes.
+  fillOdoPositionCovariance(ref_ekf_nav_msg, odo_ros_msg.pose.covariance);
   odo_ros_msg.pose.covariance[3*6 + 3] = pow(ref_ekf_euler_msg.accuracy.x, 2);
   odo_ros_msg.pose.covariance[4*6 + 4] = pow(ref_ekf_euler_msg.accuracy.y, 2);
   odo_ros_msg.pose.covariance[5*6 + 5] = pow(ref_ekf_euler_msg.accuracy.z, 2);
@@ -1265,21 +1313,8 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   odo_ros_msg.pose.pose.position.y = easting_northing[1] - first_valid_northing_;
   odo_ros_msg.pose.pose.position.z = ref_ekf_nav_msg.altitude - first_valid_altitude_;
 
-  // Compute convergence angle.
-  double longitudeRad      = sbgDegToRadd(ref_ekf_nav_msg.longitude);
-  double latitudeRad       = sbgDegToRadd(ref_ekf_nav_msg.latitude);
-  double central_meridian  = sbgDegToRadd(utm_.getMeridian());
-  double convergence_angle = atan(tan(longitudeRad - central_meridian) * sin(latitudeRad));
-
-  // Convert position standard deviations to UTM frame.
-  double std_east  = ref_ekf_nav_msg.position_accuracy.x;
-  double std_north = ref_ekf_nav_msg.position_accuracy.y;
-  double std_x = std_north * cos(convergence_angle) - std_east * sin(convergence_angle);
-  double std_y = std_north * sin(convergence_angle) + std_east * cos(convergence_angle);
-  double std_z = ref_ekf_nav_msg.position_accuracy.z;
-  odo_ros_msg.pose.covariance[0*6 + 0] = std_x * std_x;
-  odo_ros_msg.pose.covariance[1*6 + 1] = std_y * std_y;
-  odo_ros_msg.pose.covariance[2*6 + 2] = std_z * std_z;
+  // Project the position covariance onto the UTM grid axes.
+  fillOdoPositionCovariance(ref_ekf_nav_msg, odo_ros_msg.pose.covariance);
   odo_ros_msg.pose.covariance[3*6 + 3] = pow(ref_ekf_euler_msg.accuracy.x, 2);
   odo_ros_msg.pose.covariance[4*6 + 4] = pow(ref_ekf_euler_msg.accuracy.y, 2);
   odo_ros_msg.pose.covariance[5*6 + 5] = pow(ref_ekf_euler_msg.accuracy.z, 2);
@@ -1289,9 +1324,7 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   odo_ros_msg.twist.twist.linear.x      = ref_ekf_nav_msg.velocity.x;
   odo_ros_msg.twist.twist.linear.y      = ref_ekf_nav_msg.velocity.y;
   odo_ros_msg.twist.twist.linear.z      = ref_ekf_nav_msg.velocity.z;
-  odo_ros_msg.twist.twist.angular.x     = ref_sbg_imu_msg.delta_angle.x;
-  odo_ros_msg.twist.twist.angular.y     = ref_sbg_imu_msg.delta_angle.y;
-  odo_ros_msg.twist.twist.angular.z     = ref_sbg_imu_msg.delta_angle.z;
+  odo_ros_msg.twist.twist.angular       = convertImuShortAngularVelocity(ref_sbg_imu_msg);
   odo_ros_msg.twist.covariance[0*6 + 0] = pow(ref_ekf_nav_msg.velocity_accuracy.x, 2);
   odo_ros_msg.twist.covariance[1*6 + 1] = pow(ref_ekf_nav_msg.velocity_accuracy.y, 2);
   odo_ros_msg.twist.covariance[2*6 + 2] = pow(ref_ekf_nav_msg.velocity_accuracy.z, 2);

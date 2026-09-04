@@ -242,6 +242,49 @@ private:
   const geometry_msgs::msg::TwistStamped createRosTwistStampedMessage(const sbg::SbgVector3f& body_vel, const sbg_driver::msg::SbgImuShort& ref_sbg_imu_msg) const;
 
   /*!
+   * Convert a body frame vector of a SBG log to the configured frame convention.
+   *
+   * SBG Systems expresses body frame vectors in FRD (Forward-Right-Down), which the ENU
+   * convention reports in FLU (Forward-Left-Up) as per REP-103, so the Y and Z axes change
+   * sign. The NED convention is the native one and is passed through.
+   *
+   * \param[in] ref_vector          X, Y, Z body frame vector, in the SBG FRD convention.
+   * \return                        Vector in the configured frame convention.
+   */
+  const geometry_msgs::msg::Vector3 convertBodyFrameVector(const float (&ref_vector)[3]) const;
+
+  /*!
+   * Fill the position part of a ROS odometry pose covariance, in the UTM grid frame.
+   *
+   * The Ekf Nav accuracies are the standard deviations of the position error along the true
+   * east, north and vertical axes, and are reported without any correlation. The odometry
+   * position is expressed in the UTM grid frame, whose north differs from the true north by
+   * the meridian convergence angle, so the horizontal covariance has to be rotated:
+   *
+   *   C' = R * C * transpose(R)
+   *
+   * That keeps the trace and the determinant, and creates a cross covariance as soon as the
+   * convergence angle is not zero and the two horizontal accuracies differ.
+   *
+   * Only the indices 0, 1, 6, 7 and 14 are written, the orientation block is left untouched.
+   *
+   * \param[in]  ref_ekf_nav_msg      SBG-ROS Ekf Nav message, in the ENU convention.
+   * \param[out] ref_pose_covariance  Pose covariance to fill, ROS row major 6x6 layout.
+   */
+  void fillOdoPositionCovariance(const sbg_driver::msg::SbgEkfNav &ref_ekf_nav_msg, std::array<double, 36> &ref_pose_covariance) const;
+
+  /*!
+   * Convert the raw delta angle of a SBG-ROS short IMU message into an angular velocity.
+   *
+   * The short IMU logs carry the gyroscope output as scaled integers, using either the
+   * standard or the high range scale factor depending on the IMU status.
+   *
+   * \param[in] ref_sbg_imu_msg     SBG-ROS short IMU message.
+   * \return                        Angular velocity in rad.s-1.
+   */
+  const geometry_msgs::msg::Vector3 convertImuShortAngularVelocity(const sbg_driver::msg::SbgImuShort& ref_sbg_imu_msg) const;
+
+  /*!
    * Fill a transformation.
    *
    * \param[in] ref_parent_frame_id     Parent frame ID.

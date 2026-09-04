@@ -359,9 +359,9 @@ SBG_INLINE int32_t sbgStreamBufferReadInt32LE(SbgStreamBuffer *pHandle)
                 // Store data according to platform endianness
                 //
                 #if (SBG_CONFIG_BIG_ENDIAN == 1)
-                    return bytesValues[3] | (bytesValues[2] << 8) | (bytesValues[1] << 16) | (bytesValues[0] << 24);
+                    return (int32_t)((uint32_t)bytesValues[3] | ((uint32_t)bytesValues[2] << 8) | ((uint32_t)bytesValues[1] << 16) | ((uint32_t)bytesValues[0] << 24));
                 #else
-                    return bytesValues[0] | (bytesValues[1] << 8) | (bytesValues[2] << 16) | (bytesValues[3] << 24);
+                    return (int32_t)((uint32_t)bytesValues[0] | ((uint32_t)bytesValues[1] << 8) | ((uint32_t)bytesValues[2] << 16) | ((uint32_t)bytesValues[3] << 24));
                 #endif
             #endif
         }
@@ -932,9 +932,9 @@ SBG_INLINE int64_t sbgStreamBufferReadInt64LE(SbgStreamBuffer *pHandle)
                 // Store data according to platform endianness
                 //
                 #if (SBG_CONFIG_BIG_ENDIAN == 1)
-                    return (lowPart << 32) | highPart;
+                    return (int64_t)(((uint64_t)lowPart << 32) | (uint64_t)highPart);
                 #else
-                    return lowPart | (highPart << 32);
+                    return (int64_t)((uint64_t)lowPart | ((uint64_t)highPart << 32));
                 #endif
             #endif
         }
