@@ -29,6 +29,14 @@ namespace
   constexpr double  METER_TOLERANCE   = 1.0e-3;
   constexpr double  CROSS_TOLERANCE   = 1.0e-2;
 
+  //
+  // sbgECom short IMU gyroscope scale factors, in LSB per rad.s-1. They are derived from their
+  // documented definitions rather than copied from the driver: the standard scale is 2^26, and
+  // the high range one spreads the full int32 range over 10000 deg.s-1.
+  //
+  const double  GYRO_SCALE_STD   = std::pow(2.0, 26);
+  const double  GYRO_SCALE_HIGH  = std::floor((std::pow(2.0, 31) - 1.0) / (10000.0 * M_PI / 180.0));
+
   /*!
    * Create a fully valid UTC log, so that the message wrapper synchronizes on the UTC time.
    */
@@ -190,6 +198,59 @@ namespace
   }
 
   /*!
+   * Create a short IMU message whose raw delta angle is an exact multiple of the gyroscope
+   * scale factor, so the expected angular velocity is that multiple.
+   *
+   * Standard scale asks for 0.03125, -0.0625 and 0.125 rad.s-1, the high range one for 1.0,
+   * -0.5 and 2.0 rad.s-1. Both sets are asymmetric and signed, and both land on integer raw
+   * counts, as a device would send them.
+   */
+  sbg_driver::msg::SbgImuShort createImuShortMessage(bool use_high_scale)
+  {
+    sbg_driver::msg::SbgImuShort imu_message;
+
+    imu_message.time_stamp = 2000;
+    imu_message.imu_status.imu_gyros_use_high_scale = use_high_scale;
+
+    const double gyro_scale = use_high_scale ? GYRO_SCALE_HIGH : GYRO_SCALE_STD;
+
+    if (use_high_scale)
+    {
+      imu_message.delta_angle.x = gyro_scale * 1.0;
+      imu_message.delta_angle.y = gyro_scale * -0.5;
+      imu_message.delta_angle.z = gyro_scale * 2.0;
+    }
+    else
+    {
+      imu_message.delta_angle.x = gyro_scale * 0.03125;
+      imu_message.delta_angle.y = gyro_scale * -0.0625;
+      imu_message.delta_angle.z = gyro_scale * 0.125;
+    }
+
+    return imu_message;
+  }
+
+  /*!
+   * Check the angular velocity of a message built from createImuShortMessage().
+   */
+  void expectImuShortAngularVelocity(const geometry_msgs::msg::Vector3 &ref_angular_velocity,
+                                     bool use_high_scale)
+  {
+    if (use_high_scale)
+    {
+      EXPECT_DOUBLE_EQ(ref_angular_velocity.x, 1.0);
+      EXPECT_DOUBLE_EQ(ref_angular_velocity.y, -0.5);
+      EXPECT_DOUBLE_EQ(ref_angular_velocity.z, 2.0);
+    }
+    else
+    {
+      EXPECT_DOUBLE_EQ(ref_angular_velocity.x, 0.03125);
+      EXPECT_DOUBLE_EQ(ref_angular_velocity.y, -0.0625);
+      EXPECT_DOUBLE_EQ(ref_angular_velocity.z, 0.125);
+    }
+  }
+
+  /*!
    * Create the navigation message of a step north from the reference, with a 10 m altitude gain.
    */
   sbg_driver::msg::SbgEkfNav createNorthStepNavMessage()
@@ -205,8 +266,8 @@ namespace
    * inputs, never from another createRosOdoMessage() call, so both IMU overloads are checked
    * against the same external truth instead of against each other.
    *
-   * The angular velocity is deliberately left out: the two overloads disagree there and the
-   * short IMU one is still under review.
+   * The angular velocity is not checked here, because the two overloads take it from
+   * different fields. Each test asserts it separately.
    */
   void expectNorthStepOdometry(const nav_msgs::msg::Odometry &ref_odo_message)
   {
@@ -955,13 +1016,11 @@ TEST_F(MessageWrapperTest, odometryFromImuDataMatchesExpectedValues)
 
 TEST_F(MessageWrapperTest, odometryFromImuShortMatchesExpectedValues)
 {
-  sbg::MessageWrapper            wrapper;
-  sbg_driver::msg::SbgImuShort   imu_message;
+  sbg::MessageWrapper wrapper;
 
   configureForOdometry(wrapper, false);
 
-  imu_message.time_stamp = 2000;
-
+  const auto imu_message = createImuShortMessage(false);
   const tf2::Quaternion orientation(0.0, 0.0, 0.0, 1.0);
   const auto euler_message = createEulerMessage();
 
@@ -974,11 +1033,74 @@ TEST_F(MessageWrapperTest, odometryFromImuShortMatchesExpectedValues)
 
   //
   // The short IMU overload shares the whole projection, covariance and frame logic with the
-  // one above, and is checked against the very same expectations. The angular velocity is not
-  // asserted: this overload copies the raw delta angle counts instead of scaling them.
+  // one above, and is checked against the very same expectations.
   //
   SCOPED_TRACE("SbgImuShort overload");
   expectNorthStepOdometry(odo_message);
+
+  //
+  // The short IMU logs carry the gyroscope output as scaled integers, so the odometry has to
+  // divide them by the gyroscope scale factor, exactly like the ROS IMU message does.
+  //
+  expectImuShortAngularVelocity(odo_message.twist.twist.angular, false);
+}
+
+TEST_F(MessageWrapperTest, odometryFromImuShortUsesTheHighGyroScale)
+{
+  sbg::MessageWrapper wrapper;
+
+  configureForOdometry(wrapper, false);
+
+  const auto imu_message = createImuShortMessage(true);
+  const tf2::Quaternion orientation(0.0, 0.0, 0.0, 1.0);
+  const auto euler_message = createEulerMessage();
+
+  wrapper.createRosOdoMessage(
+    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE),
+    orientation, euler_message);
+
+  const auto odo_message = wrapper.createRosOdoMessage(
+    imu_message, createNorthStepNavMessage(), orientation, euler_message);
+
+  //
+  // The status flag selects the high range scale factor, which is about 5.5 times smaller
+  // than the standard one, so using the wrong one cannot pass.
+  //
+  expectImuShortAngularVelocity(odo_message.twist.twist.angular, true);
+}
+
+TEST_F(MessageWrapperTest, imuShortAngularVelocityIsConsistentBetweenImuAndOdometry)
+{
+  sbg::MessageWrapper wrapper;
+
+  configureForOdometry(wrapper, false);
+
+  const tf2::Quaternion orientation(0.0, 0.0, 0.0, 1.0);
+  const auto euler_message = createEulerMessage();
+  const sbg_driver::msg::SbgEkfQuat quat_message;
+
+  for (const bool use_high_scale : {false, true})
+  {
+    SCOPED_TRACE(use_high_scale ? "high gyroscope scale" : "standard gyroscope scale");
+
+    const auto imu_message = createImuShortMessage(use_high_scale);
+
+    const auto ros_imu_message = wrapper.createRosImuMessage(imu_message, quat_message);
+    const auto odo_message = wrapper.createRosOdoMessage(
+      imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE),
+      orientation, euler_message);
+
+    //
+    // Both outputs are checked against the independently derived expectation first, so the
+    // equality below cannot be satisfied by both conversions being wrong the same way.
+    //
+    expectImuShortAngularVelocity(ros_imu_message.angular_velocity, use_high_scale);
+    expectImuShortAngularVelocity(odo_message.twist.twist.angular, use_high_scale);
+
+    EXPECT_DOUBLE_EQ(odo_message.twist.twist.angular.x, ros_imu_message.angular_velocity.x);
+    EXPECT_DOUBLE_EQ(odo_message.twist.twist.angular.y, ros_imu_message.angular_velocity.y);
+    EXPECT_DOUBLE_EQ(odo_message.twist.twist.angular.z, ros_imu_message.angular_velocity.z);
+  }
 }
 
 TEST_F(MessageWrapperTest, odometryWithTransformPublishingMatchesExpectedValues)

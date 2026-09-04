@@ -242,6 +242,17 @@ private:
   const geometry_msgs::msg::TwistStamped createRosTwistStampedMessage(const sbg::SbgVector3f& body_vel, const sbg_driver::msg::SbgImuShort& ref_sbg_imu_msg) const;
 
   /*!
+   * Convert the raw delta angle of a SBG-ROS short IMU message into an angular velocity.
+   *
+   * The short IMU logs carry the gyroscope output as scaled integers, using either the
+   * standard or the high range scale factor depending on the IMU status.
+   *
+   * \param[in] ref_sbg_imu_msg     SBG-ROS short IMU message.
+   * \return                        Angular velocity in rad.s-1.
+   */
+  const geometry_msgs::msg::Vector3 convertImuShortAngularVelocity(const sbg_driver::msg::SbgImuShort& ref_sbg_imu_msg) const;
+
+  /*!
    * Fill a transformation.
    *
    * \param[in] ref_parent_frame_id     Parent frame ID.

@@ -1040,18 +1040,7 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
 
   imu_ros_message.header = createRosHeader(ref_sbg_imu_msg.time_stamp);
 
-  if (ref_sbg_imu_msg.imu_status.imu_gyros_use_high_scale)
-  {
-    imu_ros_message.angular_velocity.x          = ref_sbg_imu_msg.delta_angle.x / SBG_ECOM_LOG_IMU_GYRO_SCALE_HIGH;
-    imu_ros_message.angular_velocity.y          = ref_sbg_imu_msg.delta_angle.y / SBG_ECOM_LOG_IMU_GYRO_SCALE_HIGH;
-    imu_ros_message.angular_velocity.z          = ref_sbg_imu_msg.delta_angle.z / SBG_ECOM_LOG_IMU_GYRO_SCALE_HIGH;
-  }
-  else
-  {
-    imu_ros_message.angular_velocity.x          = ref_sbg_imu_msg.delta_angle.x / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
-    imu_ros_message.angular_velocity.y          = ref_sbg_imu_msg.delta_angle.y / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
-    imu_ros_message.angular_velocity.z          = ref_sbg_imu_msg.delta_angle.z / SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
-  }
+  imu_ros_message.angular_velocity            = convertImuShortAngularVelocity(ref_sbg_imu_msg);
 
   imu_ros_message.linear_acceleration.x       = ref_sbg_imu_msg.delta_velocity.x / SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD;
   imu_ros_message.linear_acceleration.y       = ref_sbg_imu_msg.delta_velocity.y / SBG_ECOM_LOG_IMU_ACCEL_SCALE_STD;
@@ -1082,6 +1071,27 @@ const sensor_msgs::msg::Imu MessageWrapper::createRosImuMessage(const sbg_driver
   }
 
   return imu_ros_message;
+}
+
+const geometry_msgs::msg::Vector3 MessageWrapper::convertImuShortAngularVelocity(const sbg_driver::msg::SbgImuShort& ref_sbg_imu_msg) const
+{
+  geometry_msgs::msg::Vector3   angular_velocity;
+  float                         gyro_scale;
+
+  if (ref_sbg_imu_msg.imu_status.imu_gyros_use_high_scale)
+  {
+    gyro_scale = SBG_ECOM_LOG_IMU_GYRO_SCALE_HIGH;
+  }
+  else
+  {
+    gyro_scale = SBG_ECOM_LOG_IMU_GYRO_SCALE_STD;
+  }
+
+  angular_velocity.x = ref_sbg_imu_msg.delta_angle.x / gyro_scale;
+  angular_velocity.y = ref_sbg_imu_msg.delta_angle.y / gyro_scale;
+  angular_velocity.z = ref_sbg_imu_msg.delta_angle.z / gyro_scale;
+
+  return angular_velocity;
 }
 
 void MessageWrapper::fillTransform(const std::string &ref_parent_frame_id, const std::string &ref_child_frame_id, const geometry_msgs::msg::Pose &ref_pose, geometry_msgs::msg::TransformStamped &refTransformStamped)
@@ -1289,9 +1299,7 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(const sbg_driv
   odo_ros_msg.twist.twist.linear.x      = ref_ekf_nav_msg.velocity.x;
   odo_ros_msg.twist.twist.linear.y      = ref_ekf_nav_msg.velocity.y;
   odo_ros_msg.twist.twist.linear.z      = ref_ekf_nav_msg.velocity.z;
-  odo_ros_msg.twist.twist.angular.x     = ref_sbg_imu_msg.delta_angle.x;
-  odo_ros_msg.twist.twist.angular.y     = ref_sbg_imu_msg.delta_angle.y;
-  odo_ros_msg.twist.twist.angular.z     = ref_sbg_imu_msg.delta_angle.z;
+  odo_ros_msg.twist.twist.angular       = convertImuShortAngularVelocity(ref_sbg_imu_msg);
   odo_ros_msg.twist.covariance[0*6 + 0] = pow(ref_ekf_nav_msg.velocity_accuracy.x, 2);
   odo_ros_msg.twist.covariance[1*6 + 1] = pow(ref_ekf_nav_msg.velocity_accuracy.y, 2);
   odo_ros_msg.twist.covariance[2*6 + 2] = pow(ref_ekf_nav_msg.velocity_accuracy.z, 2);
