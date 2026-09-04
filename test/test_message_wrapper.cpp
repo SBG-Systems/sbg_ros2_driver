@@ -189,6 +189,60 @@ namespace
     ref_wrapper.setOdomInitFrameId("map_test");
   }
 
+  /*!
+   * Create the navigation message of a step north from the reference, with a 10 m altitude gain.
+   */
+  sbg_driver::msg::SbgEkfNav createNorthStepNavMessage()
+  {
+    return createNavMessage(ODOM_LATITUDE + ODOM_STEP_DEG, ODOM_LONGITUDE, ODOM_ALTITUDE + 10.0);
+  }
+
+  /*!
+   * Check an odometry message produced for createNorthStepNavMessage(), the reference position
+   * having been latched first.
+   *
+   * The expectations are computed from the closed form helpers above and from the synthetic
+   * inputs, never from another createRosOdoMessage() call, so both IMU overloads are checked
+   * against the same external truth instead of against each other.
+   *
+   * The angular velocity is deliberately left out: the two overloads disagree there and the
+   * short IMU one is still under review.
+   */
+  void expectNorthStepOdometry(const nav_msgs::msg::Odometry &ref_odo_message)
+  {
+    EXPECT_EQ(ref_odo_message.header.frame_id, "odom_test");
+    EXPECT_EQ(ref_odo_message.child_frame_id, "imu_link_test");
+
+    EXPECT_NEAR(ref_odo_message.pose.pose.position.x, 0.0, CROSS_TOLERANCE);
+    EXPECT_NEAR(ref_odo_message.pose.pose.position.y,
+                expectedNorthingDelta(ODOM_LATITUDE, ODOM_STEP_DEG), METER_TOLERANCE);
+    EXPECT_NEAR(ref_odo_message.pose.pose.position.z, 10.0, METER_TOLERANCE);
+
+    EXPECT_NEAR(ref_odo_message.pose.pose.orientation.x, 0.0, QUAT_TOLERANCE);
+    EXPECT_NEAR(ref_odo_message.pose.pose.orientation.y, 0.0, QUAT_TOLERANCE);
+    EXPECT_NEAR(ref_odo_message.pose.pose.orientation.z, 0.0, QUAT_TOLERANCE);
+    EXPECT_NEAR(ref_odo_message.pose.pose.orientation.w, 1.0, QUAT_TOLERANCE);
+
+    EXPECT_NEAR(ref_odo_message.pose.covariance[0], 9.0, METER_TOLERANCE);
+    EXPECT_NEAR(ref_odo_message.pose.covariance[7], 9.0, METER_TOLERANCE);
+    EXPECT_NEAR(ref_odo_message.pose.covariance[14], 25.0, METER_TOLERANCE);
+    EXPECT_NEAR(ref_odo_message.pose.covariance[21], 4.0, METER_TOLERANCE);
+    EXPECT_NEAR(ref_odo_message.pose.covariance[28], 9.0, METER_TOLERANCE);
+    EXPECT_NEAR(ref_odo_message.pose.covariance[35], 16.0, METER_TOLERANCE);
+
+    EXPECT_DOUBLE_EQ(ref_odo_message.twist.twist.linear.x, 1.0);
+    EXPECT_DOUBLE_EQ(ref_odo_message.twist.twist.linear.y, 2.0);
+    EXPECT_DOUBLE_EQ(ref_odo_message.twist.twist.linear.z, 3.0);
+
+    EXPECT_NEAR(ref_odo_message.twist.covariance[0], 0.0625, METER_TOLERANCE);
+    EXPECT_NEAR(ref_odo_message.twist.covariance[7], 0.25, METER_TOLERANCE);
+    EXPECT_NEAR(ref_odo_message.twist.covariance[14], 0.5625, METER_TOLERANCE);
+
+    EXPECT_DOUBLE_EQ(ref_odo_message.twist.covariance[21], 0.0);
+    EXPECT_DOUBLE_EQ(ref_odo_message.twist.covariance[28], 0.0);
+    EXPECT_DOUBLE_EQ(ref_odo_message.twist.covariance[35], 0.0);
+  }
+
   class MessageWrapperTest : public ::testing::Test
   {
   protected:
@@ -863,94 +917,96 @@ TEST_F(MessageWrapperTest, odometryPassesTheOrientationThrough)
   EXPECT_NEAR(odo_message.pose.pose.orientation.w, 0.5, QUAT_TOLERANCE);
 }
 
-TEST_F(MessageWrapperTest, odometryFromImuShortMatchesImuData)
+TEST_F(MessageWrapperTest, odometryFromImuDataMatchesExpectedValues)
 {
-  sbg::MessageWrapper            wrapper_data;
-  sbg::MessageWrapper            wrapper_short;
-  sbg_driver::msg::SbgImuData    imu_message;
-  sbg_driver::msg::SbgImuShort   imu_short_message;
+  sbg::MessageWrapper           wrapper;
+  sbg_driver::msg::SbgImuData   imu_message;
 
-  configureForOdometry(wrapper_data, false);
-  configureForOdometry(wrapper_short, false);
+  configureForOdometry(wrapper, false);
 
-  imu_message.time_stamp        = 2000;
-  imu_short_message.time_stamp  = 2000;
+  imu_message.time_stamp  = 2000;
+  imu_message.gyro.x      = 0.1;
+  imu_message.gyro.y      = 0.2;
+  imu_message.gyro.z      = 0.3;
 
   const tf2::Quaternion orientation(0.0, 0.0, 0.0, 1.0);
   const auto euler_message = createEulerMessage();
-  const auto nav_message = createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE);
-
-  wrapper_data.createRosOdoMessage(imu_message, nav_message, orientation, euler_message);
-  wrapper_short.createRosOdoMessage(imu_short_message, nav_message, orientation, euler_message);
-
-  const auto stepped_nav = createNavMessage(
-    ODOM_LATITUDE + ODOM_STEP_DEG, ODOM_LONGITUDE + ODOM_STEP_DEG, ODOM_ALTITUDE + 10.0);
-
-  const auto from_data = wrapper_data.createRosOdoMessage(
-    imu_message, stepped_nav, orientation, euler_message);
-  const auto from_short = wrapper_short.createRosOdoMessage(
-    imu_short_message, stepped_nav, orientation, euler_message);
 
   //
-  // Both overloads share the whole projection, covariance and frame logic. The angular
-  // velocity is the only part that differs, and it is not compared here: the short IMU
-  // message carries raw delta angle counts.
+  // Latch the UTM reference on the first fix, then step north.
   //
-  EXPECT_EQ(from_short.header.frame_id, from_data.header.frame_id);
-  EXPECT_EQ(from_short.child_frame_id, from_data.child_frame_id);
+  wrapper.createRosOdoMessage(
+    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE),
+    orientation, euler_message);
 
-  EXPECT_NEAR(from_short.pose.pose.position.x, from_data.pose.pose.position.x, METER_TOLERANCE);
-  EXPECT_NEAR(from_short.pose.pose.position.y, from_data.pose.pose.position.y, METER_TOLERANCE);
-  EXPECT_NEAR(from_short.pose.pose.position.z, from_data.pose.pose.position.z, METER_TOLERANCE);
+  const auto odo_message = wrapper.createRosOdoMessage(
+    imu_message, createNorthStepNavMessage(), orientation, euler_message);
 
-  EXPECT_DOUBLE_EQ(from_short.twist.twist.linear.x, from_data.twist.twist.linear.x);
-  EXPECT_DOUBLE_EQ(from_short.twist.twist.linear.y, from_data.twist.twist.linear.y);
-  EXPECT_DOUBLE_EQ(from_short.twist.twist.linear.z, from_data.twist.twist.linear.z);
+  SCOPED_TRACE("SbgImuData overload");
+  expectNorthStepOdometry(odo_message);
 
-  for (size_t i = 0; i < 36; i++)
-  {
-    EXPECT_DOUBLE_EQ(from_short.pose.covariance[i], from_data.pose.covariance[i]) << "pose " << i;
-    EXPECT_DOUBLE_EQ(from_short.twist.covariance[i], from_data.twist.covariance[i]) << "twist " << i;
-  }
+  //
+  // This overload reports the gyroscope rates as they are, in rad.s^-1.
+  //
+  EXPECT_DOUBLE_EQ(odo_message.twist.twist.angular.x, 0.1);
+  EXPECT_DOUBLE_EQ(odo_message.twist.twist.angular.y, 0.2);
+  EXPECT_DOUBLE_EQ(odo_message.twist.twist.angular.z, 0.3);
 }
 
-TEST_F(MessageWrapperTest, odometryIsUnchangedWhenTransformsArePublished)
+TEST_F(MessageWrapperTest, odometryFromImuShortMatchesExpectedValues)
 {
-  sbg::MessageWrapper           wrapper_without_tf;
-  sbg::MessageWrapper           wrapper_with_tf;
-  sbg_driver::msg::SbgImuData   imu_message;
+  sbg::MessageWrapper            wrapper;
+  sbg_driver::msg::SbgImuShort   imu_message;
 
-  configureForOdometry(wrapper_without_tf, false);
-  configureForOdometry(wrapper_with_tf, true);
+  configureForOdometry(wrapper, false);
 
   imu_message.time_stamp = 2000;
 
   const tf2::Quaternion orientation(0.0, 0.0, 0.0, 1.0);
   const auto euler_message = createEulerMessage();
-  const auto nav_message = createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE);
-  const auto stepped_nav = createNavMessage(
-    ODOM_LATITUDE + ODOM_STEP_DEG, ODOM_LONGITUDE, ODOM_ALTITUDE);
 
-  wrapper_without_tf.createRosOdoMessage(imu_message, nav_message, orientation, euler_message);
-  wrapper_with_tf.createRosOdoMessage(imu_message, nav_message, orientation, euler_message);
+  wrapper.createRosOdoMessage(
+    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE),
+    orientation, euler_message);
 
-  const auto without_tf = wrapper_without_tf.createRosOdoMessage(
-    imu_message, stepped_nav, orientation, euler_message);
-  const auto with_tf = wrapper_with_tf.createRosOdoMessage(
-    imu_message, stepped_nav, orientation, euler_message);
+  const auto odo_message = wrapper.createRosOdoMessage(
+    imu_message, createNorthStepNavMessage(), orientation, euler_message);
 
   //
-  // Broadcasting the initial and the odometry transforms must not alter the message. The
-  // transforms mirror the pose below, which is asserted here.
+  // The short IMU overload shares the whole projection, covariance and frame logic with the
+  // one above, and is checked against the very same expectations. The angular velocity is not
+  // asserted: this overload copies the raw delta angle counts instead of scaling them.
   //
-  EXPECT_EQ(with_tf.header.frame_id, without_tf.header.frame_id);
-  EXPECT_EQ(with_tf.child_frame_id, without_tf.child_frame_id);
+  SCOPED_TRACE("SbgImuShort overload");
+  expectNorthStepOdometry(odo_message);
+}
 
-  EXPECT_NEAR(with_tf.pose.pose.position.x, without_tf.pose.pose.position.x, METER_TOLERANCE);
-  EXPECT_NEAR(with_tf.pose.pose.position.y, without_tf.pose.pose.position.y, METER_TOLERANCE);
-  EXPECT_NEAR(with_tf.pose.pose.position.z, without_tf.pose.pose.position.z, METER_TOLERANCE);
+TEST_F(MessageWrapperTest, odometryWithTransformPublishingMatchesExpectedValues)
+{
+  sbg::MessageWrapper           wrapper;
+  sbg_driver::msg::SbgImuData   imu_message;
 
-  EXPECT_NEAR(with_tf.pose.pose.orientation.w, without_tf.pose.pose.orientation.w, QUAT_TOLERANCE);
+  configureForOdometry(wrapper, true);
+
+  imu_message.time_stamp = 2000;
+
+  const tf2::Quaternion orientation(0.0, 0.0, 0.0, 1.0);
+  const auto euler_message = createEulerMessage();
+
+  wrapper.createRosOdoMessage(
+    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE),
+    orientation, euler_message);
+
+  const auto odo_message = wrapper.createRosOdoMessage(
+    imu_message, createNorthStepNavMessage(), orientation, euler_message);
+
+  //
+  // Broadcasting the initial and the odometry transforms must leave the message alone, so the
+  // expectations are exactly the ones checked without transform publishing. The transforms
+  // themselves mirror the pose asserted here.
+  //
+  SCOPED_TRACE("transform publishing enabled");
+  expectNorthStepOdometry(odo_message);
 }
 
 //---------------------------------------------------------------------//
@@ -1233,14 +1289,17 @@ namespace
 
 TEST_F(MessageWrapperTest, shipMotionIsPassedThroughInBothConventions)
 {
-  sbg::MessageWrapper wrapper_ned;
-  sbg::MessageWrapper wrapper_enu;
+  sbg::MessageWrapper wrapper;
 
-  wrapper_ned.setUseEnu(false);
-  wrapper_enu.setUseEnu(true);
+  //
+  // The ship motion conversion is stateless, so one wrapper can be reconfigured between the
+  // two conventions instead of running two nodes at once.
+  //
+  wrapper.setUseEnu(false);
+  const auto ned_message = wrapper.createSbgShipMotionMessage(createShipMotionLog());
 
-  const auto ned_message = wrapper_ned.createSbgShipMotionMessage(createShipMotionLog());
-  const auto enu_message = wrapper_enu.createSbgShipMotionMessage(createShipMotionLog());
+  wrapper.setUseEnu(true);
+  const auto enu_message = wrapper.createSbgShipMotionMessage(createShipMotionLog());
 
   //
   // This documents the current behavior: surge, sway and heave and their derivatives are
