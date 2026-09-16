@@ -95,6 +95,21 @@ ament_export_dependencies(rosidl_default_runtime)
 ## Your package locations should be listed before other locations
 add_subdirectory(external/sbgECom)
 
+## sbgECom is bundled upstream code and is intentionally outside this repository's sanitizer
+## gate: defects in it are fixed upstream, not patched here.
+##
+## The sanitizer job passes -fsanitize=address,undefined through CMAKE_<LANG>_FLAGS, which
+## applies to every target in the build, the vendored one included. Target level options are
+## appended after those flags, so -fno-sanitize=undefined here turns UndefinedBehaviorSanitizer
+## back off for the sbgECom target only. AddressSanitizer stays enabled everywhere, and the
+## driver's own targets and its tests keep both sanitizers.
+##
+## Nothing is added to a normal build.
+if(CMAKE_C_FLAGS MATCHES "-fsanitize=[^ ]*undefined" OR CMAKE_CXX_FLAGS MATCHES "-fsanitize=[^ ]*undefined")
+  message(STATUS "Excluding the bundled sbgECom from UndefinedBehaviorSanitizer instrumentation")
+  target_compile_options(sbgECom PRIVATE -fno-sanitize=undefined)
+endif()
+
 include_directories(
   ${PROJECT_SOURCE_DIR}/include/sbg_driver/
   ${PROJECT_SOURCE_DIR}/external/sbgECom/common
@@ -258,9 +273,56 @@ if(BUILD_TESTING)
     DESTINATION share/${PROJECT_NAME}/test
   )
 
+  ## Ask the compiler where one of its runtime libraries lives, for LD_PRELOAD.
+  function(sbg_resolve_runtime_library ref_output_var ref_library_name)
+    execute_process(
+      COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=${ref_library_name}
+      RESULT_VARIABLE resolve_result
+      OUTPUT_VARIABLE resolved_path
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    if(NOT resolve_result EQUAL 0 OR NOT IS_ABSOLUTE "${resolved_path}" OR NOT EXISTS "${resolved_path}")
+      message(FATAL_ERROR "Could not resolve ${ref_library_name}: ${CMAKE_CXX_COMPILER} "
+        "-print-file-name=${ref_library_name} returned '${resolved_path}'")
+    endif()
+
+    set(${ref_output_var} "${resolved_path}" PARENT_SCOPE)
+  endfunction()
+
+  ## The launch test starts a plain python3, which then loads the rosidl extension modules.
+  ## When the build is instrumented those modules carry AddressSanitizer, and ASan refuses to
+  ## initialize from a library loaded after the process has started, so its runtime has to be
+  ## preloaded.
+  ##
+  ## The C++ runtime has to be preloaded as well: python3 doesn't link it, so ASan would find
+  ## no __cxa_throw to chain its interceptor to, and would abort the moment a library loaded
+  ## later throws, which Fast DDS does while opening its transports. The ASan runtime must
+  ## stay first in the list, otherwise it is back to being loaded too late.
+  ##
+  ## Nothing is added to the environment of a normal build.
+  set(SBG_LAUNCH_TEST_ARGS "")
+
+  if(CMAKE_C_FLAGS MATCHES "-fsanitize=[^ ]*address" OR CMAKE_CXX_FLAGS MATCHES "-fsanitize=[^ ]*address")
+    sbg_resolve_runtime_library(SBG_ASAN_RUNTIME libasan.so)
+    sbg_resolve_runtime_library(SBG_CXX_RUNTIME libstdc++.so.6)
+
+    message(STATUS "Launch tests will preload ${SBG_ASAN_RUNTIME} and ${SBG_CXX_RUNTIME}")
+
+    ## rosidl_typesupport_cpp caches the type support library for the lifetime of the process,
+    ## so creating a node is enough for LeakSanitizer to report it. Only that loader is
+    ## suppressed, see test/lsan_suppressions.supp: leaks in the driver are still reported.
+    list(APPEND SBG_LAUNCH_TEST_ARGS
+      ENV
+      "LD_PRELOAD=${SBG_ASAN_RUNTIME}:${SBG_CXX_RUNTIME}"
+      "LSAN_OPTIONS=suppressions=${CMAKE_CURRENT_SOURCE_DIR}/test/lsan_suppressions.supp:print_suppressions=0"
+    )
+  endif()
+
   ## The replay is real time and the fixture is four seconds long, so the test itself runs in
-  ## a few seconds. The timeout only bounds a node that never starts or never publishes.
-  add_launch_test(test/test_replay_launch.py TIMEOUT 120)
+  ## a few seconds. The timeout only bounds a node that never starts or never publishes, and is
+  ## generous enough for an instrumented build.
+  add_launch_test(test/test_replay_launch.py TIMEOUT 120 ${SBG_LAUNCH_TEST_ARGS})
 endif()
 
 ament_package()

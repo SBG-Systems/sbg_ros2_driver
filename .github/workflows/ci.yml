@@ -46,3 +46,39 @@ jobs:
           target-ros2-distro: ${{ matrix.ros_distribution }}
           # Coverage collection is out of scope for this first CI iteration.
           coverage-result: false
+
+  # Run the same test suite once more on Lyrical with AddressSanitizer and
+  # UndefinedBehaviorSanitizer, to catch memory and undefined behaviour defects in the
+  # driver and in the bundled sbgECom.
+  sanitizers:
+    name: sanitizers (lyrical)
+    runs-on: ubuntu-24.04
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-resolute-latest
+    env:
+      # Fail the job on the first finding instead of only reporting it.
+      ASAN_OPTIONS: halt_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+
+    steps:
+      - name: Build and test sbg_driver with ASan and UBSan
+        uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          package-name: sbg_driver
+          target-ros2-distro: lyrical
+          coverage-result: false
+          # Instruments everything this repository compiles, the bundled sbgECom included.
+          # The asan-gcc colcon mixin is deliberately not used: it only sets
+          # -fsanitize=address, with no UBSan, no frame pointers and no linker flags.
+          colcon-defaults: |
+            {
+              "build": {
+                "cmake-args": [
+                  "-DCMAKE_BUILD_TYPE=Debug",
+                  "-DCMAKE_C_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all -g",
+                  "-DCMAKE_CXX_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all -g",
+                  "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined",
+                  "-DCMAKE_SHARED_LINKER_FLAGS=-fsanitize=address,undefined"
+                ]
+              }
+            }
