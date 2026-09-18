@@ -202,11 +202,8 @@ namespace
    * having been latched first.
    *
    * The expectations are computed from the closed form helpers above and from the synthetic
-   * inputs, never from another createRosOdoMessage() call, so both IMU overloads are checked
-   * against the same external truth instead of against each other.
-   *
-   * The angular velocity is deliberately left out: the two overloads disagree there and the
-   * short IMU one is still under review.
+   * inputs, never from another createRosOdoMessage() call, so the odometry is checked against
+   * an external truth rather than against itself.
    */
   void expectNorthStepOdometry(const nav_msgs::msg::Odometry &ref_odo_message)
   {
@@ -661,8 +658,8 @@ TEST_F(MessageWrapperTest, rosImuMessageInvalidatesOrientationWhenQuaternionIsMi
   sbg::MessageWrapper           wrapper;
   sbg_driver::msg::SbgEkfQuat   quat_message;
 
-  const auto imu_message      = wrapper.createSbgImuDataMessage(createImuLog(1000));
-  const auto ros_imu_message  = wrapper.createRosImuMessage(imu_message, quat_message);
+  const sbg::ImuSample imu_sample(wrapper.createSbgImuDataMessage(createImuLog(1000)));
+  const auto ros_imu_message  = wrapper.createRosImuMessage(imu_sample, quat_message);
 
   EXPECT_DOUBLE_EQ(ros_imu_message.orientation_covariance[0], -1.0);
 }
@@ -677,8 +674,8 @@ TEST_F(MessageWrapperTest, rosImuMessageFillsOrientationCovarianceFromAccuracy)
   quat_message.accuracy.y   = 3.0;
   quat_message.accuracy.z   = 4.0;
 
-  const auto imu_message      = wrapper.createSbgImuDataMessage(createImuLog(1000));
-  const auto ros_imu_message  = wrapper.createRosImuMessage(imu_message, quat_message);
+  const sbg::ImuSample imu_sample(wrapper.createSbgImuDataMessage(createImuLog(1000)));
+  const auto ros_imu_message  = wrapper.createRosImuMessage(imu_sample, quat_message);
 
   EXPECT_DOUBLE_EQ(ros_imu_message.orientation.w, 1.0);
 
@@ -694,6 +691,49 @@ TEST_F(MessageWrapperTest, rosImuMessageFillsOrientationCovarianceFromAccuracy)
     EXPECT_DOUBLE_EQ(ros_imu_message.angular_velocity_covariance[i], 0.0);
     EXPECT_DOUBLE_EQ(ros_imu_message.linear_acceleration_covariance[i], 0.0);
   }
+}
+
+TEST_F(MessageWrapperTest, rosImuMessageReportsTheSampleRates)
+{
+  sbg::MessageWrapper           wrapper;
+  sbg_driver::msg::SbgEkfQuat   quat_message;
+
+  //
+  // NED on purpose: the axes are then passed through, so this checks the units alone. The frame
+  // conversion has its own tests, imuMessageKeepsSbgAxesInNed and imuMessageFlipsYAndZInEnu.
+  //
+  wrapper.setUseEnu(false);
+
+  const sbg::ImuSample imu_sample(wrapper.createSbgImuDataMessage(createImuLog(1000)));
+  const auto ros_imu_message  = wrapper.createRosImuMessage(imu_sample, quat_message);
+
+  //
+  // The sample is already in SI units, so the rates are reported as they are.
+  //
+  EXPECT_DOUBLE_EQ(ros_imu_message.angular_velocity.x, 0.25);
+  EXPECT_DOUBLE_EQ(ros_imu_message.angular_velocity.y, 0.5);
+  EXPECT_DOUBLE_EQ(ros_imu_message.angular_velocity.z, 0.75);
+
+  EXPECT_DOUBLE_EQ(ros_imu_message.linear_acceleration.x, 1.0);
+  EXPECT_DOUBLE_EQ(ros_imu_message.linear_acceleration.y, 2.0);
+  EXPECT_DOUBLE_EQ(ros_imu_message.linear_acceleration.z, 3.0);
+}
+
+TEST_F(MessageWrapperTest, rosTemperatureMessageReportsDegreesCelsius)
+{
+  sbg::MessageWrapper wrapper;
+
+  wrapper.setUseEnu(false);
+
+  const sbg::ImuSample imu_sample(wrapper.createSbgImuDataMessage(createImuLog(1000)));
+  const auto temperature_message  = wrapper.createRosTemperatureMessage(imu_sample);
+
+  //
+  // The sample carries degC whichever IMU log it was built from, so the temperature is reported
+  // as it is. Scaling it here made the IMU data source report 25 / 256 degC.
+  //
+  EXPECT_FLOAT_EQ(temperature_message.temperature, 25.0f);
+  EXPECT_DOUBLE_EQ(temperature_message.variance, 0.0);
 }
 
 //---------------------------------------------------------------------//
@@ -762,14 +802,12 @@ TEST_F(MessageWrapperTest, insTimestampHandlesDeviceTimestampRollover)
 TEST_F(MessageWrapperTest, odometryFirstFixIsTheOrigin)
 {
   sbg::MessageWrapper           wrapper;
-  sbg_driver::msg::SbgImuData   imu_message;
+  sbg::ImuSample                imu_sample;
 
   configureForOdometry(wrapper, false);
 
-  imu_message.time_stamp = 2000;
-
   const auto odo_message = wrapper.createRosOdoMessage(
-    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), createEulerMessage());
+    imu_sample, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), createEulerMessage());
 
   //
   // The first navigation fix latches the UTM reference, so it is reported at the origin.
@@ -782,22 +820,20 @@ TEST_F(MessageWrapperTest, odometryFirstFixIsTheOrigin)
 TEST_F(MessageWrapperTest, odometryReportsDisplacementFromTheFirstFix)
 {
   sbg::MessageWrapper           wrapper;
-  sbg_driver::msg::SbgImuData   imu_message;
+  sbg::ImuSample                imu_sample;
 
   configureForOdometry(wrapper, false);
-
-  imu_message.time_stamp = 2000;
 
   const auto euler_message = createEulerMessage();
 
   wrapper.createRosOdoMessage(
-    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), euler_message);
+    imu_sample, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), euler_message);
 
   //
   // A step north, with a 10 m altitude gain.
   //
   const auto north_message = wrapper.createRosOdoMessage(
-    imu_message,
+    imu_sample,
     createNavMessage(ODOM_LATITUDE + ODOM_STEP_DEG, ODOM_LONGITUDE, ODOM_ALTITUDE + 10.0),
     euler_message);
 
@@ -810,7 +846,7 @@ TEST_F(MessageWrapperTest, odometryReportsDisplacementFromTheFirstFix)
   // A step east, back at the reference altitude.
   //
   const auto east_message = wrapper.createRosOdoMessage(
-    imu_message,
+    imu_sample,
     createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE + ODOM_STEP_DEG, ODOM_ALTITUDE),
     euler_message);
 
@@ -824,7 +860,7 @@ TEST_F(MessageWrapperTest, odometryReportsDisplacementFromTheFirstFix)
   // re-initialized, so this has to land on the origin again.
   //
   const auto back_message = wrapper.createRosOdoMessage(
-    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), euler_message);
+    imu_sample, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), euler_message);
 
   EXPECT_NEAR(back_message.pose.pose.position.x, 0.0, METER_TOLERANCE);
   EXPECT_NEAR(back_message.pose.pose.position.y, 0.0, METER_TOLERANCE);
@@ -834,14 +870,12 @@ TEST_F(MessageWrapperTest, odometryReportsDisplacementFromTheFirstFix)
 TEST_F(MessageWrapperTest, odometryUsesTheConfiguredFrames)
 {
   sbg::MessageWrapper           wrapper;
-  sbg_driver::msg::SbgImuData   imu_message;
+  sbg::ImuSample                imu_sample;
 
   configureForOdometry(wrapper, false);
 
-  imu_message.time_stamp = 2000;
-
   const auto odo_message = wrapper.createRosOdoMessage(
-    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), createEulerMessage());
+    imu_sample, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), createEulerMessage());
 
   EXPECT_EQ(odo_message.header.frame_id, "odom_test");
 
@@ -854,14 +888,12 @@ TEST_F(MessageWrapperTest, odometryUsesTheConfiguredFrames)
 TEST_F(MessageWrapperTest, odometryFillsPoseAndTwistCovariance)
 {
   sbg::MessageWrapper           wrapper;
-  sbg_driver::msg::SbgImuData   imu_message;
+  sbg::ImuSample                imu_sample;
 
   configureForOdometry(wrapper, false);
 
-  imu_message.time_stamp = 2000;
-
   const auto odo_message = wrapper.createRosOdoMessage(
-    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), createEulerMessage());
+    imu_sample, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE), createEulerMessage());
 
   //
   // On the zone central meridian the convergence angle is zero, so the horizontal position
@@ -899,16 +931,14 @@ TEST_F(MessageWrapperTest, odometryFillsPoseAndTwistCovariance)
 TEST_F(MessageWrapperTest, odometryPassesTheOrientationThrough)
 {
   sbg::MessageWrapper           wrapper;
-  sbg_driver::msg::SbgImuData   imu_message;
+  sbg::ImuSample                imu_sample;
 
   configureForOdometry(wrapper, false);
-
-  imu_message.time_stamp = 2000;
 
   const tf2::Quaternion orientation(0.5, 0.5, 0.5, 0.5);
 
   const auto odo_message = wrapper.createRosOdoMessage(
-    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE),
+    imu_sample, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE),
     orientation, createEulerMessage());
 
   EXPECT_NEAR(odo_message.pose.pose.orientation.x, 0.5, QUAT_TOLERANCE);
@@ -917,17 +947,18 @@ TEST_F(MessageWrapperTest, odometryPassesTheOrientationThrough)
   EXPECT_NEAR(odo_message.pose.pose.orientation.w, 0.5, QUAT_TOLERANCE);
 }
 
-TEST_F(MessageWrapperTest, odometryFromImuDataMatchesExpectedValues)
+TEST_F(MessageWrapperTest, odometryMatchesExpectedValues)
 {
   sbg::MessageWrapper           wrapper;
   sbg_driver::msg::SbgImuData   imu_message;
 
   configureForOdometry(wrapper, false);
 
-  imu_message.time_stamp  = 2000;
-  imu_message.gyro.x      = 0.1;
-  imu_message.gyro.y      = 0.2;
-  imu_message.gyro.z      = 0.3;
+  imu_message.gyro.x = 0.1;
+  imu_message.gyro.y = 0.2;
+  imu_message.gyro.z = 0.3;
+
+  const sbg::ImuSample imu_sample(imu_message);
 
   const tf2::Quaternion orientation(0.0, 0.0, 0.0, 1.0);
   const auto euler_message = createEulerMessage();
@@ -936,69 +967,39 @@ TEST_F(MessageWrapperTest, odometryFromImuDataMatchesExpectedValues)
   // Latch the UTM reference on the first fix, then step north.
   //
   wrapper.createRosOdoMessage(
-    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE),
+    imu_sample, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE),
     orientation, euler_message);
 
   const auto odo_message = wrapper.createRosOdoMessage(
-    imu_message, createNorthStepNavMessage(), orientation, euler_message);
+    imu_sample, createNorthStepNavMessage(), orientation, euler_message);
 
-  SCOPED_TRACE("SbgImuData overload");
   expectNorthStepOdometry(odo_message);
 
   //
-  // This overload reports the gyroscope rates as they are, in rad.s^-1.
+  // The sample carries the angular velocity in rad.s^-1 whichever IMU log it was built from, so
+  // it is reported as it is. The ImuSample constructor is what applies the short IMU scale factor.
   //
   EXPECT_DOUBLE_EQ(odo_message.twist.twist.angular.x, 0.1);
   EXPECT_DOUBLE_EQ(odo_message.twist.twist.angular.y, 0.2);
   EXPECT_DOUBLE_EQ(odo_message.twist.twist.angular.z, 0.3);
 }
 
-TEST_F(MessageWrapperTest, odometryFromImuShortMatchesExpectedValues)
-{
-  sbg::MessageWrapper            wrapper;
-  sbg_driver::msg::SbgImuShort   imu_message;
-
-  configureForOdometry(wrapper, false);
-
-  imu_message.time_stamp = 2000;
-
-  const tf2::Quaternion orientation(0.0, 0.0, 0.0, 1.0);
-  const auto euler_message = createEulerMessage();
-
-  wrapper.createRosOdoMessage(
-    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE),
-    orientation, euler_message);
-
-  const auto odo_message = wrapper.createRosOdoMessage(
-    imu_message, createNorthStepNavMessage(), orientation, euler_message);
-
-  //
-  // The short IMU overload shares the whole projection, covariance and frame logic with the
-  // one above, and is checked against the very same expectations. The angular velocity is not
-  // asserted: this overload copies the raw delta angle counts instead of scaling them.
-  //
-  SCOPED_TRACE("SbgImuShort overload");
-  expectNorthStepOdometry(odo_message);
-}
-
 TEST_F(MessageWrapperTest, odometryWithTransformPublishingMatchesExpectedValues)
 {
   sbg::MessageWrapper           wrapper;
-  sbg_driver::msg::SbgImuData   imu_message;
+  sbg::ImuSample                imu_sample;
 
   configureForOdometry(wrapper, true);
-
-  imu_message.time_stamp = 2000;
 
   const tf2::Quaternion orientation(0.0, 0.0, 0.0, 1.0);
   const auto euler_message = createEulerMessage();
 
   wrapper.createRosOdoMessage(
-    imu_message, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE),
+    imu_sample, createNavMessage(ODOM_LATITUDE, ODOM_LONGITUDE, ODOM_ALTITUDE),
     orientation, euler_message);
 
   const auto odo_message = wrapper.createRosOdoMessage(
-    imu_message, createNorthStepNavMessage(), orientation, euler_message);
+    imu_sample, createNorthStepNavMessage(), orientation, euler_message);
 
   //
   // Broadcasting the initial and the odometry transforms must leave the message alone, so the

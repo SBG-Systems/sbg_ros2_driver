@@ -20,8 +20,7 @@ bool areStampsClose(const builtin_interfaces::msg::Time &lhs, const builtin_inte
 
 MessagePublisher::MessagePublisher():
 max_messages_(10),
-imu_data_received_(false),
-imu_short_received_(false),
+imu_source_(ImuSource::NONE),
 ekf_euler_received_(false),
 ekf_quat_received_(false),
 ekf_nav_received_(false)
@@ -88,18 +87,24 @@ void MessagePublisher::defineRosStandardPublishers(rclcpp::Node& ref_ros_node_ha
   }
 }
 
+bool MessagePublisher::updateImuSample(ImuSource imu_source, const ImuSample &ref_imu_sample)
+{
+  if ((imu_source == ImuSource::IMU_DATA) && (imu_source_ == ImuSource::IMU_SHORT))
+  {
+    return false;
+  }
+
+  imu_sample_ = ref_imu_sample;
+  imu_source_ = imu_source;
+
+  return true;
+}
+
 void MessagePublisher::processImuMessage()
 {
   if (temp_pub_)
   {
-    if (imu_short_received_)
-    {
-      temp_pub_->publish(message_wrapper_.createRosTemperatureMessage(sbg_imu_short_message_));
-    }
-    else if (imu_data_received_)
-    {
-      temp_pub_->publish(message_wrapper_.createRosTemperatureMessage(sbg_imu_message_));
-    }
+    temp_pub_->publish(message_wrapper_.createRosTemperatureMessage(imu_sample_));
   }
 
   processRosImuMessage();
@@ -115,27 +120,13 @@ void MessagePublisher::processRosVelMessage()
   //
   if (velocity_pub_ && ekf_nav_received_)
   {
-    if (imu_short_received_)
+    if (ekf_quat_received_)
     {
-      if (ekf_quat_received_)
-      {
-        velocity_pub_->publish(message_wrapper_.createRosTwistStampedMessage(sbg_ekf_quat_message_, sbg_ekf_nav_message_, sbg_imu_short_message_));
-      }
-      else if (ekf_euler_received_)
-      {
-        velocity_pub_->publish(message_wrapper_.createRosTwistStampedMessage(sbg_ekf_euler_message_, sbg_ekf_nav_message_, sbg_imu_short_message_));
-      }
+      velocity_pub_->publish(message_wrapper_.createRosTwistStampedMessage(sbg_ekf_quat_message_, sbg_ekf_nav_message_, imu_sample_));
     }
-    else if (imu_data_received_)
+    else if (ekf_euler_received_)
     {
-      if (ekf_quat_received_)
-      {
-        velocity_pub_->publish(message_wrapper_.createRosTwistStampedMessage(sbg_ekf_quat_message_, sbg_ekf_nav_message_, sbg_imu_message_));
-      }
-      else if (ekf_euler_received_)
-      {
-        velocity_pub_->publish(message_wrapper_.createRosTwistStampedMessage(sbg_ekf_euler_message_, sbg_ekf_nav_message_, sbg_imu_message_));
-      }
+      velocity_pub_->publish(message_wrapper_.createRosTwistStampedMessage(sbg_ekf_euler_message_, sbg_ekf_nav_message_, imu_sample_));
     }
   }
 }
@@ -146,75 +137,35 @@ void MessagePublisher::processRosImuMessage()
   {
     sbg_driver::msg::SbgEkfQuat ekf_quat_message_zero;
 
-    if (imu_short_received_)
+    if ((sbg_ekf_quat_message_ == ekf_quat_message_zero) || areStampsClose(imu_sample_.getHeader().stamp, sbg_ekf_quat_message_.header.stamp))
     {
-      if ((sbg_ekf_quat_message_ == ekf_quat_message_zero) || areStampsClose(sbg_imu_short_message_.header.stamp, sbg_ekf_quat_message_.header.stamp))
-      {
-        imu_pub_->publish(message_wrapper_.createRosImuMessage(sbg_imu_short_message_, sbg_ekf_quat_message_));
-      }
-    }
-    else if (imu_data_received_)
-    {
-      if ((sbg_ekf_quat_message_ == ekf_quat_message_zero) || (sbg_imu_message_.time_stamp == sbg_ekf_quat_message_.time_stamp))
-      {
-        imu_pub_->publish(message_wrapper_.createRosImuMessage(sbg_imu_message_, sbg_ekf_quat_message_));
-      }
+      imu_pub_->publish(message_wrapper_.createRosImuMessage(imu_sample_, sbg_ekf_quat_message_));
     }
   }
 }
 
 void MessagePublisher::processRosOdoMessage()
 {
-  if (odometry_pub_)
+  if (odometry_pub_ && (sbg_ekf_nav_message_.status.solution_mode == SBG_ECOM_SOL_MODE_NAV_POSITION))
   {
-    if (sbg_ekf_nav_message_.status.solution_mode == SBG_ECOM_SOL_MODE_NAV_POSITION)
+    if (areStampsClose(imu_sample_.getHeader().stamp, sbg_ekf_nav_message_.header.stamp))
     {
-      if (imu_short_received_)
+      /*
+      * Odometry message can be generated from quaternion or euler angles.
+      * Quaternion is prefered if they are available.
+      */
+      if (ekf_quat_received_)
       {
-        if (areStampsClose(sbg_imu_short_message_.header.stamp, sbg_ekf_nav_message_.header.stamp))
+        if (areStampsClose(imu_sample_.getHeader().stamp, sbg_ekf_quat_message_.header.stamp))
         {
-          /*
-          * Odometry message can be generated from quaternion or euler angles.
-          * Quaternion is prefered if they are available.
-          */
-          if (ekf_quat_received_)
-          {
-            if (areStampsClose(sbg_imu_short_message_.header.stamp, sbg_ekf_quat_message_.header.stamp))
-            {
-              odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_quat_message_, sbg_ekf_euler_message_));
-            }
-          }
-          else
-          {
-            if (areStampsClose(sbg_imu_short_message_.header.stamp, sbg_ekf_euler_message_.header.stamp))
-            {
-              odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_short_message_, sbg_ekf_nav_message_, sbg_ekf_euler_message_));
-            }
-          }
+          odometry_pub_->publish(message_wrapper_.createRosOdoMessage(imu_sample_, sbg_ekf_nav_message_, sbg_ekf_quat_message_, sbg_ekf_euler_message_));
         }
       }
-      else if (imu_data_received_)
+      else
       {
-        if (sbg_imu_message_.time_stamp == sbg_ekf_nav_message_.time_stamp)
+        if (areStampsClose(imu_sample_.getHeader().stamp, sbg_ekf_euler_message_.header.stamp))
         {
-          /*
-          * Odometry message can be generated from quaternion or euler angles.
-          * Quaternion is prefered if they are available.
-          */
-          if (ekf_quat_received_)
-          {
-            if (sbg_imu_message_.time_stamp == sbg_ekf_quat_message_.time_stamp)
-            {
-              odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_message_, sbg_ekf_nav_message_, sbg_ekf_quat_message_, sbg_ekf_euler_message_));
-            }
-          }
-          else
-          {
-            if (sbg_imu_message_.time_stamp == sbg_ekf_euler_message_.time_stamp)
-            {
-              odometry_pub_->publish(message_wrapper_.createRosOdoMessage(sbg_imu_message_, sbg_ekf_nav_message_, sbg_ekf_euler_message_));
-            }
-          }
+          odometry_pub_->publish(message_wrapper_.createRosOdoMessage(imu_sample_, sbg_ekf_nav_message_, sbg_ekf_euler_message_));
         }
       }
     }
@@ -369,10 +320,14 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
       case SBG_ECOM_LOG_IMU_DATA:
         if (sbg_imu_data_pub_)
         {
-          sbg_imu_message_    = message_wrapper_.createSbgImuDataMessage(ref_sbg_log.imuData);
-          imu_data_received_  = true;
-          sbg_imu_data_pub_->publish(sbg_imu_message_);
-          processImuMessage();
+          const auto sbg_imu_message = message_wrapper_.createSbgImuDataMessage(ref_sbg_log.imuData);
+
+          sbg_imu_data_pub_->publish(sbg_imu_message);
+
+          if (updateImuSample(ImuSource::IMU_DATA, ImuSample(sbg_imu_message)))
+          {
+            processImuMessage();
+          }
         }
         break;
 
@@ -516,10 +471,14 @@ void MessagePublisher::publish(SbgEComClass sbg_msg_class, SbgEComMsgId sbg_msg_
       case SBG_ECOM_LOG_IMU_SHORT:
         if (sbg_imu_short_pub_)
         {
-          sbg_imu_short_message_  = message_wrapper_.createSbgImuShortMessage(ref_sbg_log.imuShort);
-          imu_short_received_     = true;
-          sbg_imu_short_pub_->publish(sbg_imu_short_message_);
-          processImuMessage();
+          const auto sbg_imu_short_message = message_wrapper_.createSbgImuShortMessage(ref_sbg_log.imuShort);
+
+          sbg_imu_short_pub_->publish(sbg_imu_short_message);
+
+          if (updateImuSample(ImuSource::IMU_SHORT, ImuSample(sbg_imu_short_message)))
+          {
+            processImuMessage();
+          }
         }
         break;
 

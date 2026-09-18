@@ -118,6 +118,7 @@ include_directories(
 
 ## Define common resources.
 set(SBG_COMMON_RESOURCES
+  src/imu_sample.cpp
   src/mag_calibration.cpp
   src/message_publisher.cpp
   src/message_wrapper.cpp
@@ -255,6 +256,9 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_sbg_utm test/test_sbg_utm.cpp)
   target_link_libraries(test_sbg_utm sbg_driver_core)
+
+  ament_add_gtest(test_imu_sample test/test_imu_sample.cpp)
+  target_link_libraries(test_imu_sample sbg_driver_core)
 
   ament_add_gtest(test_message_wrapper test/test_message_wrapper.cpp)
   target_link_libraries(test_message_wrapper sbg_driver_core)

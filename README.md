@@ -237,12 +237,12 @@ For each ROS2 standard, you have to activate the needed SBG outputs.
 * **`/imu/temp`** [sensor_msgs/Temperature](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Temperature.html)
 
   IMU temperature data.
-  Requires `/sbg/imu_data`.
+  Requires `/sbg/imu_data` or `/sbg/imu_short`.
   
 * **`/imu/velocity`** [geometry_msgs/TwistStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/TwistStamped.html)
 
   IMU velocity data.
-  Requires `/sbg/imu_data`.
+  Requires `/sbg/imu_data` or `/sbg/imu_short`.
   
 * **`/imu/mag`** [sensor_msgs/MagneticField](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/MagneticField.html)
 
@@ -576,6 +576,10 @@ Each standard topic is built from several SBG logs, and is only published once t
 have been received. Make sure the device is configured to output them — `imuData` (or `imuShort`)
 and `ekfQuat` for `/imu/data` and `/imu/velocity`, `gps1Pos` for `/imu/nav_sat_fix`, `utcTime`
 for `/imu/utc_ref` — see [Configure the SBG device](#configure-the-sbg-device).
+
+If the device outputs both `imuShort` and `imuData`, the standard topics are built from
+`imuShort` only: it is the asynchronous, accurately time stamped log. Both SBG topics keep being
+published.
 
 ### Topics and frames
 
