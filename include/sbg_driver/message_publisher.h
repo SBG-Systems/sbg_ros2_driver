@@ -39,6 +39,16 @@
 namespace sbg
 {
 /*!
+ * SBG log a normalized IMU sample is built from.
+ */
+enum class ImuSource
+{
+  NONE,           /*!< No IMU log received yet. */
+  IMU_DATA,       /*!< SBG_ECOM_LOG_IMU_DATA. */
+  IMU_SHORT,      /*!< SBG_ECOM_LOG_IMU_SHORT. */
+};
+
+/*!
  * Class to publish all SBG-ROS messages to the corresponding publishers.
  */
 class MessagePublisher
@@ -71,8 +81,6 @@ private:
   rclcpp::Publisher<sbg_driver::msg::SbgAirData, std::allocator<void>>::SharedPtr       sbg_air_data_pub_;
 
   rclcpp::Publisher<sensor_msgs::msg::Imu, std::allocator<void>>::SharedPtr             imu_pub_;
-  sbg_driver::msg::SbgImuData                                                           sbg_imu_message_;
-  sbg_driver::msg::SbgImuShort                                                          sbg_imu_short_message_;
   sbg_driver::msg::SbgEkfQuat                                                           sbg_ekf_quat_message_;
   sbg_driver::msg::SbgEkfNav                                                            sbg_ekf_nav_message_;
   sbg_driver::msg::SbgEkfEuler                                                          sbg_ekf_euler_message_;
@@ -97,8 +105,8 @@ private:
   // the device actually sends is tracked here. The ROS standard messages are built from
   // several SBG logs and need to know which ones are available.
   //
-  bool                                                                                  imu_data_received_;
-  bool                                                                                  imu_short_received_;
+  ImuSample                                                                             imu_sample_;
+  ImuSource                                                                             imu_source_;
   bool                                                                                  ekf_euler_received_;
   bool                                                                                  ekf_quat_received_;
   bool                                                                                  ekf_nav_received_;
@@ -125,6 +133,19 @@ private:
    * \param[in] odom_enable             If true, enable odometry messages.
    */
   void defineRosStandardPublishers(rclcpp::Node& ref_ros_node_handle, bool odom_enable, bool enu_enable);
+
+  /*!
+   * Update the IMU sample the ROS standard messages are built from.
+   *
+   * SBG_ECOM_LOG_IMU_SHORT is preferred over SBG_ECOM_LOG_IMU_DATA: it is the asynchronous,
+   * accurately time stamped log. Once a IMU Short log has been received, IMU Data logs no
+   * longer drive the ROS standard messages.
+   *
+   * \param[in] imu_source              SBG log.
+   * \param[in] ref_imu_sample          IMU sample.
+   * \return                            If true, the sample has been accepted.
+   */
+  bool updateImuSample(ImuSource imu_source, const ImuSample &ref_imu_sample);
 
   /*!
    * Process a received SBG IMU log.
