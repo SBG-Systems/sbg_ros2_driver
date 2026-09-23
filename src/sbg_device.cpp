@@ -389,6 +389,33 @@ void SbgDevice::initSubscribers()
 
     rtcm_sub_ = ref_node_.create_subscription<rtcm_msgs::msg::Message>(config_store_.getRtcmFullTopic(), 10, rtcm_cb);
   }
+
+  if (config_store_.getPositionInputConf().subscribe)
+  {
+    auto position_cb = [&](const sensor_msgs::msg::NavSatFix::SharedPtr msg) -> void {
+        this->writePositionAidingToDevice(msg);
+    };
+
+    position_input_sub_ = ref_node_.create_subscription<sensor_msgs::msg::NavSatFix>(config_store_.getPositionInputConf().topic, 10, position_cb);
+  }
+
+  if (config_store_.getVelocityInputConf().subscribe)
+  {
+    auto velocity_cb = [&](const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg) -> void {
+        this->writeVelocityAidingToDevice(msg);
+    };
+
+    velocity_input_sub_ = ref_node_.create_subscription<geometry_msgs::msg::TwistWithCovarianceStamped>(config_store_.getVelocityInputConf().topic, 10, velocity_cb);
+  }
+
+  if (config_store_.getAirDataInputConf().subscribe)
+  {
+    auto air_data_cb = [&](const sensor_msgs::msg::FluidPressure::SharedPtr msg) -> void {
+        this->writeAirDataAidingToDevice(msg);
+    };
+
+    air_data_input_sub_ = ref_node_.create_subscription<sensor_msgs::msg::FluidPressure>(config_store_.getAirDataInputConf().topic, 10, air_data_cb);
+  }
 }
 
 void SbgDevice::configure()
@@ -689,6 +716,47 @@ void SbgDevice::writeRtcmMessageToDevice(const rtcm_msgs::msg::Message::SharedPt
 
     sbgEComErrorToString(error_code, error_str);
     SBG_LOG_ERROR(SBG_ERROR, "Failed to sent RTCM data to device: %s", error_str);
+  }
+}
+
+void SbgDevice::writePositionAidingToDevice(const sensor_msgs::msg::NavSatFix::SharedPtr msg)
+{
+  SbgEComLogPosition  log;
+
+  if (!aiding::convertNavSatFix(*msg, aiding::computeDelayUs(ref_node_.now(), msg->header.stamp), log))
+  {
+    return;
+  }
+
+  logAidingSendError(aiding::sendPosition(com_handle_, log), "position");
+}
+
+void SbgDevice::writeVelocityAidingToDevice(const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg)
+{
+  SbgEComLogVelocity  log;
+
+  aiding::convertTwistWithCovariance(*msg, config_store_.getVelocityInputFrame(), aiding::computeDelayUs(ref_node_.now(), msg->header.stamp), log);
+
+  logAidingSendError(aiding::sendVelocity(com_handle_, log), "velocity");
+}
+
+void SbgDevice::writeAirDataAidingToDevice(const sensor_msgs::msg::FluidPressure::SharedPtr msg)
+{
+  SbgEComLogAirData   log;
+
+  aiding::convertFluidPressure(*msg, aiding::computeDelayUs(ref_node_.now(), msg->header.stamp), log);
+
+  logAidingSendError(aiding::sendAirData(com_handle_, log), "air data");
+}
+
+void SbgDevice::logAidingSendError(SbgErrorCode error_code, const char *p_aiding_name) const
+{
+  if (error_code != SBG_NO_ERROR)
+  {
+    char error_str[256];
+
+    sbgEComErrorToString(error_code, error_str);
+    SBG_LOG_ERROR(SBG_ERROR, "Failed to send %s aiding data to device: %s", p_aiding_name, error_str);
   }
 }
 

@@ -44,8 +44,10 @@
 // ROS headers
 #include <rclcpp/rclcpp.hpp>
 
-#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
 // Project headers
+#include "aiding_input.h"
+
+#ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
 #include "sbg_vector3.h"
 #endif
 
@@ -58,6 +60,15 @@ namespace sbg
   {
     ROS = 0,
     INS_UNIX = 1,
+  };
+
+  /*!
+   * Subscription settings of an aiding input.
+   */
+  struct AidingInputConf
+  {
+    bool          subscribe;
+    std::string   topic;
   };
 
 /*!
@@ -122,6 +133,11 @@ private:
 
   bool                        nmea_publish_;
   std::string                 nmea_full_topic_;
+
+  AidingInputConf             position_input_;
+  AidingInputConf             velocity_input_;
+  AidingInputConf             air_data_input_;
+  aiding::VelocityFrame       velocity_input_frame_;
 
 #ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
   //
@@ -247,6 +263,13 @@ private:
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
   void loadNmeaParameters(const rclcpp::Node& ref_node_handle);
+
+  /*!
+   * Load the aiding input parameters.
+   *
+   * \param[in] ref_node_handle   ROS nodeHandle.
+   */
+  void loadAidingInputParameters(const rclcpp::Node& ref_node_handle);
 
 #ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
 
@@ -522,6 +545,34 @@ public:
    * \return                      String with RTCM namespace + topic.
    */
   const std::string &getRtcmFullTopic() const;
+
+  /*!
+   * Get the generic position aiding input settings.
+   *
+   * \return                      Position aiding input settings.
+   */
+  const AidingInputConf &getPositionInputConf() const;
+
+  /*!
+   * Get the generic velocity aiding input settings.
+   *
+   * \return                      Velocity aiding input settings.
+   */
+  const AidingInputConf &getVelocityInputConf() const;
+
+  /*!
+   * Get the frame convention of the generic velocity aiding input.
+   *
+   * \return                      Velocity aiding input frame convention.
+   */
+  aiding::VelocityFrame getVelocityInputFrame() const;
+
+  /*!
+   * Get the air data aiding input settings.
+   *
+   * \return                      Air data aiding input settings.
+   */
+  const AidingInputConf &getAirDataInputConf() const;
 
   /*!
    * Returns if a specific NMEA GGA message should be published or not.
