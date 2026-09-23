@@ -6,7 +6,7 @@
  *
  * \brief           Header file that contains all versions related information such as change log.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -46,8 +46,8 @@ extern "C" {
 //----------------------------------------------------------------------//
 
 #define SBG_E_COM_VERSION_MAJOR         5
-#define SBG_E_COM_VERSION_MINOR         3
-#define SBG_E_COM_VERSION_REV           2276
+#define SBG_E_COM_VERSION_MINOR         8
+#define SBG_E_COM_VERSION_REV           935
 #define SBG_E_COM_VERSION_BUILD         SBG_VERSION_QUALIFIER_STABLE
 
 #define SBG_E_COM_VERSION               SBG_VERSION_SOFTWARE(SBG_E_COM_VERSION_MAJOR,SBG_E_COM_VERSION_MINOR,SBG_E_COM_VERSION_REV,SBG_E_COM_VERSION_BUILD)

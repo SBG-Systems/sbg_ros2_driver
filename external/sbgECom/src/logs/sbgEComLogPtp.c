@@ -98,6 +98,8 @@ SbgErrorCode sbgEComLogPtpReadFromStream(SbgEComLogPtp *pLogData, SbgStreamBuffe
         memset(pLogData->masterMacAddress, UINT8_MAX, sizeof(pLogData->masterMacAddress));
     }
 
+    pLogData->domainNumber              = sbgStreamBufferReadUint8(pStreamBuffer);
+
     errorCode = sbgStreamBufferGetLastError(pStreamBuffer);
 
     if (errorCode == SBG_NO_ERROR)
@@ -149,6 +151,8 @@ SbgErrorCode sbgEComLogPtpWriteToStream(const SbgEComLogPtp *pLogData, SbgStream
     {
         sbgStreamBufferWriteUint8(pStreamBuffer, pLogData->masterMacAddress[i]);
     }
+
+    sbgStreamBufferWriteUint8(pStreamBuffer,    pLogData->domainNumber);
 
     return sbgStreamBufferGetLastError(pStreamBuffer);
 }

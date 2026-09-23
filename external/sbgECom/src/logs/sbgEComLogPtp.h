@@ -6,7 +6,7 @@
  *
  * \brief           Parse logs used to report device PTP status.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -54,6 +54,8 @@ typedef enum _SbgEComLogPtpState
     SBG_ECOM_LOG_PTP_STATE_FAULTY           = 1,                        /*!< The device is in the faulty state. */
     SBG_ECOM_LOG_PTP_STATE_MASTER           = 2,                        /*!< The device is the domain master. */
     SBG_ECOM_LOG_PTP_STATE_PASSIVE          = 3,                        /*!< The device is passive. */
+    SBG_ECOM_LOG_PTP_STATE_UNCALIBRATED     = 4,                        /*!< The device is an uncalibrated slave. */
+    SBG_ECOM_LOG_PTP_STATE_SLAVE            = 5,                        /*!< The device is a slave. */
 } SbgEComLogPtpState;
 
 /*!
@@ -120,6 +122,7 @@ typedef struct _SbgEComLogPtp
     float                                clockFreqOffsetStdDev;         /*!< Frequency offset standard deviation, in Hz. */
 
     uint8_t                              masterMacAddress[6];           /*!< Master clock 48 bits mac address, all field at UINT8_MAX if invalid. Added in sbgECom v5.2.*/
+    uint8_t                              domainNumber;                  /*!< Domain number attribute. */
 } SbgEComLogPtp;
 
 //----------------------------------------------------------------------//

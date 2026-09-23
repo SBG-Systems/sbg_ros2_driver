@@ -60,77 +60,85 @@ The following section provides an overview of all available CAN messages with a 
 Because CAN payloads are limited to 8 bytes only, consistent data might be spread across several CAN messages.  
 For example, the two CAN messages `SBG_ECAN_MSG_UTC_0` and `SBG_ECAN_MSG_UTC_1` form a consistent dataset that should be interpreted together.
 
-| Name (Log ID)                                                                   | Description                                                                 |
-|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| [SBG_ECAN_MSG_STATUS_01 (0x100)](#SBG_ECAN_MSG_STATUS_01)                       | General device status and information - part 1/3.                           |
-| [SBG_ECAN_MSG_STATUS_02 (0x101)](#SBG_ECAN_MSG_STATUS_02)                       | General device status and information - part 2/3.                           |
-| [SBG_ECAN_MSG_STATUS_03 (0x102)](#SBG_ECAN_MSG_STATUS_03)                       | General device status and information - part 3/3.                           |
-| [SBG_ECAN_MSG_UTC_0 (0x110)](#SBG_ECAN_MSG_UTC_0)                               | INS clock and UTC time reference - part 1/2.                                |
-| [SBG_ECAN_MSG_UTC_1 (0x111)](#SBG_ECAN_MSG_UTC_1)                               | INS clock and UTC time reference - part 2/2.                                |
-| [SBG_ECAN_MSG_IMU_INFO (0x120)](#SBG_ECAN_MSG_IMU_INFO)                         | IMU timestamp, status and temperature.                                      |
-| [SBG_ECAN_MSG_IMU_ACCEL (0x121)](#SBG_ECAN_MSG_IMU_ACCEL)                       | IMU body X,Y,Z accelerometers.                                              |
-| [SBG_ECAN_MSG_IMU_GYRO (0x122)](#SBG_ECAN_MSG_IMU_GYRO)                         | IMU body X,Y,Z rotation rates.                                              |
-| [SBG_ECAN_MSG_IMU_DELTA_VEL (0x123)](#SBG_ECAN_MSG_IMU_ACCEL)                   | Deprecated - same as `SBG_ECAN_MSG_IMU_ACCEL`.                              |
-| [SBG_ECAN_MSG_IMU_DELTA_ANGLE (0x124)](#SBG_ECAN_MSG_IMU_GYRO)                  | Deprecated - same as `SBG_ECAN_MSG_IMU_GYRO`.                               |
-| [SBG_ECAN_MSG_EKF_INFO (0x130)](#SBG_ECAN_MSG_EKF_INFO)                         | AHRS/INS solution timestamp.                                                |
-| [SBG_ECAN_MSG_EKF_QUAT (0x131)](#SBG_ECAN_MSG_EKF_QUAT)                         | AHRS/INS attitude using quaternion representation.                          |
-| [SBG_ECAN_MSG_EKF_EULER (0x132)](#SBG_ECAN_MSG_EKF_EULER)                       | AHRS/INS attitude using Euler angles representation.                        |
-| [SBG_ECAN_MSG_EKF_ORIENTATION_ACC (0x133)](#SBG_ECAN_MSG_EKF_ORIENTATION_ACC)   | AHRS/INS attitude standard deviation accuracy.                              |
-| [SBG_ECAN_MSG_EKF_POS (0x134)](#SBG_ECAN_MSG_EKF_POS)                           | INS latitude/longitude position.                                            |
-| [SBG_ECAN_MSG_EKF_ALTITUDE (0x135)](#SBG_ECAN_MSG_EKF_ALTITUDE)                 | INS altitude above MSL and undulation.                                      |
-| [SBG_ECAN_MSG_EKF_POS_ACC (0x136)](#SBG_ECAN_MSG_EKF_POS_ACC)                   | INS position standard deviation accuracy.                                   |
-| [SBG_ECAN_MSG_EKF_VEL_NED (0x137)](#SBG_ECAN_MSG_EKF_VEL_NED)                   | INS velocity in North, East, Down navigation frame.                         |
-| [SBG_ECAN_MSG_EKF_VEL_NED_ACC (0x138)](#SBG_ECAN_MSG_EKF_VEL_NED_ACC)           | INS velocity standard deviation accuracy in the NED frame.                  |
-| [SBG_ECAN_MSG_EKF_VEL_BODY (0x139)](#SBG_ECAN_MSG_EKF_VEL_BODY)                 | INS velocity X, Y, Z body frame.                                            |
-| [SBG_ECAN_MSG_AUTO_TRACK_SLIP_CURV (0x220)](#SBG_ECAN_MSG_AUTO_TRACK_SLIP_CURV) | Automotive-specific track angle, slip angle, and curvature radius.          |
-| [SBG_ECAN_MSG_SHIP_MOTION_INFO (0x140)](#SBG_ECAN_MSG_SHIP_MOTION_INFO)         | Marine-specific heave, surge, sway timestamp, and status.                   |
-| [SBG_ECAN_MSG_SHIP_MOTION_0 (0x141)](#SBG_ECAN_MSG_SHIP_MOTION_0)               | Surge, sway, and heave measurements.                                        |
-| [SBG_ECAN_MSG_SHIP_MOTION_1 (0x145)](#SBG_ECAN_MSG_SHIP_MOTION_1)               | Surge, sway, and heave acceleration measurements.                           |
-| [SBG_ECAN_MSG_SHIP_MOTION_2 (0x149)](#SBG_ECAN_MSG_SHIP_MOTION_2)               | Surge, sway, and heave velocity measurements.                               |
-| [SBG_ECAN_MSG_SHIP_MOTION_HP_INFO (0x14A)](#SBG_ECAN_MSG_SHIP_MOTION_HP_INFO)   | Delayed heave timestamp and status.                                         |
-| [SBG_ECAN_MSG_SHIP_MOTION_HP_0 (0x14B)](#SBG_ECAN_MSG_SHIP_MOTION_HP_0)         | Delayed heave measurement (surge and sway are not computed).                |
-| [SBG_ECAN_MSG_SHIP_MOTION_HP_1 (0x14C)](#SBG_ECAN_MSG_SHIP_MOTION_HP_1)         | Vessel's acceleration used to compute delayed heave.                        |
-| [SBG_ECAN_MSG_SHIP_MOTION_HP_2 (0x14D)](#SBG_ECAN_MSG_SHIP_MOTION_HP_2)         | Delayed heave velocity (surge and sway are not computed).                   |
-| [SBG_ECAN_MSG_MAG_0 (0x150)](#SBG_ECAN_MSG_MAG_0)                               | Magnetometer aiding timestamp and status.                                   |
-| [SBG_ECAN_MSG_MAG_1 (0x151)](#SBG_ECAN_MSG_MAG_1)                               | Normalized X, Y, Z magnetic field values.                                   |
-| [SBG_ECAN_MSG_MAG_2 (0x152)](#SBG_ECAN_MSG_MAG_2)                               | Accelerometers X, Y, Z aligned with magnetometer frame.                     |
-| [SBG_ECAN_MSG_ODO_INFO (0x160)](#SBG_ECAN_MSG_ODO_INFO)                         | Wheel speed odometer velocity timestamp and status.                         |
-| [SBG_ECAN_MSG_ODO_VEL (0x161)](#SBG_ECAN_MSG_ODO_VEL)                           | Wheel speed odometer velocity measurement.                                  |
-| [SBG_ECAN_MSG_AIR_DATA_INFO (0x162)](#SBG_ECAN_MSG_AIR_DATA_INFO)               | AirData aiding timestamp, status and air temperature.                       |
-| [SBG_ECAN_MSG_AIR_DATA_ALTITUDE (0x163)](#SBG_ECAN_MSG_AIR_DATA_ALTITUDE)       | AirData static pressure and barometric altitude.                            |
-| [SBG_ECAN_MSG_AIR_DATA_AIRSPEED (0x164)](#SBG_ECAN_MSG_AIR_DATA_AIRSPEED)       | AirData dynamic pressure and true airspeed.                                 |
-| [SBG_ECAN_MSG_DEPTH_INFO (0x166)](#SBG_ECAN_MSG_DEPTH_INFO)                     | Subsea depth pressure sensor timestamp and status.                          |
-| [SBG_ECAN_MSG_DEPTH_ALTITUDE (0x167)](#SBG_ECAN_MSG_DEPTH_ALTITUDE)             | Subsea water pressure value and depth value.                                |
-| [SBG_ECAN_MSG_GPS1_VEL_INFO (0x170)](#SBG_ECAN_MSG_GPSX_VEL_INFO)               | GNSS module 1 velocity timestamp and status.                                |
-| [SBG_ECAN_MSG_GPS1_VEL (0x171)](#SBG_ECAN_MSG_GPSX_VEL)                         | GNSS module 1 velocity North, East, Down values.                            |
-| [SBG_ECAN_MSG_GPS1_VEL_ACC (0x172)](#SBG_ECAN_MSG_GPSX_VEL_ACC)                 | GNSS module 1 velocity NED standard deviation accuracies.                   |
-| [SBG_ECAN_MSG_GPS1_COURSE (0x173)](#SBG_ECAN_MSG_GPSX_COURSE)                   | GNSS module 1 course over ground and accuracy.                              |
-| [SBG_ECAN_MSG_GPS1_POS_INFO (0x174)](#SBG_ECAN_MSG_GPSX_POS_INFO)               | GNSS module 1 position timestamp and status.                                |
-| [SBG_ECAN_MSG_GPS1_POS (0x175)](#SBG_ECAN_MSG_GPSX_POS)                         | GNSS module 1 position latitude and longitude.                              |
-| [SBG_ECAN_MSG_GPS1_POS_ALT (0x176)](#SBG_ECAN_MSG_GPSX_POS_ALT)                 | GNSS module 1 altitude MSL, undulation and information.                     |
-| [SBG_ECAN_MSG_GPS1_POS_ACC (0x177)](#SBG_ECAN_MSG_GPSX_POS_ACC)                 | GNSS module 1 position accuracy and information.                            |
-| [SBG_ECAN_MSG_GPS1_HDT_INFO (0x178)](#SBG_ECAN_MSG_GPSX_HDT_INFO)               | GNSS module 1 dual antenna timestamp and status.                            |
-| [SBG_ECAN_MSG_GPS1_HDT (0x179)](#SBG_ECAN_MSG_GPSX_HDT)                         | GNSS module 1 dual antenna true heading, pitch angle, and accuracies.       |
-| [SBG_ECAN_MSG_GPS2_VEL_INFO (0x180)](#SBG_ECAN_MSG_GPSX_VEL_INFO)               | GNSS module 2 velocity timestamp and status.                                |
-| [SBG_ECAN_MSG_GPS2_VEL (0x181)](#SBG_ECAN_MSG_GPSX_VEL)                         | GNSS module 2 velocity North, East, Down values.                            |
-| [SBG_ECAN_MSG_GPS2_VEL_ACC (0x182)](#SBG_ECAN_MSG_GPSX_VEL_ACC)                 | GNSS module 2 velocity NED standard deviation accuracies.                   |
-| [SBG_ECAN_MSG_GPS2_COURSE (0x183)](#SBG_ECAN_MSG_GPSX_COURSE)                   | GNSS module 2 course over ground and accuracy.                              |
-| [SBG_ECAN_MSG_GPS2_POS_INFO (0x184)](#SBG_ECAN_MSG_GPSX_POS_INFO)               | GNSS module 2 position timestamp and status.                                |
-| [SBG_ECAN_MSG_GPS2_POS (0x185)](#SBG_ECAN_MSG_GPSX_POS)                         | GNSS module 2 position latitude and longitude.                              |
-| [SBG_ECAN_MSG_GPS2_POS_ALT (0x186)](#SBG_ECAN_MSG_GPSX_POS_ALT)                 | GNSS module 2 altitude MSL, undulation and information.                     |
-| [SBG_ECAN_MSG_GPS2_POS_ACC (0x187)](#SBG_ECAN_MSG_GPSX_POS_ACC)                 | GNSS module 2 position accuracy and information.                            |
-| [SBG_ECAN_MSG_GPS2_HDT_INFO (0x188)](#SBG_ECAN_MSG_GPSX_HDT_INFO)               | GNSS module 2 dual antenna timestamp and status.                            |
-| [SBG_ECAN_MSG_GPS2_HDT (0x189)](#SBG_ECAN_MSG_GPSX_HDT)                         | GNSS module 2 dual antenna true heading, pitch angle, and accuracies.       |
-| [SBG_ECAN_MSG_EVENT_INFO_A (0x200)](#SBG_ECAN_MSG_EVENT_INFO_X)                 | Sync In A event marker timestamp and status.                                |
-| [SBG_ECAN_MSG_EVENT_TIME_A (0x201)](#SBG_ECAN_MSG_EVENT_TIME_X)                 | Additional Sync In A event marker offset from primary timestamp.            |
-| [SBG_ECAN_MSG_EVENT_INFO_B (0x202)](#SBG_ECAN_MSG_EVENT_INFO_X)                 | Sync In B event marker timestamp and status.                                |
-| [SBG_ECAN_MSG_EVENT_TIME_B (0x203)](#SBG_ECAN_MSG_EVENT_TIME_X)                 | Additional Sync In B event marker offset from primary timestamp.            |
-| [SBG_ECAN_MSG_EVENT_INFO_C (0x204)](#SBG_ECAN_MSG_EVENT_INFO_X)                 | Sync In C event marker timestamp and status.                                |
-| [SBG_ECAN_MSG_EVENT_TIME_C (0x205)](#SBG_ECAN_MSG_EVENT_TIME_X)                 | Additional Sync In C event marker offset from primary timestamp.            |
-| [SBG_ECAN_MSG_EVENT_INFO_D (0x206)](#SBG_ECAN_MSG_EVENT_INFO_X)                 | Sync In D event marker timestamp and status.                                |
-| [SBG_ECAN_MSG_EVENT_TIME_D (0x207)](#SBG_ECAN_MSG_EVENT_TIME_X)                 | Additional Sync In D event marker offset from primary timestamp.            |
-| [SBG_ECAN_MSG_EVENT_INFO_E (0x208)](#SBG_ECAN_MSG_EVENT_INFO_X)                 | Sync In E event marker timestamp and status.                                |
-| [SBG_ECAN_MSG_EVENT_TIME_E (0x209)](#SBG_ECAN_MSG_EVENT_TIME_X)                 | Additional Sync In E event marker offset from primary timestamp.            |
+| Name (Log ID)                                                                            | Description                                                                 |
+|------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| [SBG_ECAN_MSG_STATUS_01 (0x100)](#SBG_ECAN_MSG_STATUS_01)                                | General device status and information - part 1/3.                           |
+| [SBG_ECAN_MSG_STATUS_02 (0x101)](#SBG_ECAN_MSG_STATUS_02)                                | General device status and information - part 2/3.                           |
+| [SBG_ECAN_MSG_STATUS_03 (0x102)](#SBG_ECAN_MSG_STATUS_03)                                | General device status and information - part 3/3.                           |
+| [SBG_ECAN_MSG_UTC_0 (0x110)](#SBG_ECAN_MSG_UTC_0)                                        | INS clock and UTC time reference - part 1/2.                                |
+| [SBG_ECAN_MSG_UTC_1 (0x111)](#SBG_ECAN_MSG_UTC_1)                                        | INS clock and UTC time reference - part 2/2.                                |
+| [SBG_ECAN_MSG_IMU_INFO (0x120)](#SBG_ECAN_MSG_IMU_INFO)                                  | IMU timestamp, status and temperature.                                      |
+| [SBG_ECAN_MSG_IMU_ACCEL (0x121)](#SBG_ECAN_MSG_IMU_ACCEL)                                | IMU body X,Y,Z accelerometers.                                              |
+| [SBG_ECAN_MSG_IMU_GYRO (0x122)](#SBG_ECAN_MSG_IMU_GYRO)                                  | IMU body X,Y,Z rotation rates.                                              |
+| [SBG_ECAN_MSG_IMU_DELTA_VEL (0x123)](#SBG_ECAN_MSG_IMU_ACCEL)                            | Deprecated - same as `SBG_ECAN_MSG_IMU_ACCEL`.                              |
+| [SBG_ECAN_MSG_IMU_DELTA_ANGLE (0x124)](#SBG_ECAN_MSG_IMU_GYRO)                           | Deprecated - same as `SBG_ECAN_MSG_IMU_GYRO`.                               |
+| [SBG_ECAN_MSG_EKF_INFO (0x130)](#SBG_ECAN_MSG_EKF_INFO)                                  | AHRS/INS solution timestamp.                                                |
+| [SBG_ECAN_MSG_EKF_QUAT (0x131)](#SBG_ECAN_MSG_EKF_QUAT)                                  | AHRS/INS attitude using quaternion representation.                          |
+| [SBG_ECAN_MSG_EKF_EULER (0x132)](#SBG_ECAN_MSG_EKF_EULER)                                | AHRS/INS attitude using Euler angles representation.                        |
+| [SBG_ECAN_MSG_EKF_ORIENTATION_ACC (0x133)](#SBG_ECAN_MSG_EKF_ORIENTATION_ACC)            | AHRS/INS attitude standard deviation accuracy.                              |
+| [SBG_ECAN_MSG_EKF_POS (0x134)](#SBG_ECAN_MSG_EKF_POS)                                    | INS latitude/longitude position.                                            |
+| [SBG_ECAN_MSG_EKF_ALTITUDE (0x135)](#SBG_ECAN_MSG_EKF_ALTITUDE)                          | INS altitude above MSL and undulation.                                      |
+| [SBG_ECAN_MSG_EKF_POS_ACC (0x136)](#SBG_ECAN_MSG_EKF_POS_ACC)                            | INS position standard deviation accuracy.                                   |
+| [SBG_ECAN_MSG_EKF_VEL_NED (0x137)](#SBG_ECAN_MSG_EKF_VEL_NED)                            | INS velocity in North, East, Down navigation frame.                         |
+| [SBG_ECAN_MSG_EKF_VEL_NED_ACC (0x138)](#SBG_ECAN_MSG_EKF_VEL_NED_ACC)                    | INS velocity standard deviation accuracy in the NED frame.                  |
+| [SBG_ECAN_MSG_EKF_VEL_BODY (0x139)](#SBG_ECAN_MSG_EKF_VEL_BODY)                          | INS velocity X, Y, Z body frame.                                            |
+| [SBG_ECAN_MSG_EKF_AIR_DATA (0x13A)](#SBG_ECAN_MSG_EKF_AIR_DATA)                          | Air velocity in the North, East, Down (NED) navigation frame.               |
+| [SBG_ECAN_MSG_EKF_AIR_DATA_ACC (0x13B)](#SBG_ECAN_MSG_EKF_AIR_DATA_ACC)                  | Air velocity standard deviation in the North, East, Down (NED) frame.       |
+| [SBG_ECAN_MSG_AUTO_TRACK_SLIP_CURV (0x220)](#SBG_ECAN_MSG_AUTO_TRACK_SLIP_CURV)          | Automotive-specific track angle, slip angle, and curvature radius.          |
+| [SBG_ECAN_MSG_SHIP_MOTION_INFO (0x140)](#SBG_ECAN_MSG_SHIP_MOTION_INFO)                  | Marine-specific heave, surge, sway timestamp, and status.                   |
+| [SBG_ECAN_MSG_SHIP_MOTION_0 (0x141)](#SBG_ECAN_MSG_SHIP_MOTION_0)                        | Surge, sway, and heave measurements.                                        |
+| [SBG_ECAN_MSG_SHIP_MOTION_1 (0x145)](#SBG_ECAN_MSG_SHIP_MOTION_1)                        | Surge, sway, and heave acceleration measurements.                           |
+| [SBG_ECAN_MSG_SHIP_MOTION_2 (0x149)](#SBG_ECAN_MSG_SHIP_MOTION_2)                        | Surge, sway, and heave velocity measurements.                               |
+| [SBG_ECAN_MSG_SHIP_MOTION_HP_INFO (0x14A)](#SBG_ECAN_MSG_SHIP_MOTION_HP_INFO)            | Delayed heave timestamp and status.                                         |
+| [SBG_ECAN_MSG_SHIP_MOTION_HP_0 (0x14B)](#SBG_ECAN_MSG_SHIP_MOTION_HP_0)                  | Delayed heave measurement (surge and sway are not computed).                |
+| [SBG_ECAN_MSG_SHIP_MOTION_HP_1 (0x14C)](#SBG_ECAN_MSG_SHIP_MOTION_HP_1)                  | Vessel's acceleration used to compute delayed heave.                        |
+| [SBG_ECAN_MSG_SHIP_MOTION_HP_2 (0x14D)](#SBG_ECAN_MSG_SHIP_MOTION_HP_2)                  | Delayed heave velocity (surge and sway are not computed).                   |
+| [SBG_ECAN_MSG_MAG_0 (0x150)](#SBG_ECAN_MSG_MAG_0)                                        | Magnetometer aiding timestamp and status.                                   |
+| [SBG_ECAN_MSG_MAG_1 (0x151)](#SBG_ECAN_MSG_MAG_1)                                        | Normalized X, Y, Z magnetic field values.                                   |
+| [SBG_ECAN_MSG_MAG_2 (0x152)](#SBG_ECAN_MSG_MAG_2)                                        | Accelerometers X, Y, Z aligned with magnetometer frame.                     |
+| [SBG_ECAN_MSG_ODO_INFO (0x160)](#SBG_ECAN_MSG_ODO_INFO)                                  | Wheel speed odometer velocity timestamp and status.                         |
+| [SBG_ECAN_MSG_ODO_VEL (0x161)](#SBG_ECAN_MSG_ODO_VEL)                                    | Wheel speed odometer velocity measurement.                                  |
+| [SBG_ECAN_MSG_AIR_DATA_INFO (0x162)](#SBG_ECAN_MSG_AIR_DATA_INFO)                        | AirData aiding timestamp, status and air temperature.                       |
+| [SBG_ECAN_MSG_AIR_DATA_ALTITUDE (0x163)](#SBG_ECAN_MSG_AIR_DATA_ALTITUDE)                | AirData static pressure and barometric altitude.                            |
+| [SBG_ECAN_MSG_AIR_DATA_AIRSPEED (0x164)](#SBG_ECAN_MSG_AIR_DATA_AIRSPEED)                | AirData dynamic pressure and true airspeed.                                 |
+| [SBG_ECAN_MSG_DEPTH_INFO (0x166)](#SBG_ECAN_MSG_DEPTH_INFO)                              | Subsea depth pressure sensor timestamp and status.                          |
+| [SBG_ECAN_MSG_DEPTH_ALTITUDE (0x167)](#SBG_ECAN_MSG_DEPTH_ALTITUDE)                      | Subsea water pressure value and depth value.                                |
+| [SBG_ECAN_MSG_GPS1_VEL_INFO (0x170)](#SBG_ECAN_MSG_GPSX_VEL_INFO)                        | GNSS module 1 velocity timestamp and status.                                |
+| [SBG_ECAN_MSG_GPS1_VEL (0x171)](#SBG_ECAN_MSG_GPSX_VEL)                                  | GNSS module 1 velocity North, East, Down values.                            |
+| [SBG_ECAN_MSG_GPS1_VEL_ACC (0x172)](#SBG_ECAN_MSG_GPSX_VEL_ACC)                          | GNSS module 1 velocity NED standard deviation accuracies.                   |
+| [SBG_ECAN_MSG_GPS1_COURSE (0x173)](#SBG_ECAN_MSG_GPSX_COURSE)                            | GNSS module 1 course over ground and accuracy.                              |
+| [SBG_ECAN_MSG_GPS1_POS_INFO (0x174)](#SBG_ECAN_MSG_GPSX_POS_INFO)                        | GNSS module 1 position timestamp and status.                                |
+| [SBG_ECAN_MSG_GPS1_POS (0x175)](#SBG_ECAN_MSG_GPSX_POS)                                  | GNSS module 1 position latitude and longitude.                              |
+| [SBG_ECAN_MSG_GPS1_POS_ALT (0x176)](#SBG_ECAN_MSG_GPSX_POS_ALT)                          | GNSS module 1 altitude MSL, undulation and information.                     |
+| [SBG_ECAN_MSG_GPS1_POS_ACC (0x177)](#SBG_ECAN_MSG_GPSX_POS_ACC)                          | GNSS module 1 position accuracy and information.                            |
+| [SBG_ECAN_MSG_GPS1_HDT_INFO (0x178)](#SBG_ECAN_MSG_GPSX_HDT_INFO)                        | GNSS module 1 dual antenna timestamp and status.                            |
+| [SBG_ECAN_MSG_GPS1_HDT (0x179)](#SBG_ECAN_MSG_GPSX_HDT)                                  | GNSS module 1 dual antenna true heading, pitch angle, and accuracies.       |
+| [SBG_ECAN_MSG_GPS1_POS_SECURITY_STATUS (0x17A)](#SBG_ECAN_MSG_GPSX_POS_SECURITY_STATUS)  | GNSS module 1 security status including IFM, spoofing and OSNMA detection.  |
+| [SBG_ECAN_MSG_GPS1_HDT_SV (0x17B)](#SBG_ECAN_MSG_GPSX_HDT_SV)                            | GNSS module 1 dual antenna baseline and satellites tracked and used.        |
+| [SBG_ECAN_MSG_GPS1_POS_MON (0x17C)](#SBG_ECAN_MSG_GPSX_POS_MON)                          | GNSS module 1 monitoring, including receiver number of reboots and up time. |
+| [SBG_ECAN_MSG_GPS2_VEL_INFO (0x180)](#SBG_ECAN_MSG_GPSX_VEL_INFO)                        | GNSS module 2 velocity timestamp and status.                                |
+| [SBG_ECAN_MSG_GPS2_VEL (0x181)](#SBG_ECAN_MSG_GPSX_VEL)                                  | GNSS module 2 velocity North, East, Down values.                            |
+| [SBG_ECAN_MSG_GPS2_VEL_ACC (0x182)](#SBG_ECAN_MSG_GPSX_VEL_ACC)                          | GNSS module 2 velocity NED standard deviation accuracies.                   |
+| [SBG_ECAN_MSG_GPS2_COURSE (0x183)](#SBG_ECAN_MSG_GPSX_COURSE)                            | GNSS module 2 course over ground and accuracy.                              |
+| [SBG_ECAN_MSG_GPS2_POS_INFO (0x184)](#SBG_ECAN_MSG_GPSX_POS_INFO)                        | GNSS module 2 position timestamp and status.                                |
+| [SBG_ECAN_MSG_GPS2_POS (0x185)](#SBG_ECAN_MSG_GPSX_POS)                                  | GNSS module 2 position latitude and longitude.                              |
+| [SBG_ECAN_MSG_GPS2_POS_ALT (0x186)](#SBG_ECAN_MSG_GPSX_POS_ALT)                          | GNSS module 2 altitude MSL, undulation and information.                     |
+| [SBG_ECAN_MSG_GPS2_POS_ACC (0x187)](#SBG_ECAN_MSG_GPSX_POS_ACC)                          | GNSS module 2 position accuracy and information.                            |
+| [SBG_ECAN_MSG_GPS2_HDT_INFO (0x188)](#SBG_ECAN_MSG_GPSX_HDT_INFO)                        | GNSS module 2 dual antenna timestamp and status.                            |
+| [SBG_ECAN_MSG_GPS2_HDT (0x189)](#SBG_ECAN_MSG_GPSX_HDT)                                  | GNSS module 2 dual antenna true heading, pitch angle, and accuracies.       |
+| [SBG_ECAN_MSG_GPS2_POS_SECURITY_STATUS (0x18A)](#SBG_ECAN_MSG_GPSX_POS_SECURITY_STATUS)  | GNSS module 2 security status including IFM, spoofing and OSNMA detection.  |
+| [SBG_ECAN_MSG_GPS2_HDT_SV (0x18B)](#SBG_ECAN_MSG_GPSX_HDT_SV)                            | GNSS module 2 dual antenna baseline and satellites tracked and used.        |
+| [SBG_ECAN_MSG_GPS2_POS_MON (0x18C)](#SBG_ECAN_MSG_GPSX_POS_MON)                          | GNSS module 2 monitoring, including receiver number of reboots and up time. |
+| [SBG_ECAN_MSG_EVENT_INFO_A (0x200)](#SBG_ECAN_MSG_EVENT_INFO_X)                          | Sync In A event marker timestamp and status.                                |
+| [SBG_ECAN_MSG_EVENT_TIME_A (0x201)](#SBG_ECAN_MSG_EVENT_TIME_X)                          | Additional Sync In A event marker offset from primary timestamp.            |
+| [SBG_ECAN_MSG_EVENT_INFO_B (0x202)](#SBG_ECAN_MSG_EVENT_INFO_X)                          | Sync In B event marker timestamp and status.                                |
+| [SBG_ECAN_MSG_EVENT_TIME_B (0x203)](#SBG_ECAN_MSG_EVENT_TIME_X)                          | Additional Sync In B event marker offset from primary timestamp.            |
+| [SBG_ECAN_MSG_EVENT_INFO_C (0x204)](#SBG_ECAN_MSG_EVENT_INFO_X)                          | Sync In C event marker timestamp and status.                                |
+| [SBG_ECAN_MSG_EVENT_TIME_C (0x205)](#SBG_ECAN_MSG_EVENT_TIME_X)                          | Additional Sync In C event marker offset from primary timestamp.            |
+| [SBG_ECAN_MSG_EVENT_INFO_D (0x206)](#SBG_ECAN_MSG_EVENT_INFO_X)                          | Sync In D event marker timestamp and status.                                |
+| [SBG_ECAN_MSG_EVENT_TIME_D (0x207)](#SBG_ECAN_MSG_EVENT_TIME_X)                          | Additional Sync In D event marker offset from primary timestamp.            |
+| [SBG_ECAN_MSG_EVENT_INFO_E (0x208)](#SBG_ECAN_MSG_EVENT_INFO_X)                          | Sync In E event marker timestamp and status.                                |
+| [SBG_ECAN_MSG_EVENT_TIME_E (0x209)](#SBG_ECAN_MSG_EVENT_TIME_X)                          | Additional Sync In E event marker offset from primary timestamp.            |
 ## General Status Messages
 
 These outputs aggregate system status data into six categories: General, Clock, Communications, Aiding, Solution, and Heave.  
@@ -424,6 +432,36 @@ The `SBG_ECAN_MSG_EKF_VEL_BODY` message provides INS velocity data in the body X
 | VELOCITY_X    | Velocity in body/INS X direction | 10^-2   | m/s    | int16  | 2    | 0      |
 | VELOCITY_Y    | Velocity in body/INS Y direction | 10^-2   | m/s    | int16  | 2    | 2      |
 | VELOCITY_Z    | Velocity in body/INS Z direction | 10^-2   | m/s    | int16  | 2    | 4      |
+
+### SBG_ECAN_MSG_EKF_AIR_DATA (0x13A) {#SBG_ECAN_MSG_EKF_AIR_DATA}
+
+This log provides air velocity in the North, East, Down (NED) navigation frame.
+
+- **Message Name (ID):** `SBG_ECAN_MSG_EKF_AIR_DATA (0x13A)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.4-blue) ![HPINS](https://img.shields.io/badge/HPINS-6.3-blue)
+- **Payload Size:** 6 bytes
+
+| Field    | Description                          | Scaling | Unit | Format | Size | Offset |
+|----------|--------------------------------------|---------|------|--------|------|--------|
+| WIND_N   | Air velocity in the North direction. | 10^-2   | m/s  | int16  | 2    | 0      |
+| WIND_E   | Air velocity in the East direction.  | 10^-2   | m/s  | int16  | 2    | 2      |
+| WIND_D   | Air velocity in the Down direction.  | 10^-2   | m/s  | int16  | 2    | 4      |
+
+### SBG_ECAN_MSG_EKF_AIR_DATA_ACC (0x13B) {#SBG_ECAN_MSG_EKF_AIR_DATA_ACC}
+
+This log provides air velocity standard deviation in the North, East, Down (NED) navigation frame.
+
+- **Message Name (ID):** `SBG_ECAN_MSG_EKF_AIR_DATA_ACC (0x13B)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.4-blue) ![HPINS](https://img.shields.io/badge/HPINS-6.3-blue)
+- **Payload Size:** 6 bytes
+
+| Field       | Description                                             | Scaling | Unit | Format | Size | Offset |
+|-------------|---------------------------------------------------------|---------|------|--------|------|--------|
+| WIND_ACC_N  | Air velocity standard deviation in the North direction. | 10^-2   | m/s  | uint16 | 2    | 0      |
+| WIND_ACC_E  | Air velocity standard deviation in the East direction.  | 10^-2   | m/s  | uint16 | 2    | 2      |
+| WIND_ACC_D  | Air velocity standard deviation in the Down direction.  | 10^-2   | m/s  | uint16 | 2    | 4      |
 ## Automotive Outputs
 
 All messages in this section are specifically designed for automotive applications.
@@ -490,6 +528,10 @@ The `SBG_ECAN_MSG_SHIP_MOTION_0` message reports surge, sway, and heave motion m
 | SWAY          | Sway motion (positive right)                                       | 10^-3   | m     | int16  | 2    | 2      |
 | HEAVE         | Heave motion (positive down)                                       | 10^-3   | m     | int16  | 2    | 4      |
 
+> [!WARNING]
+> The `HEAVE` output follows the selected output monitoring point.  
+> The `SURGE` and `SWAY` outputs are only valid when this monitoring point is the IMU physical measurement point (`Bare IMU`).
+
 ### SBG_ECAN_MSG_SHIP_MOTION_1 (0x145) {#SBG_ECAN_MSG_SHIP_MOTION_1}
 
 The `SBG_ECAN_MSG_SHIP_MOTION_1` message reports longitudinal, lateral, and vertical accelerations.
@@ -505,6 +547,9 @@ The `SBG_ECAN_MSG_SHIP_MOTION_1` message reports longitudinal, lateral, and vert
 | ACCEL_Y       | Lateral acceleration (right)                                       | 10^-2   | m/s²  | int16  | 2    | 2      |
 | ACCEL_Z       | Vertical acceleration (down)                                       | 10^-2   | m/s²  | int16  | 2    | 4      |
 
+> [!WARNING]
+> The `ACCEL_X`, `ACCEL_Y`, and `ACCEL_Z` outputs are only valid when the selected output monitoring point is the IMU physical measurement point (`Bare IMU`).
+
 ### SBG_ECAN_MSG_SHIP_MOTION_2 (0x149) {#SBG_ECAN_MSG_SHIP_MOTION_2}
 
 The `SBG_ECAN_MSG_SHIP_MOTION_2` message reports the velocities in the longitudinal, lateral, and vertical directions.
@@ -519,6 +564,10 @@ The `SBG_ECAN_MSG_SHIP_MOTION_2` message reports the velocities in the longitudi
 | VEL_X         | Longitudinal velocity (positive forward)                           | 10^-2   | m/s   | int16  | 2    | 0      |
 | VEL_Y         | Lateral velocity (positive right)                                  | 10^-2   | m/s   | int16  | 2    | 2      |
 | VEL_Z         | Vertical velocity (positive down)                                  | 10^-2   | m/s   | int16  | 2    | 4      |
+
+> [!WARNING]
+> The `VEL_Z` output follows the selected output monitoring point.  
+> The `VEL_X` and `VEL_Y` outputs are only valid when this monitoring point is the IMU physical measurement point (`Bare IMU`).
 
 ### SBG_ECAN_MSG_SHIP_MOTION_HP_INFO (0x14A) {#SBG_ECAN_MSG_SHIP_MOTION_HP_INFO}
 
@@ -554,6 +603,10 @@ Surge and sway quantities are not computed by the delayed heave algorithm.
 | SWAY          | Not available for delayed heave.                                   | 10^-3   | m     | int16  | 2    | 2      |
 | HEAVE         | Delayed heave motion (positive down)                               | 10^-3   | m     | int16  | 2    | 4      |
 
+> [!WARNING]
+> The `HEAVE` output follows the selected output monitoring point.  
+> The `SURGE` and `SWAY` outputs are only valid when this monitoring point is the IMU physical measurement point (`Bare IMU`).
+
 ### SBG_ECAN_MSG_SHIP_MOTION_HP_1 (0x14C) {#SBG_ECAN_MSG_SHIP_MOTION_HP_1}
 
 The `SBG_ECAN_MSG_SHIP_MOTION_HP_1` message reports longitudinal, lateral, and vertical accelerations.
@@ -568,6 +621,9 @@ The `SBG_ECAN_MSG_SHIP_MOTION_HP_1` message reports longitudinal, lateral, and v
 | ACCEL_X       | Longitudinal acceleration (forward)                                | 10^-2   | m/s²  | int16  | 2    | 0      |
 | ACCEL_Y       | Lateral acceleration (right)                                       | 10^-2   | m/s²  | int16  | 2    | 2      |
 | ACCEL_Z       | Vertical acceleration (down)                                       | 10^-2   | m/s²  | int16  | 2    | 4      |
+
+> [!WARNING]
+> The `ACCEL_X`, `ACCEL_Y`, and `ACCEL_Z` outputs are only valid when the selected output monitoring point is the IMU physical measurement point (`Bare IMU`).
 
 ### SBG_ECAN_MSG_SHIP_MOTION_HP_2 (0x14D) {#SBG_ECAN_MSG_SHIP_MOTION_HP_2}
 
@@ -584,6 +640,10 @@ Surge and sway velocities are not computed by the delayed heave algorithm.
 | VEL_X         | Longitudinal velocity (positive forward)                           | 10^-2   | m/s   | int16  | 2    | 0      |
 | VEL_Y         | Lateral velocity (positive right)                                  | 10^-2   | m/s   | int16  | 2    | 2      |
 | VEL_Z         | Vertical velocity (positive down)                                  | 10^-2   | m/s   | int16  | 2    | 4      |
+
+> [!WARNING]
+> The `VEL_Z` output follows the selected output monitoring point.  
+> The `VEL_X` and `VEL_Y` outputs are not computed for delayed heave.
 ## Magnetometer Output
 
 These CAN logs provide fully calibrated and normalized magnetometer values in arbitrary units (a.u.), along with associated accelerometer measurements.   
@@ -908,6 +968,51 @@ The `SBG_ECAN_MSG_GPSX_HDT` message provides the GNSS true heading, pitch angle,
 | TRUE_HEADING_ACC | 1σ True heading estimated accuracy (0 to 360°)                                         | 10^-2   | °     | uint16 | 2    | 2      |
 | PITCH            | Pitch angle from the master to the rover                                               | 10^-2   | °     | int16  | 2    | 4      |
 | PITCH_ACC        | 1σ Pitch estimated accuracy                                                            | 10^-2   | °     | uint16 | 2    | 6      |
+
+### SBG_ECAN_MSG_GPSX_POS_SECURITY_STATUS (0x17A - 0x18A) {#SBG_ECAN_MSG_GPSX_POS_SECURITY_STATUS}
+
+The `SBG_ECAN_MSG_GPSX_POS_SECURITY_STATUS` message provides GNSS security monitoring information including interference monitoring (IFM), spoofing detection, and Galileo OSNMA authentication status for either the primary (GPS1) or secondary (GPS2) GNSS receiver.
+
+- **Message Name (ID):** `SBG_ECAN_MSG_GPS1_POS_SECURITY_STATUS (0x17A)`, `SBG_ECAN_MSG_GPS2_POS_SECURITY_STATUS (0x18A)`
+- **Compatibility:** All products with GNSS capability
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.2-blue) ![HPINS](https://img.shields.io/badge/HPINS-6.0-blue)
+- **Payload Size:** 4 bytes
+
+| Field            | Description                                                                            | Scaling | Unit  | Format | Size | Offset |
+|------------------|----------------------------------------------------------------------------------------|---------|-------|--------|------|--------|
+| STATUS           | Interference/spoofing status (see [GPS_POS_STATUS_EXT](#GPS_POS_STATUS_EXT)).          | -       | -     | uint32 | 4    | 0      |
+
+### SBG_ECAN_MSG_GPSX_HDT_SV (0x17B - 0x18B) {#SBG_ECAN_MSG_GPSX_HDT_SV}
+
+The `SBG_ECAN_MSG_GPSX_HDT_SV` message provides the GNSS baseline, number of satellites tracked and number of satellites used.
+
+- **Message Name (ID):** `SBG_ECAN_MSG_GPS1_HDT_SV (0x17B)`, `SBG_ECAN_MSG_GPS2_HDT_SV (0x18B)`
+- **Compatibility:** All products with dual antenna GNSS capability
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.2-blue) ![HPINS](https://img.shields.io/badge/HPINS-6.0-blue)
+- **Payload Size:** 6 bytes
+
+| Field            | Description                                                                            | Scaling | Unit  | Format | Size | Offset |
+|------------------|----------------------------------------------------------------------------------------|---------|-------|--------|------|--------|
+| BASELINE         | Distance between main and auxiliary antenna.                                           | -       | m     | float  | 4    | 0      |
+| NUM_SV_TRACKED   | Number of space vehicles tracked for true heading - 0xFF if N/A.                       | -       | -     | uint8  | 1    | 4      |
+| NUM_SV_USED      | Number of SV used in true heading solution - 0xFF if N/A.                              | -       | -     | uint8  | 1    | 5      |
+
+### SBG_ECAN_MSG_GPSX_POS_MON (0x17C - 0x18C) {#SBG_ECAN_MSG_GPSX_POS_MON}
+
+The `SBG_ECAN_MSG_GPSX_POS_MON` message provides receiver monitoring information, including the number of reboots triggered by abnormal operating conditions and the up time.
+
+- **Message Name (ID):** `SBG_ECAN_MSG_GPS1_POS_MON (0x17C)`, `SBG_ECAN_MSG_GPS2_POS_MON (0x18C)`
+- **Compatibility:** All products with GNSS capability
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-4.1-blue) ![HPINS](https://img.shields.io/badge/HPINS-6.3-blue)
+- **Payload Size:** 5 bytes
+
+| Field            | Description                                                                            | Scaling | Unit  | Format | Size | Offset |
+|------------------|----------------------------------------------------------------------------------------|---------|-------|--------|------|--------|
+| NR_DIAG_REBOOTS  | Number of GNSS reboots triggered by abnormal operating conditions.                     | -       | -     | uint8  | 1    | 0      |
+| UP_TIME          | GNSS up time, in seconds - 0xFFFFFFFF if N/A.                                          | -       | s     | uint32 | 4    | 1      |
+
+> [!NOTE]
+> The GNSS receiver may be rebooted by the software if abnormal operating conditions are detected (e.g. interference or spoofing detection). Reboots triggered by normal user actions, including configuration changes or firmware updates, are not included in the counter.
 ## Event Markers
 
 SBG Systems Inertial Systems can detect event markers at up to 1 kHz on synchronization input signals, such as Sync A, Sync B, Sync C, Sync D, and Sync E.  

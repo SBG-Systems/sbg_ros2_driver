@@ -159,7 +159,7 @@ const sbg_driver::msg::SbgEkfStatus MessageWrapper::createEkfStatusMessage(uint3
 
   ekf_status_message.align_valid        = (ekf_status & SBG_ECOM_SOL_ALIGN_VALID) != 0;
 
-  ekf_status_message.depth_used         = (ekf_status & SBG_ECOM_SOL_DEPTH_USED) != 0;
+  ekf_status_message.depth_used         = (ekf_status & SBG_ECOM_SOL_VERTICAL_AIDING_USED) != 0;
 
   ekf_status_message.zaru_used          = (ekf_status & SBG_ECOM_SOL_ZARU_USED) != 0;
 

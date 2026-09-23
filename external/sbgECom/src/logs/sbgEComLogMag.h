@@ -6,9 +6,9 @@
  *
  * \brief           Parse magnetic field measurements logs.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -26,7 +26,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * \endlicense
  */
 
@@ -36,6 +36,9 @@
 // sbgCommonLib headers
 #include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
+
+// Project headers
+#include <defs/sbgEComDefsAiding.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,7 +76,7 @@ extern "C" {
  */
 typedef struct _SbgEComLogMag
 {
-    uint32_t    timeStamp;                  /*!< Time in us since the sensor power up. */
+    uint32_t    timeStamp;                  /*!< Time in us since the INS power up OR measurement delay in us OR GPS time of the week in ms. */
     uint16_t    status;                     /*!< Magnetometer status bitmask. */
     float       magnetometers[3];           /*!< X, Y, Z magnetometer data in arbitrary units (A.U.). */
     float       accelerometers[3];          /*!< X, Y, Z accelerometer data in (m/s^2). */
@@ -85,7 +88,7 @@ typedef struct _SbgEComLogMag
 
 /*!
  * Parse data for the SBG_ECOM_LOG_MAG message and fill the corresponding structure.
- * 
+ *
  * \param[out]  pLogData                    Log structure instance to fill.
  * \param[in]   pStreamBuffer               Input stream buffer to read the log from.
  * \return                                  SBG_NO_ERROR if a valid log has been read from the stream buffer.
@@ -100,6 +103,26 @@ SbgErrorCode sbgEComLogMagReadFromStream(SbgEComLogMag *pLogData, SbgStreamBuffe
  * \return                                  SBG_NO_ERROR if the log has been written to the stream buffer.
  */
 SbgErrorCode sbgEComLogMagWriteToStream(const SbgEComLogMag *pLogData, SbgStreamBuffer *pStreamBuffer);
+
+//----------------------------------------------------------------------//
+//- Public setters/getters                                             -//
+//----------------------------------------------------------------------//
+
+/*!
+ * Set the magnetometer time type.
+ *
+ * \param[in]   pLogData            Log instance.
+ * \param[in]   timeType            The time type to set.
+ */
+void sbgEComLogMagSetTimeType(SbgEComLogMag *pLogData, SbgEComAidingTimeType timeType);
+
+/*!
+ * Returns the magnetometer time type.
+ *
+ * \param[in]   pLogData            Log instance.
+ * \return                          The time type.
+ */
+SbgEComAidingTimeType sbgEComLogMagGetTimeType(const SbgEComLogMag *pLogData);
 
 //----------------------------------------------------------------------//
 //- DEPRECATED - Used for backward compatibility                       -//

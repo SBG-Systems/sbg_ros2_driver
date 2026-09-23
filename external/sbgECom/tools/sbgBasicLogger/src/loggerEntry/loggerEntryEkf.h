@@ -5,7 +5,7 @@
  *
  * \brief           Implemented INS output such as attitude & navigation logs.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    Proprietary license
  *
  * This source code is intended for use only by SBG Systems SAS and
@@ -48,13 +48,13 @@ namespace sbg
 
         /*!
          * Returns the log name.
-         * 
+         *
          * \return                                          log name.
          */
         std::string getName() const override;
-        
+
     private:
-        
+
         //----------------------------------------------------------------------//
         //- Private methods                                                    -//
         //----------------------------------------------------------------------//
@@ -68,7 +68,7 @@ namespace sbg
 
         /*!
          * Write the data log to the file
-         * 
+         *
          * \param[in]   context                             Logger context and settings.
          * \param[in]   logData                             Input sbgECom log data to write.
          */
@@ -76,7 +76,7 @@ namespace sbg
 
         /*!
          * Write the data log to the console
-         * 
+         *
          * \param[in]   context                             Logger context and settings.
          * \param[in]   logData                             Input sbgECom log data to write.
          */
@@ -96,13 +96,13 @@ namespace sbg
 
         /*!
          * Returns the log name.
-         * 
+         *
          * \return                                          log name.
          */
         std::string getName() const override;
 
     private:
-        
+
         //----------------------------------------------------------------------//
         //- Private methods                                                    -//
         //----------------------------------------------------------------------//
@@ -116,7 +116,7 @@ namespace sbg
 
         /*!
          * Write the data log to the file
-         * 
+         *
          * \param[in]   context                             Logger context and settings.
          * \param[in]   logData                             Input sbgECom log data to write.
          */
@@ -124,7 +124,7 @@ namespace sbg
 
         /*!
          * Write the data log to the console
-         * 
+         *
          * \param[in]   context                             Logger context and settings.
          * \param[in]   logData                             Input sbgECom log data to write.
          */
@@ -144,13 +144,13 @@ namespace sbg
 
         /*!
          * Returns the log name.
-         * 
+         *
          * \return                                          log name.
          */
         std::string getName() const override;
 
     private:
-        
+
         //----------------------------------------------------------------------//
         //- Private methods                                                    -//
         //----------------------------------------------------------------------//
@@ -164,7 +164,7 @@ namespace sbg
 
         /*!
          * Write the data log to the file
-         * 
+         *
          * \param[in]   context                             Logger context and settings.
          * \param[in]   logData                             Input sbgECom log data to write.
          */
@@ -172,7 +172,7 @@ namespace sbg
 
         /*!
          * Write the data log to the console
-         * 
+         *
          * \param[in]   context                             Logger context and settings.
          * \param[in]   logData                             Input sbgECom log data to write.
          */
@@ -192,13 +192,13 @@ namespace sbg
 
         /*!
          * Returns the log name.
-         * 
+         *
          * \return                                          log name.
          */
         std::string getName() const override;
 
     private:
-        
+
         //----------------------------------------------------------------------//
         //- Private methods                                                    -//
         //----------------------------------------------------------------------//
@@ -212,7 +212,7 @@ namespace sbg
 
         /*!
          * Write the data log to the file
-         * 
+         *
          * \param[in]   context                             Logger context and settings.
          * \param[in]   logData                             Input sbgECom log data to write.
          */
@@ -220,12 +220,60 @@ namespace sbg
 
         /*!
          * Write the data log to the console
-         * 
+         *
          * \param[in]   context                             Logger context and settings.
          * \param[in]   logData                             Input sbgECom log data to write.
          */
         void writeDataToConsole(const CLoggerContext &context, const SbgEComLogUnion &logData) override;
 
+    };
+
+    /*!
+     * Handle SBG_ECOM_LOG_EKF_AIR_DATA
+     */
+    class CLoggerEntryEkfAirData : public IFileLogger, public ILoggerEntryKey<SBG_ECOM_CLASS_LOG_ECOM_0, SBG_ECOM_LOG_EKF_AIR_DATA>
+    {
+    public:
+
+        //----------------------------------------------------------------------//
+        //- Public getters                                                     -//
+        //----------------------------------------------------------------------//
+
+        /*!
+         * Returns the log name.
+         *
+         * \return                                          log name.
+         */
+        std::string getName() const override;
+
+    private:
+
+        //----------------------------------------------------------------------//
+        //- Private methods                                                    -//
+        //----------------------------------------------------------------------//
+
+        /*!
+         * Write the header to the file and/or console.
+         *
+         * \param[in]   context                             Logger context and settings.
+         */
+        void writeHeaderToFile(const CLoggerContext &context) override;
+
+        /*!
+         * Write the data log to the file
+         *
+         * \param[in]   context                             Logger context and settings.
+         * \param[in]   logData                             Input sbgECom log data to write.
+         */
+        void writeDataToFile(const CLoggerContext &context, const SbgEComLogUnion &logData) override;
+
+        /*!
+         * Write the data log to the console
+         *
+         * \param[in]   context                             Logger context and settings.
+         * \param[in]   logData                             Input sbgECom log data to write.
+         */
+        void writeDataToConsole(const CLoggerContext &context, const SbgEComLogUnion &logData) override;
     };
 };
 

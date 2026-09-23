@@ -6,7 +6,7 @@
  *
  * \brief           Common enumeration and definitions for RAW GNSS data
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -165,6 +165,7 @@ typedef enum _SbgEComSignalId
     SBG_ECOM_SIGNAL_ID_QZSS_L6_D                = 167,
     SBG_ECOM_SIGNAL_ID_QZSS_L6_E                = 168,
     SBG_ECOM_SIGNAL_ID_QZSS_L6_DE               = 169,
+    SBG_ECOM_SIGNAL_ID_QZSS_L1_CB               = 170,
 
     //
     // SBAS system (180 to 199)
@@ -218,7 +219,7 @@ typedef enum _SbgEComConstellationId
 
 /*!
  * Returns a constellation given a signal ID
- * 
+ *
  * \param[in]   signalId                    Signal ID value.
  * \return                                  Constellation this signal belongs to.
  */
@@ -226,7 +227,7 @@ SbgEComConstellationId sbgEComGetConstellationFromSignalId(SbgEComSignalId signa
 
 /*!
  * Check if a value belongs to SbgEComSignalId enum.
- * 
+ *
  * \note: SBG_ECOM_SIGNAL_ID_UNKNOWN is considered to be a valid enum value.
  *
  * \param[in]   signalId                    Signal ID value.
@@ -236,7 +237,7 @@ bool sbgEComSignalIdIsValid(uint8_t signalId);
 
 /*!
  * Get a signal ID as a read only C string.
- * 
+ *
  * \param[in]   signalId                    Signal ID value.
  * \return                                  Signal ID as a read only C string.
  */
@@ -252,7 +253,7 @@ bool sbgEComConstellationIdIsValid(uint8_t constellationId);
 
 /*!
  * Get a constellation ID as a read only C string.
- * 
+ *
  * \param[in]   constellationId             Constellation ID value.
  * \return                                  Constellation ID as a read only C string.
  */

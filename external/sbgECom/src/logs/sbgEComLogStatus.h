@@ -6,7 +6,7 @@
  *
  * \brief           Parse logs used to report device status.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -129,6 +129,7 @@ typedef enum _SbgEComCanBusStatus
 #define SBG_ECOM_AIDING_DEPTH_RECV              (0x00000001u << 12)     /*!< Set to 1 when valid Depth Log data is received. */
 #define SBG_ECOM_AIDING_AIR_DATA_RECV           (0x00000001u << 13)     /*!< Set to 1 when valid Air Data (altitude and/or true airspeed) is received. */
 #define SBG_ECOM_AIDING_VEL1_RECV               (0x00000001u << 14)     /*!< Set to 1 when valid generic velocity 1 data is received. */
+#define SBG_ECOM_AIDING_POS1_RECV               (0x00000001u << 15)     /*!< Set to 1 when valid generic position 1 data is received. */
 
 //----------------------------------------------------------------------//
 //- Status definitions                                                 -//

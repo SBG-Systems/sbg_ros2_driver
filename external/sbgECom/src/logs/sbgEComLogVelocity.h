@@ -6,7 +6,7 @@
  *
  * \brief           Parse received generic velocity measurement logs.
  *
- * \copyright       Copyright (C) 2007-2025, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,6 +37,9 @@
 #include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 
+// Project headers
+#include <defs/sbgEComDefsAiding.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -52,16 +55,6 @@ extern "C" {
 #define SBG_ECOM_VELOCITY_1_VALID                   (0x0001 << 4)                   /*!< Set to 1 if the Y or East velocity information is valid. */
 #define SBG_ECOM_VELOCITY_2_VALID                   (0x0001 << 5)                   /*!< Set to 1 if the Z or Down velocity information is valid. */
 #define SBG_ECOM_VELOCITY_STD_VALID                 (0x0001 << 6)                   /*!< Set to 1 if the velocity standard deviation information is valid. */
-
-/*!
- * Time types definitions.
- */
-typedef enum _SbgEComVelocityTimeType
-{
-    SBG_ECOM_VELOCITY_TIME_TYPE_TIMESTAMP           = 0,                            /*!< The timeStamp field represents the time since the INS power up, in us. */
-    SBG_ECOM_VELOCITY_TIME_TYPE_DELAY               = 1,                            /*!< The timeStamp field represents a delay, in us. */
-    SBG_ECOM_VELOCITY_TIME_TYPE_TIME_OF_WEEK        = 2                             /*!< The timeStamp field represents a GPS time of the week, in ms. */
-} SbgEComVelocityTimeType;
 
 //----------------------------------------------------------------------//
 //- Log structure definitions                                          -//
@@ -81,6 +74,13 @@ typedef struct _SbgEComLogVelocity
 //----------------------------------------------------------------------//
 //- Public methods                                                     -//
 //----------------------------------------------------------------------//
+
+/*!
+ * Construct an empty / zero initialized instance.
+ *
+ * \param[in]   pLogData                    Log instance.
+ */
+void sbgEComLogVelocityConstruct(SbgEComLogVelocity *pLogData);
 
 /*!
  * Parse data for the SBG_ECOM_LOG_VELOCITY_# message and fill the corresponding structure.
@@ -110,7 +110,7 @@ SbgErrorCode sbgEComLogVelocityWriteToStream(const SbgEComLogVelocity *pLogData,
  * \param[in]   pLogData            Log instance.
  * \param[in]   timeType            The time type to set.
  */
-void sbgEComLogVelocitySetTimeType(SbgEComLogVelocity *pLogData, SbgEComVelocityTimeType timeType);
+void sbgEComLogVelocitySetTimeType(SbgEComLogVelocity *pLogData, SbgEComAidingTimeType timeType);
 
 /*!
  * Returns the velocity time type.
@@ -118,7 +118,7 @@ void sbgEComLogVelocitySetTimeType(SbgEComLogVelocity *pLogData, SbgEComVelocity
  * \param[in]   pLogData            Log instance.
  * \return                          The time type.
  */
-SbgEComVelocityTimeType sbgEComLogVelocityGetTimeType(const SbgEComLogVelocity *pLogData);
+SbgEComAidingTimeType sbgEComLogVelocityGetTimeType(const SbgEComLogVelocity *pLogData);
 
 #ifdef __cplusplus
 }

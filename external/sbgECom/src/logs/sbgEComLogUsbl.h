@@ -8,7 +8,7 @@
  *
  * USBL binary logs contains underwater positioning data of a USBL beacon.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -71,9 +71,11 @@ typedef struct _SbgEComLogUsbl
 
     float       depth;                  /*!< Depth in meters below mean sea level (positive down). */
 
-    float       latitudeAccuracy;       /*!< 1 sigma latitude accuracy in meters. */
-    float       longitudeAccuracy;      /*!< 1 sigma longitude accuracy in meters. */
-    float       depthAccuracy;          /*!< 1 sigma depth accuracy in meters. */
+    float       latitudeAccuracy;       /*!< 1 sigma latitude accuracy, in meters. */
+    float       longitudeAccuracy;      /*!< 1 sigma longitude accuracy, in meters. */
+    float       depthAccuracy;          /*!< 1 sigma depth accuracy, in meters. */
+
+    uint32_t    informationAge;         /*!< Time elapsed between the USBL measurement UTC time and the processing time, in microseconds. */
 } SbgEComLogUsbl;
 
 //----------------------------------------------------------------------//

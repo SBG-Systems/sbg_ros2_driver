@@ -21,6 +21,8 @@ SbgErrorCode sbgEComLogUsblReadFromStream(SbgEComLogUsbl *pLogData, SbgStreamBuf
     pLogData->longitudeAccuracy = sbgStreamBufferReadFloatLE(pStreamBuffer);
     pLogData->depthAccuracy     = sbgStreamBufferReadFloatLE(pStreamBuffer);
 
+    pLogData->informationAge    = sbgStreamBufferReadUint32LE(pStreamBuffer);
+
     return sbgStreamBufferGetLastError(pStreamBuffer);
 }
 
@@ -36,10 +38,12 @@ SbgErrorCode sbgEComLogUsblWriteToStream(const SbgEComLogUsbl *pLogData, SbgStre
     sbgStreamBufferWriteDoubleLE(pStreamBuffer, pLogData->longitude);
 
     sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->depth);
-    
+
     sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->latitudeAccuracy);
     sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->longitudeAccuracy);
     sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->depthAccuracy);
+
+    sbgStreamBufferWriteUint32LE(pStreamBuffer, pLogData->informationAge);
 
     return sbgStreamBufferGetLastError(pStreamBuffer);
 }

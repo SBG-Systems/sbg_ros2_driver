@@ -1,4 +1,4 @@
-﻿// sbgCommonLib headers
+// sbgCommonLib headers
 #include <sbgCommon.h>
 #include <crc/sbgCrc.h>
 #include <interfaces/sbgInterface.h>
@@ -888,12 +888,13 @@ SbgErrorCode sbgEComProtocolClose(SbgEComProtocol *pProtocol)
 
 SbgErrorCode sbgEComProtocolPurgeIncoming(SbgEComProtocol *pProtocol)
 {
-    SbgErrorCode    errorCode = SBG_NO_ERROR;
-    size_t          numBytesRead;
-    uint32_t        timeStamp;
+    SbgErrorCode            errorCode       = SBG_NO_ERROR;
+    const uint32_t          startTime       = sbgGetTime();
+    size_t                  numBytesRead    = 0;
+    uint32_t                numReadCalls    = 0;
 
     //
-    // Reset the work buffer
+    // Reset the work buffer and protocol RX state
     //
     pProtocol->rxBufferSize     = 0;
     pProtocol->discardSize      = 0;
@@ -902,29 +903,30 @@ SbgErrorCode sbgEComProtocolPurgeIncoming(SbgEComProtocol *pProtocol)
     sbgEComProtocolClearLargeTransfer(pProtocol);
 
     //
-    // Try to read all incoming data for at least 100 ms and trash them
-    ///
-    timeStamp = sbgGetTime();
-
+    // Try to read all incoming data during a fixed time window and discard all received bytes.
+    // To cope with busy systems, this method also enforces a minimum number of calls to sbgInterfaceRead.
+    //
     do
     {
         errorCode = sbgInterfaceRead(pProtocol->pLinkedInterface, pProtocol->rxBuffer, &numBytesRead, sizeof(pProtocol->rxBuffer));
 
         if (errorCode != SBG_NO_ERROR)
         {
-            SBG_LOG_ERROR(errorCode, "Unable to read data from interface");
+            SBG_LOG_ERROR(errorCode, "unable to read data from interface during purge");
             break;
         }
-    } while ((sbgGetTime() - timeStamp) < 100);
 
-    //
-    // If we still have read some bytes it means we were not able to purge successfully the rx buffer
-    //
-    if ( (errorCode == SBG_NO_ERROR) && (numBytesRead > 0) )
-    {
-        errorCode = SBG_ERROR;
-        SBG_LOG_ERROR(errorCode, "Unable to purge the rx buffer,  %zu bytes remaining", numBytesRead);
-    }
+        numReadCalls++;
+
+        //
+        // Yield if no bytes have been read before trying to drain the RX buffer again.
+        //
+        if (numBytesRead == 0)
+        {
+            sbgSleep(1);
+        }
+
+    } while ( ( (sbgGetTime() - startTime) < 500) || (numReadCalls < 50) );
 
     return errorCode;
 }
@@ -1139,11 +1141,11 @@ SbgErrorCode sbgEComStartFrameGeneration(SbgStreamBuffer *pOutputStream, uint8_t
 
 SbgErrorCode sbgEComFinalizeFrameGeneration(SbgStreamBuffer *pOutputStream, size_t streamCursor)
 {
-    SbgErrorCode    errorCode;
-    size_t          payloadSize;    
-    size_t          currentPos;
-    uint16_t            frameCrc;
-
+    SbgErrorCode                        errorCode;
+    size_t                              payloadSize;
+    size_t                              currentPos;
+    uint16_t                            frameCrc;
+    
     assert(pOutputStream);
 
     //
@@ -1151,9 +1153,6 @@ SbgErrorCode sbgEComFinalizeFrameGeneration(SbgStreamBuffer *pOutputStream, size
     //
     errorCode = sbgStreamBufferGetLastError(pOutputStream);
 
-    //
-    // Is the stream buffer error free ?
-    //
     if (errorCode == SBG_NO_ERROR)
     {
         //
@@ -1166,19 +1165,13 @@ SbgErrorCode sbgEComFinalizeFrameGeneration(SbgStreamBuffer *pOutputStream, size
         //
         if (payloadSize <= SBG_ECOM_MAX_PAYLOAD_SIZE)
         {
-            //
-            // Backup the current cursor position
-            //
             currentPos = sbgStreamBufferTell(pOutputStream);
 
             //
-            // Goto the payload size field (4th byte in the frame)
+            // Seek to the payload size field (4th byte in the frame)
             //
             sbgStreamBufferSeek(pOutputStream, streamCursor+4, SB_SEEK_SET);
 
-            //
-            // Write the payload size
-            //
             sbgStreamBufferWriteUint16LE(pOutputStream, (uint16_t)payloadSize);
 
             //
@@ -1190,31 +1183,18 @@ SbgErrorCode sbgEComFinalizeFrameGeneration(SbgStreamBuffer *pOutputStream, size
             // Compute the 16 bits CRC on the whole frame except Sync 1 and Sync 2
             //
             frameCrc = sbgCrc16Compute((uint8_t*)sbgStreamBufferGetLinkedBuffer(pOutputStream) + streamCursor + 2, payloadSize + 4);
-
-            //
-            // Append the CRC
-            //
             sbgStreamBufferWriteUint16LE(pOutputStream, frameCrc);
 
-            //
-            // Append the ETX
-            //
             errorCode = sbgStreamBufferWriteUint8LE(pOutputStream, SBG_ECOM_ETX);
         }
         else
         {
-            //
-            // Invalid payload size
-            //
             errorCode = SBG_BUFFER_OVERFLOW;
             SBG_LOG_ERROR(errorCode, "Payload of %zu bytes is too big for a valid sbgECom log", payloadSize);
         }
     }
     else
     {
-        //
-        // Notify error
-        //
         SBG_LOG_ERROR(errorCode, "Unable to finalize frame because of an error on Stream Buffer");
     }
 

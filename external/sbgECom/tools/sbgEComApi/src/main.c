@@ -5,7 +5,7 @@
  *
  * \brief           Tool to perform REST GET/POST queries through sbgECom commands.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    Proprietary license
  * 
  * This source code is intended for use only by SBG Systems SAS and
@@ -459,29 +459,29 @@ int main(int argc, char **argv)
     //
     void                                *argTable[] =
     {
-        pHelpArg            = arg_lit0(     NULL,   "help",                                 "display this help and exit"),
-        pVersionArg         = arg_lit0(     NULL,   "version",                              "display version info and exit"),
+        pHelpArg                    = arg_lit0(     NULL,   "help",                                                             "display this help and exit"),
+        pVersionArg                 = arg_lit0(     NULL,   "version",                                                          "display version info and exit"),
         
-        pUdpAddrArg         = arg_str0(     "a",    "addr-ip",          "IP address",       "open an UDP interface"),
-        pUdpPortInArg       = arg_int0(     "I",    "udp-port-in",      "UDP port in",      "UDP port to receive data from (local)"),
-        pUdpPortOutArg      = arg_int0(     "O",    "udp-port-out",     "UDP port out",     "UDP port to send data to (remote)"),
+        pUdpAddrArg                 = arg_str0(     "a",    "addr-ip",                      "IP address",                       "open an UDP interface"),
+        pUdpPortInArg               = arg_int0(     "I",    "udp-port-in",                  "UDP port in",                      "UDP port to receive data from (local)"),
+        pUdpPortOutArg              = arg_int0(     "O",    "udp-port-out",                 "UDP port out",                     "UDP port to send data to (remote)"),
 
-        pSerialDeviceArg    = arg_str0(     "s",    "serial-device",    "SERIAL_DEVICE",    "open a serial interface"),
-        pSerialBaudrateArg  = arg_int0(     "r",    "serial-baudrate",  "SERIAL_BAUDRATE",  "serial baudrate"),
+        pSerialDeviceArg            = arg_str0(     "s",    "serial-device",                "SERIAL_DEVICE",                    "open a serial interface"),
+        pSerialBaudrateArg          = arg_int0(     "r",    "serial-baudrate",              "SERIAL_BAUDRATE",                  "serial baudrate"),
 
-        pNrAttemptsArg      = arg_int0(     "n",    "nr-attempts",      "NR_ATTEMPTS",      "number of transaction attempts"),
-        pTimeoutArg         = arg_int0(     "t",    "timeout",          "TIMEOUT",          "reply time-out, in seconds"),
+        pNrAttemptsArg              = arg_int0(     "n",    "nr-attempts",                  "NR_ATTEMPTS",                      "number of transaction attempts"),
+        pTimeoutArg                 = arg_int0(     "t",    "timeout",                      "TIMEOUT",                          "reply time-out, in seconds"),
 
-        pGetMethodArg       = arg_lit0(     "g",    "method-get",                           "use the GET method (default)"),
-        pPostMethodArg      = arg_lit0(     "p",    "method-post",                          "use the POST method"),
-        pQueryArg           = arg_str0(     "q",    "query",            "QUERY",            "query string, format=pretty&delta=true, format and delta options are optional"),
-        pBodyArg            = arg_str0(     "b",    "body",             "BODY",             "body (POST method only)"),
-        pBodyFileArg        = arg_file0(    "B",    "body-file",        "BODY_FILE",        "file containing the body (POST method only)"),
-        pPrintStatus        = arg_lit0(     "S",    "print-status",                         "print the status code on the output stream"),
-        pOutputFileArg      = arg_file0(    "o",    "output-file",      "OUTPUT_FILE",      "output file"),
-        pPathArg            = arg_str1(     NULL,   NULL,               "PATH",             "GET or POST request path endpoint"),
+        pGetMethodArg               = arg_lit0(     "g",    "method-get",                                                       "use the GET method (default)"),
+        pPostMethodArg              = arg_lit0(     "p",    "method-post",                                                      "use the POST method"),
+        pQueryArg                   = arg_str0(     "q",    "query",                        "QUERY",                            "query string, format=pretty&delta=true, format and delta options are optional"),
+        pBodyArg                    = arg_str0(     "b",    "body",                         "BODY",                             "body (POST method only)"),
+        pBodyFileArg                = arg_file0(    "B",    "body-file",                    "BODY_FILE",                        "file containing the body (POST method only)"),
+        pPrintStatus                = arg_lit0(     "S",    "print-status",                                                     "print the status code on the output stream"),
+        pOutputFileArg              = arg_file0(    "o",    "output-file",                  "OUTPUT_FILE",                      "output file"),
+        pPathArg                    = arg_str1(     NULL,   NULL,                           "PATH",                             "GET or POST request path endpoint"),
 
-        pEndArg             = arg_end(20),
+        pEndArg                     = arg_end(20),
     };
 
     sbgCommonLibSetLogCallback(onLogCallback);
@@ -499,8 +499,8 @@ int main(int argc, char **argv)
             
 
             printf("Access a RESTful SBG ECom server.\n\n");
-            printf("    Serial example: %s -s <SERIAL-PORT> -r <BAUDRATE> api/v1/settings -g\n", PROGRAM_NAME);
-            printf("    UDP example:    %s -a <IP_ADDR> -I <UDP_PORT_IN> -O <UDP_PORT_OUT> api/v1/settings -g\n", PROGRAM_NAME);
+            printf("    Serial example:          %s -s <SERIAL-PORT> -r <BAUDRATE> api/v1/settings -g\n", PROGRAM_NAME);
+            printf("    UDP example:             %s -a <IP_ADDR> -I <UDP_PORT_IN> -O <UDP_PORT_OUT> api/v1/settings -g\n", PROGRAM_NAME);
 
             puts("");
             
@@ -525,14 +525,14 @@ int main(int argc, char **argv)
         else if (argError == 0)
         {
             SbgInterface                 ecomInterface;
-            bool                         methodIsGet = true;
-            int                          nrAttempts = DEFAULT_CMD_NR_ATTEMPTS;
-            int                          timeout = DEFAULT_CMD_TIMEOUT;
-            bool                         writeStatus = false;
+            bool                         methodIsGet    = true;
+            int                          nrAttempts     = DEFAULT_CMD_NR_ATTEMPTS;
+            int                          timeout        = DEFAULT_CMD_TIMEOUT;
+            bool                         writeStatus    = false;
             SbgString                    bodyStorage;
-            SbgString                   *pBody = NULL;
-            const char                  *pQuery = NULL;
-            const char                  *pPath = NULL;
+            SbgString                   *pBody          = NULL;
+            const char                  *pQuery         = NULL;
+            const char                  *pPath          = NULL;
 
             if (exitCode == EXIT_SUCCESS)
             {
@@ -542,9 +542,9 @@ int main(int argc, char **argv)
 
             if (exitCode == EXIT_SUCCESS)
             {
-                bool                hasSerialConf   = false;
-                bool                hasUdpConf      = false;
-                
+                bool                hasSerialConf           = false;
+                bool                hasUdpConf              = false;
+
                 //
                 // Can't open at the same time a serial and UDP interface so check it
                 //
@@ -740,7 +740,7 @@ int main(int argc, char **argv)
                 }
                 else if (hasSerialConf && hasUdpConf)
                 {
-                    SBG_LOG_ERROR(SBG_ERROR, "please select either a serial or an UDP interface no both");
+                    SBG_LOG_ERROR(SBG_ERROR, "please select either a serial or an UDP interface not two at the same time");
                     exitCode    = EXIT_FAILURE;
                 }
                 else

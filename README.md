@@ -36,7 +36,7 @@ User can install the sbg_ros2_driver through the standard ROS2 installation syst
 ### Building from sources
 #### Dependencies
 * [Robot Operating System (ROS2)](https://docs.ros.org/)
-* [sbgECom C Library](https://github.com/SBG-Systems/sbgECom) (embeds v4.0.1987-stable - compatible with ELLIPSE firmware 2.5 and above)
+* [sbgECom C Library](https://github.com/SBG-Systems/sbgECom) (embeds v5.8.935-stable - compatible with ELLIPSE firmware 2.5 and above)
 * [nlohmann/json](https://github.com/nlohmann/json) (rosdep key `nlohmann-json-dev`)
 * [libcurl](https://curl.se/libcurl/) (rosdep key `libcurl-dev`)
 

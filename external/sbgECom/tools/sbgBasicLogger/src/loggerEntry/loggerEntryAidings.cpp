@@ -102,7 +102,7 @@ std::string CLoggerEntryDepth::getName() const
 
 void CLoggerEntryDepth::writeHeaderToFile(const CLoggerContext &context)
 {
-	m_outFile	<< context.getTimeColTitle()	<< "\tstatus\tpressureAbs\taltitude\n";
+	m_outFile	<< context.getTimeColTitle()	<< "\tstatus\tpressure\tdepth\n";
 	m_outFile	<< context.getTimeUnit()		<< "\t(na)\t(Pa)\t(m)\n";
 }
 
@@ -112,8 +112,8 @@ void CLoggerEntryDepth::writeDataToFile(const CLoggerContext &context, const Sbg
 
 	m_outFile	<< context.fmtTime(data.timeStamp)									<< "\t"
 				<< context.fmtStatus(data.status)									<< "\t"
-				<< data.pressureAbs													<< "\t"
-				<< data.altitude													<< "\n";
+				<< data.pressure													<< "\t"
+				<< data.depth														<< "\n";
 }
 
 void CLoggerEntryDepth::writeDataToConsole(const CLoggerContext &context, const SbgEComLogUnion &logData)
@@ -122,8 +122,8 @@ void CLoggerEntryDepth::writeDataToConsole(const CLoggerContext &context, const 
 
 	std::cout	<< std::setw(12) << getName()										<< ": "
 				<< std::setw(12) << context.fmtStatus(data.status)
-				<< std::setw(12) << data.pressureAbs
-				<< std::setw(12) << data.altitude									<< "\n";
+				<< std::setw(12) << data.pressure
+				<< std::setw(12) << data.depth										<< "\n";
 }
 
 
@@ -137,8 +137,8 @@ std::string CLoggerEntryUsbl::getName() const
 
 void CLoggerEntryUsbl::writeHeaderToFile(const CLoggerContext &context)
 {
-	m_outFile	<< context.getTimeColTitle()	<< "\tstatus\tlatitude\tlongitude\tdepth\tlatitudeStd\tlongitudeStd\tdepthStd\n";
-	m_outFile	<< context.getTimeUnit()		<< "\t(na)\t(deg)\t(deg)\t(m)\t(m)\t(m)\t(m)\n";
+	m_outFile	<< context.getTimeColTitle()	<< "\tstatus\tlatitude\tlongitude\tdepth\tlatitudeStd\tlongitudeStd\tdepthStd\tinformationAge\n";
+	m_outFile	<< context.getTimeUnit()		<< "\t(na)\t(deg)\t(deg)\t(m)\t(m)\t(m)\t(m)\t(us)\n";
 }
 
 void CLoggerEntryUsbl::writeDataToFile(const CLoggerContext &context, const SbgEComLogUnion &logData)
@@ -152,7 +152,8 @@ void CLoggerEntryUsbl::writeDataToFile(const CLoggerContext &context, const SbgE
 				<< data.depth														<< "\t"
 				<< data.latitudeAccuracy											<< "\t"
 				<< data.longitudeAccuracy											<< "\t"
-				<< data.depthAccuracy												<< "\n";
+				<< data.depthAccuracy												<< "\t"
+				<< data.informationAge												<< "\n";
 }
 
 void CLoggerEntryUsbl::writeDataToConsole(const CLoggerContext &context, const SbgEComLogUnion &logData)
@@ -166,7 +167,8 @@ void CLoggerEntryUsbl::writeDataToConsole(const CLoggerContext &context, const S
 				<< std::setw(12) << data.depth
 				<< std::setw(12) << data.latitudeAccuracy
 				<< std::setw(12) << data.longitudeAccuracy
-				<< std::setw(12) << data.depthAccuracy								<< "\n";
+				<< std::setw(12) << data.depthAccuracy
+				<< std::setw(12) << data.informationAge								<< "\n";
 }
 
 //----------------------------------------------------------------------//
@@ -212,6 +214,57 @@ void CLoggerEntryVelocity::writeDataToConsole(const CLoggerContext &context, con
 std::string CLoggerEntryVelocity1::getName() const
 {
 	return "velocity1";
+}
+
+//----------------------------------------------------------------------//
+//- CLoggerEntryPosition                                               -//
+//----------------------------------------------------------------------//
+void CLoggerEntryPosition::writeHeaderToFile(const CLoggerContext &context)
+{
+	m_outFile	<< context.getTimeColTitle()	<< "\tstatus\tlatitude\tlongitude\theight\tcovLatLat\tcovLonLon\tcovHgtHgt\tcovLatLon\tcovLatHgt\tcovLonHgt\n";
+	m_outFile	<< context.getTimeUnit()		<< "\t(na)\t(deg)\t(deg)\t(m)\t(m^2)\t(m^2)\t(m^2)\t(m^2)\t(m^2)\t(m^2)\n";
+}
+
+void CLoggerEntryPosition::writeDataToFile(const CLoggerContext &context, const SbgEComLogUnion &logData)
+{
+	const SbgEComLogPosition			&data = logData.positionData;
+
+	m_outFile	<< context.fmtTime(data.timeStamp)									<< "\t"
+				<< context.fmtStatus(data.status)									<< "\t"
+				<< data.position[0]													<< "\t"
+				<< data.position[1]													<< "\t"
+				<< data.position[2]													<< "\t"
+				<< data.covLatLat													<< "\t"
+				<< data.covLonLon													<< "\t"
+				<< data.covHgtHgt													<< "\t"
+				<< data.covLatLon													<< "\t"
+				<< data.covLatHgt													<< "\t"
+				<< data.covLonHgt													<< "\n";
+}
+
+void CLoggerEntryPosition::writeDataToConsole(const CLoggerContext &context, const SbgEComLogUnion &logData)
+{
+	const SbgEComLogPosition			&data = logData.positionData;
+
+	std::cout	<< std::setw(12) << getName()										<< ": "
+				<< std::setw(12) << context.fmtStatus(data.status)
+				<< std::setw(12) << data.position[0]
+				<< std::setw(12) << data.position[1]
+				<< std::setw(12) << data.position[2]
+				<< std::setw(12) << data.covLatLat
+				<< std::setw(12) << data.covLonLon
+				<< std::setw(12) << data.covHgtHgt
+				<< std::setw(12) << data.covLatLon
+				<< std::setw(12) << data.covLatHgt
+				<< std::setw(12) << data.covLonHgt									<< "\n";
+}
+
+//----------------------------------------------------------------------//
+//- CLoggerEntryPosition                                               -//
+//----------------------------------------------------------------------//
+std::string CLoggerEntryPosition1::getName() const
+{
+	return "position1";
 }
 
 }; // Namespace sbg

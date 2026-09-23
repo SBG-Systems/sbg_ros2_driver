@@ -58,6 +58,7 @@ void CLoggerApp::createLogger(const CLoggerSettings &settings)
 	m_manager->registerLog<sbg::CLoggerEntryDepth>();
 	m_manager->registerLog<sbg::CLoggerEntryUsbl>();
 	m_manager->registerLog<sbg::CLoggerEntryVelocity1>();
+	m_manager->registerLog<sbg::CLoggerEntryPosition1>();
 
 	//
 	// DVL aiding
@@ -74,6 +75,7 @@ void CLoggerApp::createLogger(const CLoggerSettings &settings)
 	m_manager->registerLog<sbg::CLoggerEntryEkfVelBody>();
 	m_manager->registerLog<sbg::CLoggerEntryEkfRotAccelBody>();
 	m_manager->registerLog<sbg::CLoggerEntryEkfRotAccelNed>();
+	m_manager->registerLog<sbg::CLoggerEntryEkfAirData>();
 
 	//
 	// Register event in/out logs
@@ -137,7 +139,7 @@ void CLoggerApp::createLogger(const CLoggerSettings &settings)
 	//
 	m_manager->registerLog<sbg::CLoggerEntryVibMonFft>();
 	m_manager->registerLog<sbg::CLoggerEntryVibMonReport>();
-	
+
 }
 
 void CLoggerApp::process()
@@ -184,32 +186,32 @@ CLoggerSettings CLoggerApp::processArgs(int argc, char **argv)
 
 	void								*argTable[] =
 	{
-		pHelpArg				= arg_lit0(		"h",	"help",												"display this help and exit"),
-		pVersionArg				= arg_lit0(		"v",	"version",											"display sbgECom version and exit"),
+		pHelpArg					= arg_lit0(		"h",	"help",																	"display this help and exit"),
+		pVersionArg					= arg_lit0(		"v",	"version",																"display sbgECom version and exit"),
 
-		pUdpAddrArg				= arg_str0(		"a",	"addr-ip",				"IP address",				"open an UDP interface"),
-		pUdpPortInArg			= arg_int0(		"I",	"udp-port-in",			"UDP port in",				"UDP port in"),
-		pUdpPortOutArg			= arg_int0(		"O",	"udp-port-out",			"UDP port out",				"UDP port out"),
+		pUdpAddrArg					= arg_str0(		"a",	"addr-ip",							"IP address",						"open an UDP interface"),
+		pUdpPortInArg				= arg_int0(		"I",	"udp-port-in",						"UDP port in",						"UDP port in"),
+		pUdpPortOutArg				= arg_int0(		"O",	"udp-port-out",						"UDP port out",						"UDP port out"),
 
-		pSerialDeviceArg		= arg_str0(		"s",	"serial-device",		"SERIAL_DEVICE",			"open a serial interface"),
-		pSerialBaudrateArg		= arg_int0(		"r",	"serial-baudrate",		"SERIAL_BAUDRATE",			"serial baudrate"),
+		pSerialDeviceArg			= arg_str0(		"s",	"serial-device",					"SERIAL_DEVICE",					"open a serial interface"),
+		pSerialBaudrateArg			= arg_int0(		"r",	"serial-baudrate",					"SERIAL_BAUDRATE",					"serial baudrate"),
 
-		pInputFileArg			= arg_file0(	"i",	"input-file",			"INPUT-FILE",				"input file"),
+		pInputFileArg				= arg_file0(	"i",	"input-file",						"INPUT-FILE",						"input file"),
 
-		pWriteLogsArg			= arg_lit0(		"w",	"write-logs",										"write logs in different files"),
-		pWriteLogsDirArg		= arg_str0(		"o",	"dir",					"DIRECTORY",				"directory to write logs into"),
+		pWriteLogsArg				= arg_lit0(		"w",	"write-logs",															"write logs in different files"),
+		pWriteLogsDirArg			= arg_str0(		"o",	"dir",								"DIRECTORY",						"directory to write logs into"),
 
-		pFileDecimationArg		= arg_int0(		"d",	"file-decimation",		"FILE DECIMATION",			"file decimation"),
-		pScreenDecimationArg	= arg_int0(		"c",	"console-decimation",	"CONSOLE DECIMATION",		"output stream decimation"),
+		pFileDecimationArg			= arg_int0(		"d",	"file-decimation",					"FILE DECIMATION",					"file decimation"),
+		pScreenDecimationArg		= arg_int0(		"c",	"console-decimation",				"CONSOLE DECIMATION",				"output stream decimation"),
 
-		pPrintLogsArg			= arg_lit0(		"p",	"print-logs",										"print the logs on the output stream"),
-		pLogsHeaderArg			= arg_lit0(		"H",	"disable-header",									"disable header for files"),
+		pPrintLogsArg				= arg_lit0(		"p",	"print-logs",															"print the logs on the output stream"),
+		pLogsHeaderArg				= arg_lit0(		"H",	"disable-header",														"disable header for files"),
 
-		pStatusFormatArg		= arg_str0(		"f",	"status-format",		"decimal or hexadecimal",	"select the format to use for status fields"),
-		pTimeModeArg			= arg_str0(		"m",	"time-mode",			"timestamp or utcIso8601",	"select time base to output"),
-		pDiscardInvalidTimeArg	= arg_lit0(		"t",	"discard-invalid-time",								"discard data without a valid UTC time"),
+		pStatusFormatArg			= arg_str0(		"f",	"status-format",					"decimal or hexadecimal",			"select the format to use for status fields"),
+		pTimeModeArg				= arg_str0(		"m",	"time-mode",						"timestamp or utcIso8601",			"select time base to output"),
+		pDiscardInvalidTimeArg		= arg_lit0(		"t",	"discard-invalid-time",													"discard data without a valid UTC time"),
 
-		pEndArg					= arg_end(20),
+		pEndArg						= arg_end(20),
 	};
 
 	if (arg_nullcheck(argTable) != 0)
@@ -233,9 +235,9 @@ CLoggerSettings CLoggerApp::processArgs(int argc, char **argv)
 			arg_print_syntax(stdout, argTable, "\n\n");
 
 			std::cout	<< "Manage sbgECom logs in text format.\n\n"
-						<< "Serial example: " << getApplicationName() << " -s <SERIAL-PORT> -r <BAUDRATE> -p\n"
-						<< "   UDP example: " << getApplicationName() << " -a <IP_ADDR> -I <UDP_PORT_IN> -O <UDP_PORT_OUT> -p\n"
-						<< "  File example: " << getApplicationName() << " -i <BINARY_FILE> -p\n"
+						<< "         Serial example: " << getApplicationName() << " -s <SERIAL-PORT> -r <BAUDRATE> -p\n"
+						<< "            UDP example: " << getApplicationName() << " -a <IP_ADDR> -I <UDP_PORT_IN> -O <UDP_PORT_OUT> -p\n"
+						<< "           File example: " << getApplicationName() << " -i <BINARY_FILE> -p\n"
 						<< std::endl;
 
 			std::cout	<< "Logs affected by decimation:\n"
@@ -340,7 +342,7 @@ CLoggerSettings CLoggerApp::processArgs(int argc, char **argv)
 			//
 			try
 			{
-				if ( (pSerialDeviceArg->count != 0) && (pSerialBaudrateArg->count != 0) )
+				if ((pSerialDeviceArg->count != 0) && (pSerialBaudrateArg->count != 0))
 				{
 					CLoggerSettings::Serial	serialConf;
 
@@ -350,7 +352,7 @@ CLoggerSettings CLoggerApp::processArgs(int argc, char **argv)
 					settings.setSerialConf(serialConf);
 				}
 
-				if ( (pUdpAddrArg->count != 0) && (pUdpPortInArg->count != 0) && (pUdpPortOutArg->count != 0) )
+				if ((pUdpAddrArg->count != 0) && (pUdpPortInArg->count != 0) && (pUdpPortOutArg->count != 0))
 				{
 					CLoggerSettings::Udp	udpConf;
 

@@ -356,6 +356,7 @@ Below are the enum definitions for GNSS signals.
 | SBG_ECOM_SIGNAL_ID_QZSS_L6_D         | 167   |
 | SBG_ECOM_SIGNAL_ID_QZSS_L6_E         | 168   |
 | SBG_ECOM_SIGNAL_ID_QZSS_L6_DE        | 169   |
+| SBG_ECOM_SIGNAL_ID_QZSS_L1_CB        | 170   |
 
 #### SBAS system (180 to 199)
 | Enum                                 | Value |

@@ -5,7 +5,7 @@
  *
  * \brief           Basic logger implementation.
  *
- * \copyright       Copyright (C) 2007-2025, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    Proprietary license
  *
  * This source code is intended for use only by SBG Systems SAS and

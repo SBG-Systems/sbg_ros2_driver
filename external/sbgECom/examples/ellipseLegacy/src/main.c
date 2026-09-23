@@ -8,7 +8,7 @@
  * This small example demonstrates how to initialize the sbgECom library
  * to read data from an Ellipse using callbacks.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy

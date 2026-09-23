@@ -81,7 +81,7 @@ SbgErrorCode sbgEComLogEkfEulerWriteToStream(const SbgEComLogEkfEuler *pLogData,
     assert(pLogData);
 
     sbgStreamBufferWriteUint32LE(pStreamBuffer, pLogData->timeStamp);
-    
+
     sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->euler[0]);
     sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->euler[1]);
     sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->euler[2]);
@@ -147,13 +147,13 @@ SbgErrorCode sbgEComLogEkfQuatWriteToStream(const SbgEComLogEkfQuat *pLogData, S
 
     sbgStreamBufferWriteUint32LE(pStreamBuffer, pLogData->timeStamp);
 
-    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->quaternion[0]); 
-    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->quaternion[1]); 
-    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->quaternion[2]); 
-    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->quaternion[3]); 
+    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->quaternion[0]);
+    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->quaternion[1]);
+    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->quaternion[2]);
+    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->quaternion[3]);
 
-    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->eulerStdDev[0]); 
-    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->eulerStdDev[1]); 
+    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->eulerStdDev[0]);
+    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->eulerStdDev[1]);
     sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->eulerStdDev[2]);
 
     sbgStreamBufferWriteUint32LE(pStreamBuffer, pLogData->status);
@@ -257,7 +257,7 @@ SbgErrorCode sbgEComLogEkfVelBodyReadFromStream(SbgEComLogEkfVelBody *pLogData, 
     pLogData->velocityStdDev[0]     = sbgStreamBufferReadFloatLE(pStreamBuffer);
     pLogData->velocityStdDev[1]     = sbgStreamBufferReadFloatLE(pStreamBuffer);
     pLogData->velocityStdDev[2]     = sbgStreamBufferReadFloatLE(pStreamBuffer);
-    
+
     return sbgStreamBufferGetLastError(pStreamBuffer);
 }
 
@@ -276,6 +276,55 @@ SbgErrorCode sbgEComLogEkfVelBodyWriteToStream(const SbgEComLogEkfVelBody *pLogD
     sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->velocityStdDev[0]);
     sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->velocityStdDev[1]);
     sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->velocityStdDev[2]);
+
+    return sbgStreamBufferGetLastError(pStreamBuffer);
+}
+
+//----------------------------------------------------------------------//
+//- Public methods (SbgEComLogEkfAirData)                              -//
+//----------------------------------------------------------------------//
+
+void sbgEComLogEkfAirDataConstruct(SbgEComLogEkfAirData *pLogData)
+{
+    assert(pLogData);
+
+    memset(pLogData, 0, sizeof(*pLogData));
+}
+
+SbgErrorCode sbgEComLogEkfAirDataReadFromStream(SbgEComLogEkfAirData *pLogData, SbgStreamBuffer *pStreamBuffer)
+{
+    assert(pLogData);
+    assert(pStreamBuffer);
+
+    pLogData->timeStamp     = sbgStreamBufferReadUint32LE(pStreamBuffer);
+    pLogData->status        = sbgStreamBufferReadUint16LE(pStreamBuffer);
+
+    pLogData->wind[0]       = sbgStreamBufferReadFloatLE(pStreamBuffer);
+    pLogData->wind[1]       = sbgStreamBufferReadFloatLE(pStreamBuffer);
+    pLogData->wind[2]       = sbgStreamBufferReadFloatLE(pStreamBuffer);
+
+    pLogData->windStdDev[0] = sbgStreamBufferReadFloatLE(pStreamBuffer);
+    pLogData->windStdDev[1] = sbgStreamBufferReadFloatLE(pStreamBuffer);
+    pLogData->windStdDev[2] = sbgStreamBufferReadFloatLE(pStreamBuffer);
+
+    return sbgStreamBufferGetLastError(pStreamBuffer);
+}
+
+SbgErrorCode sbgEComLogEkfAirDataWriteToStream(const SbgEComLogEkfAirData *pLogData, SbgStreamBuffer *pStreamBuffer)
+{
+    assert(pLogData);
+    assert(pStreamBuffer);
+
+    sbgStreamBufferWriteUint32LE(pStreamBuffer, pLogData->timeStamp);
+    sbgStreamBufferWriteUint16LE(pStreamBuffer, pLogData->status);
+
+    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->wind[0]);
+    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->wind[1]);
+    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->wind[2]);
+
+    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->windStdDev[0]);
+    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->windStdDev[1]);
+    sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->windStdDev[2]);
 
     return sbgStreamBufferGetLastError(pStreamBuffer);
 }

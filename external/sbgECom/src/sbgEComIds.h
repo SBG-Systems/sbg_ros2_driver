@@ -6,7 +6,7 @@
  *
  * \brief           Defines all sbgECom commands identifiers.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -146,6 +146,10 @@ typedef enum _SbgEComLog
     SBG_ECOM_LOG_VIB_MON_FFT                = 59,       /*!< Vibration monitoring FFT data for post processing. */
     SBG_ECOM_LOG_VIB_MON_REPORT             = 60,       /*!< Vibration monitoring report information. */
 
+    SBG_ECOM_LOG_EKF_AIR_DATA               = 61,       /*!< Air velocity log in NED frame. */
+
+    SBG_ECOM_LOG_POSITION_1                 = 62,       /*!< Generic position 1 log. */
+
     SBG_ECOM_LOG_ECOM_NUM_MESSAGES                      /*!< Helper definition to know the number of ECom messages */
 } SbgEComLog;
 
@@ -171,7 +175,7 @@ typedef enum _SbgEComNmeaLog
     SBG_ECOM_LOG_NMEA_VBW                   = 5,        /*!< Water referenced and ground referenced speed data. */
     SBG_ECOM_LOG_NMEA_DPT                   = 7,        /*!< Depth sensor output. */
     SBG_ECOM_LOG_NMEA_VTG                   = 8,        /*!< Track an Speed over the ground. */
-    SBG_ECOM_LOG_NMEA_RTO                   = 9,        /*!< Rate and direction of turn. */
+    SBG_ECOM_LOG_NMEA_ROT                   = 9,        /*!< Rate and direction of turn. */
     SBG_ECOM_LOG_NMEA_GSV                   = 10,       /*!< GNSS Satellites in View with azimuth, elevation and SNR information. */
     SBG_ECOM_LOG_NMEA_GSA                   = 11,       /*!< GNSS DOP and active satellites. */
     SBG_ECOM_LOG_NMEA_NUM_MESSAGES                      /*!< Helper definition to know the number of NMEA messages */
@@ -195,6 +199,7 @@ typedef enum _SbgEComIdNmea1Log
 
     SBG_ECOM_LOG_NMEA_1_GGK                 = 10,       /*!< Trimble NMEA like log with Time, Latitude, Longitude, Ellipsoidal height */
     SBG_ECOM_LOG_NMEA_1_PPS                 = 11,       /*!< Trimble (Applanix) NMEA like log with UTC and PPS information. */
+    SBG_ECOM_LOG_NMEA_1_AVR                 = 14,       /*!< Trimble NMEA like log with Yaw, Tilt, baseline range, and GNSS quality. */
 
     SBG_ECOM_LOG_NMEA_1_WASSP               = 12,       /*!< WASSP NMEA like log similar to PASHR one. */
 
@@ -368,6 +373,14 @@ SBG_INLINE bool sbgEComMsgClassIsALog(SbgEComClass msgClass)
         return false;
     }
 }
+
+//----------------------------------------------------------------------//
+//- DEPRECATED - Used for backward compatibility                       -//
+//----------------------------------------------------------------------//
+
+#ifdef SBG_ECOM_USE_DEPRECATED_MACROS
+    #define SBG_ECOM_LOG_NMEA_RTO                   (SBG_ECOM_LOG_NMEA_ROT)
+#endif
 
 #ifdef __cplusplus
 }

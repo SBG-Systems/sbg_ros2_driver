@@ -85,6 +85,19 @@ This new settings is available through the sbgInsRestApi at `api/v1/settings/aid
 Legacy sbgECom configuration command `SBG_ECOM_CMD_SET_MAG_CALIB` has been extended to include the 2D/3D calibration mode information.  
 The new method `sbgEComCmdMagSetCalibData2` has been introduced to provide the mode information.
 
+## From sbgECom v5.3 to v5.4
+
+sbgECom v5.4 introduces updated definitions to support a broader range of external aiding sources, including air data, generic velocity aiding, and position aiding.
+
+Some macros have been renamed to reflect these generalized usages and to prepare for future extensions.
+
+### Renamed Solution Status Flags
+
+| Name (v5.4 and later)               | Previous Name (v5.3 and earlier)        |
+|-------------------------------------|-----------------------------------------|
+| `SBG_ECOM_SOL_AIRSPEED_USED`        | `SBG_ECOM_SOL_AIR_DATA_USED`            |
+| `SBG_ECOM_SOL_VERTICAL_AIDING_USED` | `SBG_ECOM_SOL_DEPTH_USED`               |
+
 ## From sbgECom v4.x
 
 sbgECom v5.x brings several modifications and improvements to support ELLIPSE Firmware v3.

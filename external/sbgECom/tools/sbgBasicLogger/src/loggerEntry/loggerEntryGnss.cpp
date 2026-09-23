@@ -67,8 +67,8 @@ void CLoggerEntryGnssVel::writeDataToConsole(const CLoggerContext &context, cons
 
 void CLoggerEntryGnssPos::writeHeaderToFile(const CLoggerContext &context)
 {
-	m_outFile	<< context.getTimeColTitle()	<< "\tstatus\tstatusExt\tgpsTow\tlatitude\tlongitude\taltitude\tundulation\tlatitudeStd\tlongitudeStd\taltitudeStd\tnumSvTracked\tnumSvUsed\tbaseStationId\tdiffAge\n";
-	m_outFile	<< context.getTimeUnit()		<< "\t(na)\t(na)\t(ms)\t(deg)\t(deg)\t(m)\t(m)\t(m)\t(m)\t(m)\t(na)\t(na)\t(na)\t(0.01s)\n";
+	m_outFile	<< context.getTimeColTitle()	<< "\tstatus\tstatusExt\tgpsTow\tlatitude\tlongitude\taltitude\tundulation\tlatitudeStd\tlongitudeStd\taltitudeStd\tnumSvTracked\tnumSvUsed\tbaseStationId\tdiffAge\tnrDiagReboots\tupTime\n";
+	m_outFile	<< context.getTimeUnit()		<< "\t(na)\t(na)\t(ms)\t(deg)\t(deg)\t(m)\t(m)\t(m)\t(m)\t(m)\t(na)\t(na)\t(na)\t(0.01s)\t(na)\t(s)\n";
 }
 
 void CLoggerEntryGnssPos::writeDataToFile(const CLoggerContext &context, const SbgEComLogUnion &logData)
@@ -89,7 +89,9 @@ void CLoggerEntryGnssPos::writeDataToFile(const CLoggerContext &context, const S
 				<< (uint32_t)data.numSvTracked											<< "\t"
 				<< (uint32_t)data.numSvUsed												<< "\t"
 				<< (uint32_t)data.baseStationId											<< "\t"
-				<< (uint32_t)data.differentialAge										<< "\n";
+				<< (uint32_t)data.differentialAge										<< "\t"
+				<< (uint32_t)data.nrDiagReboots											<< "\t"
+				<< data.upTime															<< "\n";
 }
 
 void CLoggerEntryGnssPos::writeDataToConsole(const CLoggerContext &context, const SbgEComLogUnion &logData)
@@ -110,7 +112,9 @@ void CLoggerEntryGnssPos::writeDataToConsole(const CLoggerContext &context, cons
 				<< std::setw(12) << (uint32_t)data.numSvTracked
 				<< std::setw(12) << (uint32_t)data.numSvUsed
 				<< std::setw(12) << (uint32_t)data.baseStationId
-				<< std::setw(12) << (uint32_t)data.differentialAge						<< "\n";
+				<< std::setw(12) << (uint32_t)data.differentialAge
+				<< std::setw(12) << (uint32_t)data.nrDiagReboots
+				<< std::setw(12) << data.upTime											<< "\n";
 }
 
 //----------------------------------------------------------------------//

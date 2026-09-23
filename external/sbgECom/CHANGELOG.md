@@ -1,38 +1,99 @@
 # Change Log
 This change log lists all modifications for each sbgECom library release.
 
-sbgECom C library change log issued on: 2025-06-23  
-Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+sbgECom C library change log issued on: 2026-07-27  
+Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
 
 ## Release Summary
 
-The sbgECom 5.3.2276-stable is a major release that supports the following products:
- - **High Performance INS**: Firmware 5.x and above
- - **ELLIPSE v3**: Firmware 3.x and above
- - **ELLIPSE v1/v2**: Firmware 2.6 (legacy support)
+This release introduces compatibility with **High Performance INS (HPINS)** firmware version **6.3**, **ELLIPSE** firmware version **3.4**, and **IMU** firmware version **3.4**.
 
-This release introduces support for the **ELLIPSE v3** major firmware update.  
-The ELLIPSE v3 firmware primarily relies on the [sbgRestApi](https://developer.sbg-systems.com/sbgInsRestApi/) for product configuration.
+All new features and capabilities introduced by these firmware versions are accessible through this sbgECom release, alongside the [sbgRestApi](https://developer.sbg-systems.com/sbgInsRestApi/) for product configuration.
 
-All new features and capabilities introduced by the ELLIPSE firmware v3 are fully accessible through this [sbgECom](https://developer.sbg-systems.com/sbgECom/) release, alongside the latest version of the [sbgRestApi](https://developer.sbg-systems.com/sbgInsRestApi/).
+This release also extends NMEA 2000 CAN message support, adds Water Linked DVL aiding protocols, and introduces a new Septentrio GNSS receiver variant.
 
-A significant effort has been dedicated to improving the sbgECom logs and protocol documentation.  
-The previously used Firmware Reference Manual PDF has been replaced with an integrated, always up-to-date, Markdown/Doxygen-based documentation system.
+## Configuration & Migration
 
-Access this new and improved documentation here: [sbgECom Documentation](https://developer.sbg-systems.com/sbgECom/).
+For product configuration, sbgECom should be used alongside the [sbgRestApi](https://developer.sbg-systems.com/sbgInsRestApi/) to ensure seamless integration and optimal setup.
 
-Backward compatibility has been maintained as much as possible; however, please review the **Migration.md** file for further details on transitioning to this version.
+Backward compatibility has been maintained as much as possible; however, please review the [migration.md](https://github.com/SBG-Systems/sbgECom/blob/c1a1dd8047cf5e9d868b16fbb981aa04bef55cef/doc/migrations.md) file for further details on transitioning to this version.
 
 ## Import Highlights for this release
 
 Below are the key improvements and modifications in this release:
- - Support for the new ELLIPSE firmware v3
- - Support for output rates of up to 1 kHz
- - Added device info/settings streaming
- - Completely rewritten sbgECom protocol documentation
- - General code cleanup and improvements for better maintainability
+- Support for latest ELLIPSE firmware 3.4 and IMU firmware 3.4
+- Addition of new NMEA 2000 standard and fast packet messages
+- Support for Water Linked DVL JSON and serial aiding protocols
+- Addition of Septentrio Mosaic G5 P3 GNSS receiver
 
-## Release - 5.3.2276-stable
+## Release - 5.8.935-stable
+
+### New Features
+ - SBGECOM-560 - Add new NMEA 2000 messages
+
+### Improvements
+ - SBGECOM-590 - Doc: Add Water Linked JSON and Serial DVL aidings
+ - SBGECOM-585 - Add GNSS type Septentrio Mosaic G5 P3
+
+### Bug Fixes
+ - SBGECOM-591 - Fix missing start range in dbc files
+ - SBGECOM-587 - Doc: Fix NMEA VTG and RMC mode indicators that are not compatible with standard
+
+## Release - 5.7.626-stable
+
+### New Features
+ - SBGECOM-572 - Add sbgECan EKF Air Data message
+ - SBGECOM-565 - Add PTP uncalibrated and slave states
+
+### Bug Fixes
+ - SBGECOM-580 - Doc: Fix links on external aiding section
+
+## Release - 5.6.2730-stable
+
+### New Features
+ - SBGECOM-561 - Add new CAN log with GNSS number of reboots and up time info
+ - SBGECOM-558 - Doc: Add depth used value in PSBGA message
+ - SBGECOM-552 - Add a reboot counter in GNSS logs
+ - SBGECOM-551 - Add an uptime field in GNSS logs
+ - SBGECOM-543 - Refactor log SBG_ECOM_LOG_DEPTH
+ - SBGECOM-531 - Add standard NMEA 2000 CAN messages 
+
+### Improvements
+ - SBGECOM-557 - Doc: Add a warning to clarify ship motion status depending on IMU reference point 
+ - SBGECOM-533 - Add QZSS signal L1 C/B
+
+### Bug Fixes
+ - SBGECOM-564 - Doc: Add missing documentation for external aiding protocols and NMEA from GNSS 
+ - SBGECOM-547 - Doc: Fix SBG_ECOM_SOL_POS1_USED missing in SOLUTION_STATUS
+
+## Release - 5.5.2130-stable
+
+### New Features
+ - SBGECOM-536 - Add PTNL AVR NMEA frame
+
+### Improvements
+ - SBGECOM-525 - sbgEComProtocolPurgeIncoming: improved purge strategy on heavily loaded systems
+
+### Bug Fixes
+ - SBGECOM-534 - Doc: Fix NMEA ZDA timezone default value
+
+## Release - 5.4.1684-stable
+
+### New Features
+ - SBGECOM-514 - Add new CAN output message to send additionnal GNSS true heading fields
+ - SBGECOM-510 - Add generic 3D position aiding input/output log
+ - SBGECOM-507 - Add CAN messages for GNSS security status (interference/spoofing/OSNMA)
+ - SBGECOM-491 - Add new North, East, Down wind speed and wind speed standard deviation output
+ - SBGECOM-488 - Renamed SBG_ECOM_SOL_DEPTH_USED to SBG_ECOM_SOL_VERTICAL_AIDING_USED
+ - SBGECOM-484 - Add SBG_ECOM_SOL_VEL_CONSTRAINTS_USED flag for cars and UAV applications
+
+### Improvements
+ - SBGECOM-513 - Standardize timestamp handling when receiving aiding data in sbgECom format
+ - SBGECOM-511 - Add air data and generic velocity EKF solution types
+ - SBGECOM-504 - Doc: Update sbgECom IMU_STATUS_BIT definition
+ - SBGECOM-490 - Renamed SBG_ECOM_SOL_AIR_DATA_USED to SBG_ECOM_SOL_AIRSPEED_USED
+
+## Release - 5.3.2242-stable
 
 ### New Features
  - SBGECOM-479 - Doc: Add GSA NMEA frame

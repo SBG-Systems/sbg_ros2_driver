@@ -55,12 +55,12 @@ extern "C" {
 /*!
  * Type values reserved for standard interface types.
  */
-#define SBG_IF_TYPE_UNKNOW          (0)             /*!< The interface type is not defined. */
-#define SBG_IF_TYPE_SERIAL          (1)             /*!< The interface is a serial com port. */
-#define SBG_IF_TYPE_ETH_UDP         (2)             /*!< The interface is an UDP one. */
-#define SBG_IF_TYPE_ETH_TCP_IP      (3)             /*!< The interface is an TCP/IP one. */
-#define SBG_IF_TYPE_FILE            (4)             /*!< The interface is a file. */
-#define SBG_IF_TYPE_LAST_RESERVED   (999)           /*!< Last reserved value for standard types. */
+#define SBG_IF_TYPE_UNKNOW                      (0)             /*!< The interface type is not defined. */
+#define SBG_IF_TYPE_SERIAL                      (1)             /*!< The interface is a serial com port. */
+#define SBG_IF_TYPE_ETH_UDP                     (2)             /*!< The interface is an UDP one. */
+#define SBG_IF_TYPE_ETH_TCP_IP                  (3)             /*!< The interface is an TCP/IP one. */
+#define SBG_IF_TYPE_FILE                        (4)             /*!< The interface is a file. */
+#define SBG_IF_TYPE_LAST_RESERVED               (999)           /*!< Last reserved value for standard types. */
 
 //
 // Flags for the flush operation.

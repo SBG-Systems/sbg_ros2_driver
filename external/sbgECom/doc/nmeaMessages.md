@@ -1,7 +1,7 @@
 # NMEA Protocol & Messages {#nmeaMsg}
 
 SBG Systems AHRS and INS support input and output standard NMEA protocol.  
-The NMEA protocol is a an well known and simple ASCII based format that is widely used in different industry.
+The NMEA protocol is a well known and simple ASCII based format that is widely used in different industry.
 
 Using NMEA output messages allows straightforward and easy integration in a wide range of products and software without requiring any development.
 
@@ -135,8 +135,8 @@ When the data source is a GNSS, the standard DOP and quality indicator definitio
 | < 100 m             | Dead Reckoning | Caution     | 6           | 1           | E            | C               |
 | < 10 m              | Standalone Fix | Safe        | 1           | 4           | A            | S               |
 | < 1.2 m             | DGPS Fix       | Safe        | 2           | 2           | D            | S               |
-| < 30 cm             | Floating RTK   | Safe        | 5           | 3           | F            | S               |
-| < 10 cm             | Fixed RTK      | Safe        | 4           | 2           | R            | S               |
+| < 30 cm             | Floating RTK   | Safe        | 5           | 3           | D            | S               |
+| < 10 cm             | Fixed RTK      | Safe        | 4           | 2           | D            | S               |
 
 ### DOP Computation
 
@@ -144,10 +144,10 @@ DOP (Dilution of Precision) is a quality indicator traditionally associated with
 When using an INS, DOP has no intrinsic meaning because the INS does not rely on satellite geometry.  
 Instead, the INS provides more reliable quality indicators directly related to the estimated position standard deviation.
 
-However, since some software still relies on DOP values to filter out outliers and inaccurate solutions, the INS can output a DOP value based on the estimated position standard deviation.  
+However, since some softwares still rely on DOP values to filter out outliers and inaccurate solutions, the INS can output a DOP value based on the estimated position standard deviation.  
 This allows for backward compatibility with systems that use DOP for quality assessment, even though more modern and accurate indicators are available from the INS.
 
-SBG Systems products implements the following computation to convert a position standard deviation to an horizontal DOP value:
+SBG Systems products implement the following computation to convert a position standard deviation to an horizontal DOP value:
 
 $$DOP_{std} = \sqrt{North_{std}^2+East_{std}^2}$$
 ## Standard NMEA Messages
@@ -280,17 +280,17 @@ $GPZDA,201530.00,04,07,2002,00,00*60<CR><LF>
 - **Compatibility:** INS capable products
 - **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-1.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-1.0-blue)
 
-| Field | Name     | Format      | Description                                          |
-|-------|----------|-------------|------------------------------------------------------|
-| 0     | $##ZDA   | string      | Message ID – ZDA frame                               |
-| 1     | Time     | hhmmss.ss   | UTC Time, current time                               |
-| 2     | Day      | dd          | Day of month [01 - 31]                               |
-| 3     | Month    | mm          | Month of year [01 - 12]                              |
-| 4     | Year     | yyyy        | Year (4 digits)                                      |
-| 5     | Ltzh     | 0           | Local zone hours (not supported, fixed 00)           |
-| 6     | Ltzh     | 0           | Local zone minutes (not supported, fixed 00)         |
-| 7     | Check sum| *cs         | XOR of all previous bytes except $                   |
-| 8     | End of frame | <CR><LF> | Carriage return and line feed                        |
+| Field | Name         | Format    | Description                        |
+| ----- | ------------ | --------- | ---------------------------------- |
+| 0     | $##ZDA       | string    | Message ID – ZDA frame             |
+| 1     | Time         | hhmmss.ss | UTC Time, current time             |
+| 2     | Day          | dd        | Day of month [01 - 31]             |
+| 3     | Month        | mm        | Month of year [01 - 12]            |
+| 4     | Year         | yyyy      | Year (4 digits)                    |
+| 5     | Ltzh         | 0         | Local zone hours (not supported)   |
+| 6     | Ltzh         | 0         | Local zone minutes (not supported) |
+| 7     | Check sum    | *cs       | XOR of all previous bytes except $ |
+| 8     | End of frame | <CR><LF>  | Carriage return and line feed      |
 
 ---
 
@@ -311,13 +311,13 @@ $GPHDT,191.94,T*01<CR><LF>
 - **Compatibility:** INS capable products
 - **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-1.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-1.0-blue)
 
-| Field | Name     | Format      | Description                                          |
-|-------|----------|-------------|------------------------------------------------------|
-| 0     | $##HDT   | string      | Message ID – HDT frame                               |
-| 1     | Heading  | fff.ff      | True heading in degrees [0 - 360]                    |
-| 2     | T        | char        | T indicates true heading                             |
-| 3     | Check sum| *cs         | XOR of all previous bytes except $                   |
-| 4     | End of frame | <CR><LF> | Carriage return and line feed                        |
+| Field | Name         | Format      | Description                                          |
+|-------|--------------|-------------|------------------------------------------------------|
+| 0     | $##HDT       | string      | Message ID – HDT frame                               |
+| 1     | Heading      | fff.ff      | True heading in degrees [0 - 360]                    |
+| 2     | T            | char        | T indicates true heading                             |
+| 3     | Check sum    | *cs         | XOR of all previous bytes except $                   |
+| 4     | End of frame | <CR><LF>    | Carriage return and line feed                        |
 
 ---
 
@@ -605,7 +605,7 @@ $GBGSA,A,3,41,27,13,5,29,20,32,,,,,,1.9,1.1,1.6,4*08<CR><LF>
 
 - **Message Name (ID):** `SBG_ECOM_LOG_NMEA_GSA (11)`
 - **Compatibility:** INS capable products
-- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.2-blue) ![HPINS](https://img.shields.io/badge/HPINS-5.5-blue)
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.3-blue) ![HPINS](https://img.shields.io/badge/HPINS-5.5-blue)
 
 | Field | Name         | Format   | Description                                                        |
 | ----- | ------------ | -------- | ------------------------------------------------------------------ |
@@ -619,7 +619,8 @@ $GBGSA,A,3,41,27,13,5,29,20,32,,,,,,1.9,1.1,1.6,4*08<CR><LF>
 | 18    | Checksum     | *cs      | XOR of all previous bytes except $                                 |
 | 19    | End of frame | <CR><LF> | Carriage return and line feed                                      |
 
----## Proprietary NMEA Messages
+---
+## Proprietary NMEA Messages
 
 The `SBG_ECOM_CLASS_LOG_NMEA_1 (0x03)` message class includes all proprietary NMEA messages and other non-standard messages that utilize NMEA formatting.  
 These messages primarily provide Kalman filtered data, including navigation, velocity, and attitude information.
@@ -635,7 +636,7 @@ It briefly describe which parameters are contained in each output log.
 |--------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
 | [SBG_ECOM_LOG_NMEA_1_PSBGI (01)](#SBG_ECOM_LOG_NMEA_1_PSBGI) | SBG Systems proprietary sentence. Contains rotation rates and accelerations.                      |
 | [SBG_ECOM_LOG_NMEA_1_PSBGA (13)](#SBG_ECOM_LOG_NMEA_1_PSBGA) | SBG Systems proprietary sentence. Contains EKF attitude and status.                               |
-| [SBG_ECOM_LOG_NMEA_1_PSBGB (04)](#SBG_ECOM_LOG_NMEA_1_PSBGB) | SBG Systems proprietary sentence. Contains attitude, heading, heave, angular rates, and velocity. |
+| [SBG_ECOM_LOG_NMEA_1_PSBGB (03)](#SBG_ECOM_LOG_NMEA_1_PSBGB) | SBG Systems proprietary sentence. Contains attitude, heading, heave, angular rates, and velocity. |
 | [SBG_ECOM_LOG_NMEA_1_PRDID (00)](#SBG_ECOM_LOG_NMEA_1_PRDID) | RDI proprietary sentence. Reports pitch, roll, and heading.                                       |
 | [SBG_ECOM_LOG_NMEA_1_PASHR (02)](#SBG_ECOM_LOG_NMEA_1_PASHR) | Proprietary NMEA-like message. Reports roll, pitch, heading, and heave.                           |
 | [SBG_ECOM_LOG_NMEA_1_WASSP (12)](#SBG_ECOM_LOG_NMEA_1_WASSP) | Proprietary NMEA-like message for WASSP. Reports roll, pitch, heading, and heave.                 |
@@ -645,6 +646,8 @@ It briefly describe which parameters are contained in each output log.
 | [SBG_ECOM_LOG_NMEA_1_PHOCT (08)](#SBG_ECOM_LOG_NMEA_1_PHOCT) | iXblue NMEA-like log used to output surge, sway, and heave.                                       |
 | [SBG_ECOM_LOG_NMEA_1_INDYN (09)](#SBG_ECOM_LOG_NMEA_1_INDYN) | iXblue NMEA-like log used to output position, heading, attitude, rate, and velocity.              |
 | [SBG_ECOM_LOG_NMEA_1_GGK (10)](#SBG_ECOM_LOG_NMEA_1_GGK)     | Trimble NMEA-like log containing time, latitude, longitude, and ellipsoidal height.               |
+| [SBG_ECOM_LOG_NMEA_1_PPS (11)](#SBG_ECOM_LOG_NMEA_1_PPS)     | Trimble (Applanix) NMEA-like log containing UTC and PPS information.                              |
+| [SBG_ECOM_LOG_NMEA_1_AVR (14)](#SBG_ECOM_LOG_NMEA_1_AVR)     | Trimble NMEA-like log containing yaw, tilt, baseline range, and GNSS quality.                     |
 
 ---
 
@@ -743,13 +746,17 @@ It also denotes whether the INS is aligned, using lowercase or uppercase charact
 | p     | Nav RTK Fixed     | Full INS solution using GNSS RTK with fixed ambiguities position type.                       |
 | q     | Nav PPP Float     | Full INS solution using GNSS PPP with float ambiguities position type.                       |
 | r     | Nav PPP Fixed     | Full INS solution using GNSS PPP with fixed ambiguities position type.                       |
+| s     | Nav Air Data      | Full INS solution by integrating accelerations and air data velocity.                        |
+| t     | Nav Vel. 1        | Full INS solution by integrating accelerations and generic velocity.                         |
+| u     | Nav Pos. 1        | Full INS solution by integrating accelerations and generic position.                         |
+| v     | Nav Depth         | Full INS solution using depth data.                                                          |
 
 > [!NOTE]
 > If the INS is not fully aligned, the solution type is reported in lowercase. Once aligned, the solution type is reported in uppercase.
 
 ---
 
-### SBG_ECOM_LOG_NMEA_1_PSBGB (04) {#SBG_ECOM_LOG_NMEA_1_PSBGB}
+### SBG_ECOM_LOG_NMEA_1_PSBGB (03) {#SBG_ECOM_LOG_NMEA_1_PSBGB}
 
 The `SBG_ECOM_LOG_NMEA_1_PSBGB` is an SBG Systems proprietary NMEA log that provides UTC time of day, heading, roll, pitch, heave, angular rates, and body velocities, along with standard deviations and status indicators.
 
@@ -761,7 +768,7 @@ $PSBGB,1,000344.000,0,3.529,-12.821,6.122,0.101,0.098,10.117,0,0,0.004,0.050,2,0
 
 #### Message Structure
 
-- **Message Name (ID):** `SBG_ECOM_LOG_NMEA_1_PSBGB (04)`
+- **Message Name (ID):** `SBG_ECOM_LOG_NMEA_1_PSBGB (03)`
 - **Compatibility:** INS capable products
 - **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-X.X-blue) ![HPINS](https://img.shields.io/badge/HPINS-X.X-blue)
 
@@ -877,22 +884,22 @@ $PASHR,002258.15,320.99,T,+032.46,-008.15,-012.239,0.454,0.095,1.070,1,0*39<CR><
 - **Compatibility:** AHRS/INS capable products
 - **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-X.X-blue) ![HPINS](https://img.shields.io/badge/HPINS-X.X-blue)
 
-| Field | Name       | Format     | Description                                                                 |
-|-------|------------|------------|-----------------------------------------------------------------------------|
-| 0     | $PASHR     | string     | Message ID – Proprietary NMEA identifier                                    |
-| 1     | timeUTC    | hhmmss.ss  | Current UTC time – empty if invalid                                         |
-| 2     | heading    | fff.ff     | Heading angle, in decimal degrees [0 – 360] – empty if invalid              |
-| 3     | T          | char       | True Heading                                                                |
-| 4     | roll       | fff.ff     | Roll in decimal degrees. From [-180 – 180°] – empty if invalid              |
-| 5     | pitch      | fff.ff     | Pitch in decimal degrees. From [-90 – 90°] – empty if invalid               |
-| 6     | heave      | fff.fff    | Heave, in meters, positive up – empty if invalid                            |
-| 7     | rollStd    | fff.ff     | Roll angle standard deviation in decimal degrees – empty if invalid         |
-| 8     | pitchStd   | fff.ff     | Pitch angle standard deviation in decimal degrees – empty if invalid        |
-| 9     | headingStd | fff.ff     | Heading angle standard deviation in decimal degrees – empty if invalid      |
-| 10    | posStatus  | char       | Position Quality status<br>0 = No position<br>1 = All non-RTK fixed integer positions<br>2 = RTK fixed integer position |
-| 11    | imuStatus  | char       | IMU & Sensor Status<br>0 = IMU is working correctly<br>1 = IMU sensor error |
-| 12    | Check sum  | *cs        | XOR of all previous bytes except `$`                                        |
-| 13    | End of frame | <CR><LF> | Carriage return and line feed                                               |
+| Field | Name         | Format     | Description                                                                 |
+|-------|--------------|------------|-----------------------------------------------------------------------------|
+| 0     | $PASHR       | string     | Message ID – Proprietary NMEA identifier                                    |
+| 1     | timeUTC      | hhmmss.ss  | Current UTC time – empty if invalid                                         |
+| 2     | heading      | fff.ff     | Heading angle, in decimal degrees [0 – 360] – empty if invalid              |
+| 3     | T            | char       | True Heading                                                                |
+| 4     | roll         | fff.ff     | Roll in decimal degrees. From [-180 – 180°] – empty if invalid              |
+| 5     | pitch        | fff.ff     | Pitch in decimal degrees. From [-90 – 90°] – empty if invalid               |
+| 6     | heave        | fff.fff    | Heave, in meters, positive up – empty if invalid                            |
+| 7     | rollStd      | fff.ff     | Roll angle standard deviation in decimal degrees – empty if invalid         |
+| 8     | pitchStd     | fff.ff     | Pitch angle standard deviation in decimal degrees – empty if invalid        |
+| 9     | headingStd   | fff.ff     | Heading angle standard deviation in decimal degrees – empty if invalid      |
+| 10    | posStatus    | char       | Position Quality status<br>0 = No position<br>1 = All non-RTK fixed integer positions<br>2 = RTK fixed integer position |
+| 11    | imuStatus    | char       | IMU & Sensor Status<br>0 = IMU is working correctly<br>1 = IMU sensor error |
+| 12    | Check sum    | *cs        | XOR of all previous bytes except `$`                                        |
+| 13    | End of frame | <CR><LF>   | Carriage return and line feed                                               |
 
 ---
 
@@ -1013,6 +1020,10 @@ $PHLIN,0.03,0.22,-0.15*68<CR><LF>
 | 5     | End of frame | <CR><LF> | Carriage return and line feed                                                                     |
 
 > [!WARNING]
+> The `Heave` field follows the selected output monitoring point.  
+> The `Surge` and `Sway` fields are only valid when this monitoring point is the IMU physical measurement point (`Bare IMU`).
+
+> [!WARNING]
 > Ixblue uses different conventions for ship motion measurements. In this frame, both sway and heave values are reversed compared to SBG Systems conventions.
 
 ---
@@ -1057,6 +1068,10 @@ $PHOCT,01,000201.000,E,00,356.592,E,+000.225,E,+00.039,E,+00.023,T,+00.023,+00.0
 | 19    | Heading Rate   | QQQQ.QQ   | Heading rate of turn in °/min (positive clockwise); -9999.99 to +9999.99                 |
 | 20    | Check sum      | *cs       | XOR of all previous bytes except `$`                                                     |
 | 21    | End of frame   | <CR><LF>  | Carriage return and line feed                                                            |
+
+> [!WARNING]
+> The heave-related fields (`Primary Heave`, `Heave`, and `Heave Speed`) follow the configured lever-arm or monitoring-point settings.  
+> The `Surge`, `Sway`, `Surge Speed`, and `Sway Speed` fields are only valid when the corresponding reference point is the IMU physical measurement point (`Bare IMU`).
 
 > [!WARNING]
 > Ixblue uses different conventions for ship motion measurements. In this frame, both sway and heave values are reversed compared to SBG Systems conventions.
@@ -1130,9 +1145,9 @@ $PTNL,GGK,161159.00,013020,4854.61758182,N,00210.08881241,E,1,07,8.3,EHT140.509,
 | 5     | N/S          | char           | ‘N’ for Northern hemisphere latitude, ‘S’ for Southern hemisphere latitude       |
 | 6     | Longitude    | dddmm.mmmmmmmm | INS longitude in degrees (0 to 180) and decimal minutes (8 decimal digits)       |
 | 7     | E/W          | char           | ‘E’ for Eastern longitude, ‘W’ for Western longitude                             |
-| 8     | Pos. Quality | char           | Position quality indicator using INS standard deviation (see Quality indicators) |
+| 8     | Pos. Quality | char           | Position quality indicator using INS standard deviation (see Quality Indicators) |
 | 9     | SV used      | xx             | Number of satellites used in the solution (latest received GNSS fix)             |
-| 10    | HDOP         | z.z            | Horizontal Dilution of Precision (1 decimal digit) (see Quality indicators)      |
+| 10    | HDOP         | z.z            | Horizontal Dilution of Precision (1 decimal digit) (see DOP Computation)         |
 | 11    | Height       | EHTx.xxx       | Height above ellipsoid with 3 decimal digits and must start with `EHT`           |
 | 12    | Height Unit  | M              | Always `M`: Height above ellipsoid measured in meters                            |
 | 13    | Check sum    | *cs            | XOR of all previous bytes except `$`                                             |
@@ -1140,5 +1155,366 @@ $PTNL,GGK,161159.00,013020,4854.61758182,N,00210.08881241,E,1,07,8.3,EHT140.509,
 
 > [!NOTE]
 > The position quality and DOP are computed using the INS position's estimated standard deviation and are not directly related to the GNSS solution.
+
+---
+
+### SBG_ECOM_LOG_NMEA_1_PPS (11) {#SBG_ECOM_LOG_NMEA_1_PPS}
+
+The `SBG_ECOM_LOG_NMEA_1_PPS` message is a Trimble (Applanix) proprietary NMEA log that outputs UTC time and Pulse Per Second (PPS) synchronization information.
+
+#### Message Format
+
+```
+$GPPPS,002258.1556,6,4526,46.27,516,*48<CR><LF>
+```
+
+#### Message Structure
+
+- **Message Name (ID):** `SBG_ECOM_LOG_NMEA_1_PPS (11)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-X.X-blue) ![HPINS](https://img.shields.io/badge/HPINS-X.X-blue)
+
+| Field | Name           | Format       | Description                                                                      |
+|-------|----------------|--------------|----------------------------------------------------------------------------------|
+| 0     | $GPPPS         | string       | Message ID – Trimble (Applanix) proprietary NMEA identifier                      |
+| 1     | Time           | hhmmss.ssss  | UTC time of the previous PPS signal (4 decimal digits)                           |
+| 2     | Offset Day     | d            | Day of the week (Sunday = 0)                                                     |
+| 3     | Week Number    | wwww         | GNSS week number (0000 to 9999)                                                  |
+| 4     | UTC Offset     | ss.ss        | UTC offset time in seconds (GPS time = UTC time + UTC offset)                    |
+| 5     | PPS Count      | ccccccccc    | Number of PPS signals received (up to 9 digits)                                  |
+| 6     | Check sum      | *cs          | XOR of all previous bytes except `$`                                             |
+| 7     | End of frame   | <CR><LF>     | Carriage return and line feed                                                    |
+
+> [!NOTE]
+> This message provides precise timing information synchronized with the PPS signal.
+
+---
+
+### SBG_ECOM_LOG_NMEA_1_AVR (14) {#SBG_ECOM_LOG_NMEA_1_AVR}
+
+The `SBG_ECOM_LOG_NMEA_1_AVR` message is a Trimble proprietary NMEA log that outputs heading computed from a moving baseline vector (dual GNSS antenna system).
+
+#### Message Format
+
+```
+$PTNL,AVR,212405.20,+52.1531,Yaw,-0.0806,Tilt,,,12.575,3,1.4,16*39<CR><LF>
+$PTNL,AVR,212604.30,+52.1800,Yaw,,,-0.0807,Roll,12.579,3,1.4,16*21<CR><LF>
+```
+
+#### Message Structure
+
+- **Message Name (ID):** `SBG_ECOM_LOG_NMEA_1_AVR (14)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-X.X-blue) ![HPINS](https://img.shields.io/badge/HPINS-X.X-blue)
+
+| Field | Name           | Format       | Description                                                                      |
+|-------|----------------|--------------|----------------------------------------------------------------------------------|
+| 0     | $PTNL,AVR      | string       | Message ID – Trimble proprietary NMEA identifier                                 |
+| 1     | Time           | hhmmss.ss    | UTC time of vector fix                                                           |
+| 2     | Yaw Angle      | yyy.yyyy     | Yaw angle in degrees (0.000 to 359.999)                                          |
+| 3     | Yaw            | string       | Always `Yaw`                                                                     |
+| 4     | Tilt Angle     | tt.tttt      | Tilt angle in degrees (pitch or roll depending on antenna configuration)         |
+| 5     | Tilt           | string       | `Tilt` or `Roll` depending on antenna orientation                                |
+| 6     | Reserved       |              | Reserved field                                                                   |
+| 7     | Reserved       |              | Reserved field                                                                   |
+| 8     | Range          | rr.rrr       | Baseline range in meters (distance between antennas)                             |
+| 9     | GNSS Quality   | q            | GNSS quality indicator using INS standard deviation (see Quality Indicators)     |
+| 10    | PDOP           | p.p          | Position Dilution of Precision (1 decimal digit) (see DOP Computation)           |
+| 11    | SV used        | xx           | Number of satellites used in the solution (latest received GNSS fix)             |
+| 12    | Check sum      | *cs          | XOR of all previous bytes except `$`                                             |
+| 13    | End of frame   | <CR><LF>     | Carriage return and line feed                                                    |
+
+> [!NOTE]
+> The GNSS quality and PDOP are computed from the INS position standard deviation as described in the Quality indicators and DOP computation sections.
+
+---
+## GNSS NMEA Messages
+
+The `SBG_ECOM_CLASS_LOG_NMEA_GNSS (0x05)` message class encompasses all standard NMEA 0183 messages that can be output by the device.  
+These messages implements the NMEA 0183 version 4.1 and can be used for GNSS drop in replacement in some integrations.
+
+All GNSS NMEA outputs generated by the INS are based on data from the GNSS receiver.
+
+### Messages overview
+
+The following list, provides a quick overview of all available logs for this message class.  
+It briefly describe which parameters are contained in each output log.
+
+| Name (Msg ID)                                                  | Description                                                                            |
+|----------------------------------------------------------------|----------------------------------------------------------------------------------------|
+| [SBG_ECOM_LOG_NMEA_GNSS_GGA (00)](#SBG_ECOM_LOG_NMEA_GNSS_GGA) | Latitude, Longitude, Altitude, Quality indicator.                                      |
+| [SBG_ECOM_LOG_NMEA_GNSS_RMC (01)](#SBG_ECOM_LOG_NMEA_GNSS_RMC) | Latitude, Longitude, velocity, course over ground.                                     |
+| [SBG_ECOM_LOG_NMEA_GNSS_ZDA (02)](#SBG_ECOM_LOG_NMEA_GNSS_ZDA) | UTC date and time.                                                                     |
+| [SBG_ECOM_LOG_NMEA_GNSS_HDT (03)](#SBG_ECOM_LOG_NMEA_GNSS_HDT) | Heading from true geographic North.                                                    |
+| [SBG_ECOM_LOG_NMEA_GNSS_GST (04)](#SBG_ECOM_LOG_NMEA_GNSS_GST) | GPS Pseudorange Noise Statistics.                                                      |
+| [SBG_ECOM_LOG_NMEA_GNSS_VTG (08)](#SBG_ECOM_LOG_NMEA_GNSS_VTG) | Track an Speed over the ground.                                                        |
+| [SBG_ECOM_LOG_NMEA_GNSS_GSA (11)](#SBG_ECOM_LOG_NMEA_GNSS_GSA) | GNSS DOP and active satellites.                                                        |
+
+---
+
+### SBG_ECOM_LOG_NMEA_GNSS_GGA (00) {#SBG_ECOM_LOG_NMEA_GNSS_GGA}
+
+The `SBG_ECOM_LOG_NMEA_GNSS_GGA` message reports the receiver position and time in NMEA GGA format.
+
+#### Message Format
+
+```
+$GPGGA,,,,,,0,00,20.0,,,,,,*7A<CR><LF>
+$GPGGA,000010.00,4852.10719,N,00209.42313,E,0,00,0.0,-44.7,M,0.0,M,,,*63<CR><LF>
+```
+
+#### Message Structure
+
+- **Message Name (ID):** `SBG_ECOM_LOG_NMEA_GNSS_GGA (00)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-1.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-5.0-blue)
+
+| Field | Name             | Format         | Description                                                             |
+|-------|------------------|----------------|-------------------------------------------------------------------------|
+| 0     | $##GGA           | string         | Message ID – GGA frame                                                  |
+| 1     | Time             | hhmmss.ss      | UTC Time, current time                                                  |
+| 2     | Latitude         | ddmm.mmmmmmmm  | Latitude: degree + minutes with 8 decimal digits                        |
+| 3     | N/S              | char           | North / South indicator                                                 |
+| 4     | Longitude        | dddmm.mmmmmmmm | Longitude: degree + minutes with 8 decimal digits                       |
+| 5     | E/W              | char           | East / West indicator                                                   |
+| 6     | Quality          | i              | Solution quality (see definition in Quality indicators)                 |
+| 7     | SV used          | ii             | Number of satellites used in solution                                   |
+| 8     | Horizontal DOP   | ff.f           | Horizontal dilution of precision (see definition in Quality indicators) |
+| 9     | Altitude MSL     | ffff.fff       | Altitude above Mean Sea Level in meters                                 |
+| 10    | M                | M              | Altitude unit (Meters) fixed field.                                     |
+| 11    | Undulation       | fff.fff        | Geoidal separation between WGS-84 and MSL in meters.                    |
+| 12    | M                | M              | Units for geoidal separation (Meters) fixed field.                      |
+| 13    | Diff. Age        | s.s            | Age of differential corrections in seconds, only filled if applicable.  |
+| 14    | Diff. station ID | rrrr           | Differential station ID, only filled if applicable.                     |
+| 15    | Check sum        | *cs            | XOR of all previous bytes except $                                      |
+| 16    | End of frame     | <CR><LF>       | Carriage return and line feed                                           |
+
+---
+
+### SBG_ECOM_LOG_NMEA_GNSS_RMC (01) {#SBG_ECOM_LOG_NMEA_GNSS_RMC}
+
+The `SBG_ECOM_LOG_NMEA_GNSS_RMC` message provides the minimum recommended GNSS data, which includes a 2D position, velocity, course over ground, and quality indicators.
+
+#### Message Format
+
+```
+$GPRMC,,V,,,,,,,,,,N,V*29<CR><LF>
+$GPRMC,010802.26,A,4852.13326,N,00209.49001,E,0.2,195.49,290512,,,A*67<CR><LF>
+```
+
+#### Message Structure
+
+- **Message Name (ID):** `SBG_ECOM_LOG_NMEA_GNSS_RMC (01)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-1.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-5.0-blue)
+
+| Field | Name         | Format         | Description                                                             |
+|-------|--------------|----------------|-------------------------------------------------------------------------|
+| 0     | $##RMC       | string         | Message ID – RMC frame                                                  |
+| 1     | Time         | hhmmss.ss      | UTC Time, current time                                                  |
+| 2     | Status       | char           | Status field: A = Valid data, V = Invalid data                          |
+| 3     | Latitude     | ddmm.mmmmmmmm  | Latitude: degree + minutes with 8 decimal digits                        |
+| 4     | N/S          | char           | North / South indicator                                                 |
+| 5     | Longitude    | dddmm.mmmmmmmm | Longitude: degree + minutes with 8 decimal digits                       |
+| 6     | E/W          | char           | East / West indicator                                                   |
+| 7     | Speed        | fff.f          | Speed over ground in knots                                              |
+| 8     | Course       | fff.f          | Course over ground in degrees [0; 360]                                  |
+| 9     | Date         | ddmmyy         | UTC day, month, year                                                    |
+| 10    | Variation    | fff.ff         | Magnetic variation value in degrees [0; 180]                            |
+| 11    | E/W          | char           | Direction of magnetic variation (East / West)                           |
+| 12    | Mode         | char           | Position mode indicator (see definition in Quality indicators section)  |
+| 13    | Nav Status   | char           | Navigational status indicator (see definition in Quality indicators)    |
+| 14    | Check sum    | *cs            | XOR of all previous bytes except $                                      |
+| 15    | End of frame | <CR><LF>       | Carriage return and line feed                                           |
+
+---
+
+### SBG_ECOM_LOG_NMEA_GNSS_ZDA (02) {#SBG_ECOM_LOG_NMEA_GNSS_ZDA}
+
+The `SBG_ECOM_LOG_NMEA_GNSS_ZDA` message contains UTC time and date information.
+
+#### Message Format
+
+```
+$GPZDA,,,,,,*48<CR><LF>
+$GPZDA,201530.00,04,07,2002,00,00*60<CR><LF>
+```
+
+#### Message Structure
+
+- **Message Name (ID):** `SBG_ECOM_LOG_NMEA_GNSS_ZDA (02)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.3-blue) ![HPINS](https://img.shields.io/badge/HPINS-5.5-blue)
+
+| Field | Name         | Format    | Description                        |
+| ----- | ------------ | --------- | ---------------------------------- |
+| 0     | $##ZDA       | string    | Message ID – ZDA frame             |
+| 1     | Time         | hhmmss.ss | UTC Time, current time             |
+| 2     | Day          | dd        | Day of month [01 - 31]             |
+| 3     | Month        | mm        | Month of year [01 - 12]            |
+| 4     | Year         | yyyy      | Year (4 digits)                    |
+| 5     | Ltzh         | 0         | Local zone hours (not supported)   |
+| 6     | Ltzh         | 0         | Local zone minutes (not supported) |
+| 7     | Check sum    | *cs       | XOR of all previous bytes except $ |
+| 8     | End of frame | <CR><LF>  | Carriage return and line feed      |
+
+---
+
+### SBG_ECOM_LOG_NMEA_GNSS_HDT (03) {#SBG_ECOM_LOG_NMEA_GNSS_HDT}
+
+The `SBG_ECOM_LOG_NMEA_GNSS_HDT` message outputs the receiver true heading value. The true heading is the direction the vehicle is pointing, which is not necessarily the same as the direction of travel (course over ground).
+
+#### Message Format
+
+```
+$GPHDT,,T*1B<CR><LF>
+$GPHDT,191.94,T*01<CR><LF>
+```
+
+#### Message Structure
+
+- **Message Name (ID):** `SBG_ECOM_LOG_NMEA_GNSS_HDT (03)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-1.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-5.0-blue)
+
+| Field | Name         | Format      | Description                                          |
+|-------|--------------|-------------|------------------------------------------------------|
+| 0     | $##HDT       | string      | Message ID – HDT frame                               |
+| 1     | Heading      | fff.ff      | True heading in degrees [0 - 360]                    |
+| 2     | T            | char        | T indicates true heading                             |
+| 3     | Check sum    | *cs         | XOR of all previous bytes except $                   |
+| 4     | End of frame | <CR><LF>    | Carriage return and line feed                        |
+
+---
+
+### SBG_ECOM_LOG_NMEA_GNSS_GST (04) {#SBG_ECOM_LOG_NMEA_GNSS_GST}
+
+The `SBG_ECOM_LOG_NMEA_GNSS_GST` message provides detailed position error statistics of the Kalman filtered position solution.  
+It is important to note that the data reflects the estimated inertial position and not the GNSS quality fix directly.
+
+#### Message Format
+
+```
+$GPGST,,,,,,,,*57<CR><LF>
+$GPGST,172814.00,,0.023,0.020,273.62,0.023,0.015,0.031*46<CR><LF>
+```
+
+#### Message Structure
+
+- **Message Name (ID):** `SBG_ECOM_LOG_NMEA_GNSS_GST (04)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.3-blue) ![HPINS](https://img.shields.io/badge/HPINS-5.5-blue)
+
+| Field             | Name             | Format        | Description                                                             |
+|-------------------|------------------|---------------|-------------------------------------------------------------------------|
+| 0                 | $##GST           | string        | Message ID – GST frame                                                  |
+| 1                 | Time             | hhmmss.ss     | UTC Time, current time                                                  |
+| 2                 | psrResidual      | NULL          | RMS value of pseudorange residuals. Always NULL, not supported.         |
+| 3                 | sMajorAxisError  | fff.fff       | Error ellipse semi-major axis 1 sigma error, in meters                  |
+| 4                 | sMinorAxisError  | fff.fff       | Error ellipse semi-minor axis 1 sigma error, in meters                  |
+| 5                 | errorEllipseAng  | fff.ff        | Error ellipse orientation, degrees from true north [0 - 360]            |
+| 6                 | latError         | fff.fff       | Latitude 1 sigma error, in meters                                       |
+| 7                 | longError        | fff.fff       | Longitude 1 sigma error, in meters                                      |
+| 8                 | altError         | fff.fff       | Height 1 sigma error, in meters                                         |
+| 9                 | Check sum        | *cs           | XOR of all previous bytes except $                                      |
+| 10                | End of frame     | <CR><LF>      | Carriage return and line feed                                           |
+
+---
+
+### SBG_ECOM_LOG_NMEA_GNSS_VTG (08) {#SBG_ECOM_LOG_NMEA_GNSS_VTG}
+
+The `SBG_ECOM_LOG_NMEA_GNSS_VTG` message reports the track and velocity over ground of the receiver.  
+It includes a quality indicator similar to the RMC message.
+
+#### Message Format
+
+```
+$GPVTG,,,,,,,,,N*30<CR><LF>
+$GPVTG,256.31,T,256.44,M,45.401,N,84.084,K,N*2A<CR><LF>
+```
+
+#### Message Structure
+
+- **Message Name (ID):** `SBG_ECOM_LOG_NMEA_GNSS_VTG (08)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-1.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-5.0-blue)
+
+| Field | Name           | Format     | Description                                                             |
+|-------|----------------|------------|-------------------------------------------------------------------------|
+| 0     | $##VTG         | string     | Message ID – VTG frame                                                  |
+| 1     | Course True    | fff.ff     | True course over ground in degrees [0; 360]                             |
+| 2     | T              | char       | Course over ground is relative to true north                            |
+| 3     | Course Magnetic| fff.ff     | Magnetic course over ground in degrees [0; 360]                         |
+| 4     | M              | char       | Course over ground is relative to magnetic north                        |
+| 5     | Speed Knots    | fff.fff    | Ground speed in knots                                                   |
+| 6     | N              | char       | The speed is expressed in knots                                         |
+| 7     | Speed Km/h     | fff.fff    | Ground speed in kilometers per hour                                     |
+| 8     | K              | char       | The speed is expressed in kilometers per hour                           |
+| 9     | Mode           | char       | Position mode indicator (see definition in Quality indicators section)  |
+| 10    | Check sum      | *cs        | XOR of all previous bytes except $                                      |
+| 11    | End of frame   | <CR><LF>   | Carriage return and line feed                                           |
+
+> [!NOTE]  
+> The position mode indicator is computed using the INS position's estimated standard deviation, and is not directly related to the GNSS solution.
+
+---
+
+### SBG_ECOM_LOG_NMEA_GNSS_GSA (11) {#SBG_ECOM_LOG_NMEA_GNSS_GSA}
+
+The `SBG_ECOM_LOG_NMEA_GNSS_GSA` message provides information about the GNSS fix type, the satellites used in the navigation solution, and Dilution of Precision (DOP) values, which indicate the quality of the position solution.
+
+#### Multi-Constellations
+
+The NMEA talker ID is used to output satellite information for each constellation:
+
+- **GPGSV:** Lists all visible GPS and SBAS satellites with associated information.
+- **GLGSV:** Lists all visible GLONASS satellites with associated information.
+- **GAGSV:** Lists all visible Galileo satellites with associated information.
+- **GBGSV:** Lists all visible BeiDou satellites with associated information.
+- **GIGSV:** Lists all visible NavIC satellites with associated information.
+- **GQGSV:** Lists all visible QZSS satellites with associated information.
+
+> [!NOTE]
+> SBG Systems products do not output GNGSV messages to comply with NMEA standards.
+
+#### Message Re-Assembly
+
+GSA messages are sent using multiple NMEA frames to comply with the 80-character limit. Each GSA message contains the total number of messages as well as the current message number. Using this information, it is possible to reassemble the GSA message and get all visible satellites for each constellation.
+
+**Empty Message Example**
+
+The following message is sent by the INS when there is no GNSS reception:
+```
+$GPGSA,M,1,,,,,,,,,,,,,99.9,99.9,99.9,1*18<CR><LF>
+```
+
+**Multi-Constellation Example**
+
+The following example shows a typical GSA reporting when tracking multi-constellation satellites in a clean environment.
+
+```
+$GPGSA,A,3,8,2,22,3,14,1,27,10,32,,,,1.9,1.1,1.6,1*28<CR><LF>
+$GLGSA,A,3,87,79,71,78,72,88,86,65,,,,,1.9,1.1,1.6,2*3F<CR><LF>
+$GAGSA,A,3,11,2,24,19,25,16,12,4,,,,,1.9,1.1,1.6,3*38<CR><LF>
+$GBGSA,A,3,41,27,13,5,29,20,32,,,,,,1.9,1.1,1.6,4*08<CR><LF>
+```
+
+#### Message Structure
+
+- **Message Name (ID):** `SBG_ECOM_LOG_NMEA_GNSS_GSA (11)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.3-blue) ![HPINS](https://img.shields.io/badge/HPINS-5.5-blue)
+
+| Field | Name         | Format   | Description                                                        |
+| ----- | ------------ | -------- | ------------------------------------------------------------------ |
+| 0     | $##GSA       | string   | Message ID – GSA frame                                             |
+| 1     | Mode         | char     | Positioning mode: `M` = Manual, `A` = Automatic                    |
+| 2     | Fix Type     | d        | `1` = No fix, `2` = 2D fix, `3` = 3D fix                           |
+| 3–14  | PRNs         | ii       | Up to 12 PRN numbers used in position solution (empty if not used) |
+| 15    | PDOP         | ff.f     | Position Dilution of Precision                                     |
+| 16    | HDOP         | ff.f     | Horizontal Dilution of Precision                                   |
+| 17    | VDOP         | ff.f     | Vertical Dilution of Precision                                     |
+| 18    | Checksum     | *cs      | XOR of all previous bytes except $                                 |
+| 19    | End of frame | <CR><LF> | Carriage return and line feed                                      |
 
 ---

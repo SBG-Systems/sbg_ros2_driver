@@ -6,9 +6,9 @@
  *
  * \brief           Parse received odometer/DMI velocity measurement logs.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -26,7 +26,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * \endlicense
  */
 
@@ -49,7 +49,7 @@ extern "C" {
  * Odometer / velocity status mask definitions.
  */
 #define SBG_ECOM_ODO_REAL_MEAS              (0x0001 << 0)           /*!< Set to 1 if this log comes from a real pulse measurement or from a timeout. */
-#define SBG_ECOM_ODO_TIME_SYNC              (0x0001 << 1)           /*!< Set to 1 if the velocity information is correctly time synchronized. */
+#define SBG_ECOM_ODO_RESERVED               (0x0001 << 1)           /*!< Reserved. Deprecated status flag. */
 
 //----------------------------------------------------------------------//
 //- Log structure definitions                                          -//
@@ -71,7 +71,7 @@ typedef struct _SbgEComLogOdometer
 
 /*!
  * Parse data for the SBG_ECOM_LOG_ODO_VEL message and fill the corresponding structure.
- * 
+ *
  * \param[out]  pLogData                    Log structure instance to fill.
  * \param[in]   pStreamBuffer               Input stream buffer to read the log from.
  * \return                                  SBG_NO_ERROR if a valid log has been read from the stream buffer.
@@ -90,6 +90,10 @@ SbgErrorCode sbgEComLogOdometerWriteToStream(const SbgEComLogOdometer *pLogData,
 //----------------------------------------------------------------------//
 //- DEPRECATED - Used for backward compatibility                       -//
 //----------------------------------------------------------------------//
+
+#ifdef SBG_ECOM_USE_DEPRECATED_MACROS
+    #define SBG_ECOM_ODO_TIME_SYNC                          SBG_ECOM_ODO_RESERVED
+#endif
 
 SBG_DEPRECATED_TYPEDEF(typedef struct _SbgEComLogOdometer SbgLogOdometerData);
 

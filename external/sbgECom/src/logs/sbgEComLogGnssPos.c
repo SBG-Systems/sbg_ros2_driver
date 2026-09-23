@@ -52,11 +52,13 @@ void sbgEComLogGnssPosZeroInit(SbgEComLogGnssPos *pLogData)
     sbgEComLogGnssPosSetIfmStatus(pLogData,         SBG_ECOM_GNSS_IFM_STATUS_UNKNOWN);
     sbgEComLogGnssPosSetSpoofingStatus(pLogData,    SBG_ECOM_GNSS_SPOOFING_STATUS_UNKNOWN);
     sbgEComLogGnssPosSetOsnmaStatus(pLogData,       SBG_ECOM_GNSS_OSNMA_STATUS_DISABLED);
+
+    sbgEComLogGnssPosSetUpTimeInvalid(pLogData);
 }
 
 SbgErrorCode sbgEComLogGnssPosReadFromStream(SbgEComLogGnssPos *pLogData, SbgStreamBuffer *pStreamBuffer)
 {
-    bool        shouldContinue;
+    bool                                 shouldContinue;
 
     assert(pLogData);
     assert(pStreamBuffer);
@@ -80,23 +82,27 @@ SbgErrorCode sbgEComLogGnssPosReadFromStream(SbgEComLogGnssPos *pLogData, SbgStr
         pLogData->numSvUsed         = sbgStreamBufferReadUint8LE(pStreamBuffer);
         pLogData->baseStationId     = sbgStreamBufferReadUint16LE(pStreamBuffer);
         pLogData->differentialAge   = sbgStreamBufferReadUint16LE(pStreamBuffer);
-        shouldContinue              = true;
+
+        shouldContinue = true;
     }
     else
     {
         pLogData->numSvUsed         = UINT8_MAX;
         pLogData->baseStationId     = UINT16_MAX;
         pLogData->differentialAge   = UINT16_MAX;
-        shouldContinue              = false;
+
+        shouldContinue = false;
     }
 
     //
     // Read additional status added in version 4.0
     //
-    if ( shouldContinue && (sbgStreamBufferGetSpace(pStreamBuffer) >= 5) )
+    if (shouldContinue && (sbgStreamBufferGetSpace(pStreamBuffer) >= 5))
     {
         pLogData->numSvTracked      = sbgStreamBufferReadUint8LE(pStreamBuffer);
         pLogData->statusExt         = sbgStreamBufferReadUint32LE(pStreamBuffer);
+
+        shouldContinue = true;
     }
     else
     {
@@ -106,8 +112,25 @@ SbgErrorCode sbgEComLogGnssPosReadFromStream(SbgEComLogGnssPos *pLogData, SbgStr
         sbgEComLogGnssPosSetIfmStatus(pLogData,         SBG_ECOM_GNSS_IFM_STATUS_UNKNOWN);
         sbgEComLogGnssPosSetSpoofingStatus(pLogData,    SBG_ECOM_GNSS_SPOOFING_STATUS_UNKNOWN);
         sbgEComLogGnssPosSetOsnmaStatus(pLogData,       SBG_ECOM_GNSS_OSNMA_STATUS_DISABLED);
+
+        shouldContinue = false;
     }
-    
+
+    //
+    // Read additional fields added in version 5.6.
+    //
+    if (shouldContinue && (sbgStreamBufferGetSpace(pStreamBuffer) > 0))
+    {
+        pLogData->nrDiagReboots = sbgStreamBufferReadUint8LE(pStreamBuffer);
+        pLogData->upTime        = sbgStreamBufferReadUint32LE(pStreamBuffer);
+    }
+    else
+    {
+        pLogData->nrDiagReboots = 0;
+
+        sbgEComLogGnssPosSetUpTimeInvalid(pLogData);
+    }
+
     return sbgStreamBufferGetLastError(pStreamBuffer);
 }
 
@@ -136,6 +159,9 @@ SbgErrorCode sbgEComLogGnssPosWriteToStream(const SbgEComLogGnssPos *pLogData, S
 
     sbgStreamBufferWriteUint8LE(pStreamBuffer,      pLogData->numSvTracked);
     sbgStreamBufferWriteUint32LE(pStreamBuffer,     pLogData->statusExt);
+
+    sbgStreamBufferWriteUint8LE(pStreamBuffer,      pLogData->nrDiagReboots);
+    sbgStreamBufferWriteUint32LE(pStreamBuffer,     pLogData->upTime);
 
     return sbgStreamBufferGetLastError(pStreamBuffer);
 }
@@ -263,7 +289,7 @@ void sbgEComLogGnssPosSetDifferentialAge(SbgEComLogGnssPos *pLogData, float diff
     {
         float   diffAgeScaled;
 
-        diffAgeScaled = differentialAge / 100.0f;
+        diffAgeScaled = differentialAge * 100.0f;
 
         if (diffAgeScaled >= (float)UINT16_MAX)
         {
@@ -339,8 +365,32 @@ void sbgEComLogGnssPosSetOsnmaStatus(SbgEComLogGnssPos *pLogData, SbgEComGnssOsn
 
 SbgEComGnssOsnmaStatus sbgEComLogGnssPosGetOsnmaStatus(const SbgEComLogGnssPos *pLogData)
 {
+    assert(pLogData);
+
     return (SbgEComGnssOsnmaStatus)((pLogData->statusExt >> SBG_ECOM_LOG_GNSS_POS_OSNMA_SHIFT)&SBG_ECOM_LOG_GNSS_POS_OSNMA_MASK);
 }
+
+void sbgEComLogGnssPosSetUpTimeInvalid(SbgEComLogGnssPos *pLogData)
+{
+    assert(pLogData);
+
+    pLogData->upTime = UINT32_MAX;
+}
+
+bool sbgEComLogGnssPosUpTimeIsValid(const SbgEComLogGnssPos *pLogData)
+{
+    assert(pLogData);
+
+    if (pLogData->upTime == UINT32_MAX)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
 //----------------------------------------------------------------------//
 //- DEPRECATED - Used for backward compatibility                       -//
 //----------------------------------------------------------------------//

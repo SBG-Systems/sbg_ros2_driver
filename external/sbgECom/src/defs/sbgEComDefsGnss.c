@@ -138,6 +138,7 @@ SbgEComConstellationId sbgEComGetConstellationFromSignalId(SbgEComSignalId signa
     case SBG_ECOM_SIGNAL_ID_QZSS_L1C_D:
     case SBG_ECOM_SIGNAL_ID_QZSS_L1C_P:
     case SBG_ECOM_SIGNAL_ID_QZSS_L1_CA:
+    case SBG_ECOM_SIGNAL_ID_QZSS_L1_CB:
     case SBG_ECOM_SIGNAL_ID_QZSS_L1_SAIF:
     case SBG_ECOM_SIGNAL_ID_QZSS_L1_SB:
     case SBG_ECOM_SIGNAL_ID_QZSS_L2C_ML:
@@ -199,7 +200,7 @@ bool sbgEComSignalIdIsValid(uint8_t signalId)
     {
         return true;
     }
-    else 
+    else
     {
         return false;
     }
@@ -292,6 +293,7 @@ const char *sbgEComSignalToStr(SbgEComSignalId signalId)
         { SBG_ECOM_SIGNAL_ID_QZSS_L1C_D,        "qzssL1C_D"         },
         { SBG_ECOM_SIGNAL_ID_QZSS_L1C_P,        "qzssL1C_P"         },
         { SBG_ECOM_SIGNAL_ID_QZSS_L1_CA,        "qzssL1_CA"         },
+        { SBG_ECOM_SIGNAL_ID_QZSS_L1_CB,        "qzssL1_CB"         },
         { SBG_ECOM_SIGNAL_ID_QZSS_L1_SAIF,      "qzssL1_SAIF"       },
         { SBG_ECOM_SIGNAL_ID_QZSS_L1_SB,        "qzssL1_SB"         },
         { SBG_ECOM_SIGNAL_ID_QZSS_L2C_ML,       "qzssL2C_ML"        },
@@ -365,7 +367,7 @@ bool sbgEComConstellationIdIsValid(uint8_t constellationId)
 
 const char *sbgEComConstellationToStr(SbgEComConstellationId constellationId)
 {
-    static const char               *enumToStrLut[] = 
+    static const char               *enumToStrLut[] =
     {
         [SBG_ECOM_CONSTELLATION_ID_UNKNOWN]     = "unknown",
         [SBG_ECOM_CONSTELLATION_ID_GPS]         = "gps",

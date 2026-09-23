@@ -6,7 +6,7 @@
  *
  * \brief           Commands used to setup logs to output over the device interfaces.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -53,8 +53,9 @@ extern "C" {
 typedef enum _SbgEComOutputPort
 {
     SBG_ECOM_OUTPUT_PORT_A = 0,             /*!< Main output port. */
-    SBG_ECOM_OUTPUT_PORT_C = 2,             /*!< Secondary output port only available on Ellipse-E devices */
-    SBG_ECOM_OUTPUT_PORT_E = 4              /*!< Secondary output port only available on B1 devices */
+    SBG_ECOM_OUTPUT_PORT_C = 2,             /*!< Secondary output port only available on Ellipse-E devices. */
+    SBG_ECOM_OUTPUT_PORT_D = 3,             /*!< Secondary output port only available on Ellipse-E devices. */
+    SBG_ECOM_OUTPUT_PORT_E = 4              /*!< Secondary output port only available on B1 devices. */
 } SbgEComOutputPort;
 
 /*!

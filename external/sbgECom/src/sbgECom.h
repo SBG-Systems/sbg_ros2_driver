@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  * \file            sbgECom.h
  * \ingroup         main
  * \author          SBG Systems
@@ -6,7 +6,7 @@
  *
  * \brief           Contains main sbgECom methods.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -133,14 +133,19 @@ SbgErrorCode sbgEComHandleOneLog(SbgEComHandle *pHandle);
 SbgErrorCode sbgEComHandle(SbgEComHandle *pHandle);
 
 /*!
- * Purge the interface rx buffer as well as the sbgECom rx work buffer.
+ * Purges any pending data from both the interface RX buffer and the sbgECom internal RX work buffer.
  *
- * For example, if the program flow has been interrupted, this method can be helpful to discard all trash received data.
+ * This is useful after an unexpected disruption in the program flow, allowing the caller to
+ * discard any corrupted or incomplete data that may have been received.
  * 
- * \note This method is blocking for 100ms and actively tries to read incoming data.
+ * The function repeatedly reads and discards incoming data for a limited time window.
+ * It provides a best-effort drain of the underlying interface buffers, but cannot strictly distinguish
+ * between data sent before and after the purge, especially if the device is continuously transmitting.
+ * 
+ * \note This function is blocking and may take up to approximately 500 ms while actively reading and discarding incoming data.
  * 
  * \param[in]   pHandle                         A valid sbgECom handle.
- * \return                                      SBG_NO_ERROR if the incoming data has been purged successfully.
+ * \return                                      SBG_NO_ERROR if all pending incoming data was successfully purged.
  */
 SbgErrorCode sbgEComPurgeIncoming(SbgEComHandle *pHandle);
 

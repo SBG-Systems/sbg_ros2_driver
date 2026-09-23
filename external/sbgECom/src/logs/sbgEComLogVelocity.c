@@ -2,6 +2,9 @@
 #include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 
+// Project headers
+#include <defs/sbgEComDefsAiding.h>
+
 // Local headers
 #include "sbgEComLogVelocity.h"
 
@@ -9,12 +12,18 @@
 //- Private definitions for status field                               -//
 //----------------------------------------------------------------------//
 
-#define SBG_ECOM_LOG_VELOCITY_TIME_TYPE_SHIFT       (0u)                    /*!< Shift used to extract the velocity time type part. */
-#define SBG_ECOM_LOG_VELOCITY_TIME_TYPE_MASK        (0x0003u)           /*!< Mask used to keep only the velocity time type part. */
+#define SBG_ECOM_LOG_VELOCITY_TIME_TYPE_SHIFT       (0u)                /*!< Shift used to extract the velocity time type part. */
 
 //----------------------------------------------------------------------//
 //- Public methods                                                     -//
 //----------------------------------------------------------------------//
+
+void sbgEComLogVelocityConstruct(SbgEComLogVelocity *pLogData)
+{
+    assert(pLogData);
+
+    memset(pLogData, 0, sizeof(*pLogData));
+}
 
 SbgErrorCode sbgEComLogVelocityReadFromStream(SbgEComLogVelocity *pLogData, SbgStreamBuffer *pStreamBuffer)
 {
@@ -58,18 +67,18 @@ SbgErrorCode sbgEComLogVelocityWriteToStream(const SbgEComLogVelocity *pLogData,
 //- Public setters/getters                                             -//
 //----------------------------------------------------------------------//
 
-void sbgEComLogVelocitySetTimeType(SbgEComLogVelocity *pLogData, SbgEComVelocityTimeType timeType)
+void sbgEComLogVelocitySetTimeType(SbgEComLogVelocity *pLogData, SbgEComAidingTimeType timeType)
 {
     assert(pLogData);
-    assert(timeType <= SBG_ECOM_LOG_VELOCITY_TIME_TYPE_MASK);
+    assert(timeType <= SBG_ECOM_AIDING_TIME_TYPE_MASK);
 
-    pLogData->status &= ~(SBG_ECOM_LOG_VELOCITY_TIME_TYPE_MASK << SBG_ECOM_LOG_VELOCITY_TIME_TYPE_SHIFT);
-    pLogData->status |= ((uint16_t)timeType&SBG_ECOM_LOG_VELOCITY_TIME_TYPE_MASK) << SBG_ECOM_LOG_VELOCITY_TIME_TYPE_SHIFT;
+    pLogData->status &= ~(SBG_ECOM_AIDING_TIME_TYPE_MASK << SBG_ECOM_LOG_VELOCITY_TIME_TYPE_SHIFT);
+    pLogData->status |= ((uint16_t)timeType & SBG_ECOM_AIDING_TIME_TYPE_MASK) << SBG_ECOM_LOG_VELOCITY_TIME_TYPE_SHIFT;
 }
 
-SbgEComVelocityTimeType sbgEComLogVelocityGetTimeType(const SbgEComLogVelocity *pLogData)
+SbgEComAidingTimeType sbgEComLogVelocityGetTimeType(const SbgEComLogVelocity *pLogData)
 {
     assert(pLogData);
 
-    return (SbgEComVelocityTimeType)((pLogData->status >> SBG_ECOM_LOG_VELOCITY_TIME_TYPE_SHIFT)&SBG_ECOM_LOG_VELOCITY_TIME_TYPE_MASK);
+    return (SbgEComAidingTimeType)((pLogData->status >> SBG_ECOM_LOG_VELOCITY_TIME_TYPE_SHIFT) & SBG_ECOM_AIDING_TIME_TYPE_MASK);
 }

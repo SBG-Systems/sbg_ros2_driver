@@ -5,7 +5,7 @@
  *
  * \brief           Implement general sbgECom log such as status/utc/etc
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    Proprietary license
  *
  * This source code is intended for use only by SBG Systems SAS and

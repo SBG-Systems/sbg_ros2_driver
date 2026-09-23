@@ -21,6 +21,7 @@
 #include "sbgEComLogMag.h"
 #include "sbgEComLogMagCalib.h"
 #include "sbgEComLogOdometer.h"
+#include "sbgEComLogPosition.h"
 #include "sbgEComLogPtp.h"
 #include "sbgEComLogRawData.h"
 #include "sbgEComLogSat.h"
@@ -166,7 +167,12 @@ SbgErrorCode sbgEComLogParse(SbgEComClass msgClass, SbgEComMsgId msgId, const vo
         case SBG_ECOM_LOG_VELOCITY_1:
             errorCode = sbgEComLogVelocityReadFromStream(&pLogData->velocityData, &inputStream);
             break;
-
+        case SBG_ECOM_LOG_EKF_AIR_DATA:
+            errorCode = sbgEComLogEkfAirDataReadFromStream(&pLogData->ekfAirData, &inputStream);
+            break;
+        case SBG_ECOM_LOG_POSITION_1:
+            errorCode = sbgEComLogPositionReadFromStream(&pLogData->positionData, &inputStream);
+            break;
 
         default:
             errorCode = SBG_ERROR;

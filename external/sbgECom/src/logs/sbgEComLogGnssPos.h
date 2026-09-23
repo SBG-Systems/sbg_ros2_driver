@@ -6,7 +6,7 @@
  *
  * \brief           GNSS position related logs.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -158,9 +158,11 @@ typedef struct _SbgEComLogGnssPos
     float           altitudeAccuracy;       /*!< 1 sigma altitude accuracy in meters (0 to 9999). */
     uint8_t         numSvUsed;              /*!< Number of space vehicles used to compute the solution - set to 0xFF if not available. (added in 1.4) */
     uint16_t        baseStationId;          /*!< Base station id for differential corrections (0-4095) - set to 0xFFFF if differential are not used or not available. (added in 1.4). */
-    uint16_t        differentialAge;        /*!< Differential correction age in 0.01 seconds - set to 0xFFFF if differential are not used or not available. (added in 1.4). */  
+    uint16_t        differentialAge;        /*!< Differential correction age in 0.01 seconds - set to 0xFFFF if differential are not used or not available. (added in 1.4). */
     uint8_t         numSvTracked;           /*!< Number of space vehicles tracked by the GNSS - set to 0xFF if not available. (added in 4.0) */
     uint32_t        statusExt;              /*!< Additional status for interference, spoofing and OSNMA (added in 4.0). */
+    uint8_t         nrDiagReboots;          /*!< Number of GNSS reboots triggered by abnormal operating conditions (added in 5.6). */
+    uint32_t        upTime;                 /*!< GNSS up time, in seconds - set to 0xFFFFFFFF if not available (added in 5.6). */
 } SbgEComLogGnssPos;
 
 //----------------------------------------------------------------------//
@@ -346,11 +348,26 @@ void sbgEComLogGnssPosSetOsnmaStatus(SbgEComLogGnssPos *pLogData, SbgEComGnssOsn
 
 /*!
  * Returns the GNSS Galileo OSNMA status.
- * 
+ *
  * \param[in]   pLogData            Log instance.
  * \return                          The Galileo OSNMA status.
  */
 SbgEComGnssOsnmaStatus sbgEComLogGnssPosGetOsnmaStatus(const SbgEComLogGnssPos *pLogData);
+
+/*!
+ * Set the up time as invalid.
+ *
+ * \param[in]   pLogData            Log instance.
+ */
+void sbgEComLogGnssPosSetUpTimeInvalid(SbgEComLogGnssPos *pLogData);
+
+/*!
+ * Check if the up time is valid.
+ *
+ * \param[in]   pLogData            Log instance.
+ * \return                          True if valid.
+ */
+bool sbgEComLogGnssPosUpTimeIsValid(const SbgEComLogGnssPos *pLogData);
 
 //----------------------------------------------------------------------//
 //- DEPRECATED - Used for backward compatibility                       -//

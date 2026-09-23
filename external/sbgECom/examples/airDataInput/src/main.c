@@ -5,7 +5,7 @@
  *
  * \brief           Send AirData aiding mesurements to an ELLIPSE and read back data
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -96,7 +96,7 @@ static SbgErrorCode airDataInputSendOneLog(SbgEComHandle *pHandle)
     // We create a random airspeed between 0 to 12 m.s^-1
     //
     airDataLog.trueAirspeed = airDataInputRandFloat(0.0f, 12.0f);
-    airDataLog.status |= SBG_ECOM_AIR_DATA_AIRPSEED_VALID;
+    airDataLog.status |= SBG_ECOM_AIR_DATA_AIRSPEED_VALID;
 
     //
     // Write the payload

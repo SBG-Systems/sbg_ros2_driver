@@ -1,4 +1,4 @@
-# sbgECom Library 5.3.2276-stable
+# sbgECom Library 5.8.935-stable
 sbgECom is a C library provided under the MIT License and used to interface easily [SBG Systems](https://www.sbg-systems.com/) IMU, AHRS and INS to your application.
 
 ## Introduction
@@ -16,7 +16,7 @@ The library is written and maintained by SBG Systems SAS. You can contact the su
 
 ## Documentation
 
-You can access the full online sbgECom Doxygen documentation [here](https://developer.sbg-systems.com/sbgECom/5.3).  
+You can access the full online sbgECom Doxygen documentation [here](https://developer.sbg-systems.com/sbgECom/5.8).  
 You should also read the SBG Systems [Support Center](https://support.sbg-systems.com) to quickly start using and integrating your products.  
 Please also have a look at the [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/) documentation that is used to configure High Performance INS products.
 

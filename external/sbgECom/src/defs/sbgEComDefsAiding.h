@@ -1,12 +1,10 @@
-/*!
- * \file            sbgEComLib.h
+﻿/*!
+ * \file            sbgEComDefsAiding.h
  * \ingroup         main
  * \author          SBG Systems
- * \date            05 February 2013
+ * \date            October 6, 2025
  *
- * \brief           Main header file for the SBG Systems Enhanced Communication Library.
- *
- * Only this main header file should be included to use the library.
+ * \brief           Common enumeration and definitions for aiding data
  *
  * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
@@ -32,42 +30,38 @@
  * \endlicense
  */
 
-#ifndef SBG_ECOM_LIB_H
-#define SBG_ECOM_LIB_H
+#ifndef SBG_ECOM_DEFS_AIDING_H
+#define SBG_ECOM_DEFS_AIDING_H
+
+// sbgCommonLib headers
+#include <sbgCommon.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// sbgCommonLib headers
-#include <sbgCommon.h>
-#include <crc/sbgCrc.h>
-#include <interfaces/sbgInterface.h>
-#include <interfaces/sbgInterfaceFile.h>
-#include <interfaces/sbgInterfaceSerial.h>
-#include <interfaces/sbgInterfaceUdp.h>
-#include <splitBuffer/sbgSplitBuffer.h>
-#include <streamBuffer/sbgStreamBuffer.h>
-#include <network/sbgNetwork.h>
-#include <swap/sbgSwap.h>
+//----------------------------------------------------------------------//
+//- Constant definitions                                               -//
+//----------------------------------------------------------------------//
 
-// Local headers
-#include "sbgECanId.h"
-#include "sbgEComIds.h"
-#include "commands/sbgEComCmd.h"
-#include "logs/sbgEComLog.h"
-#include "protocol/sbgEComProtocol.h"
-#include "sessionInfo/sbgEComSessionInfo.h"
-#include "vibMon/sbgEComVibMonFft.h"
-#include "vibMon/sbgEComVibMonFftCtx.h"
-#include "sbgEComVersion.h"
-#include "sbgEComGetVersion.h"
+#define SBG_ECOM_AIDING_TIME_TYPE_MASK              (0x0007u)                   /*!< Mask used to keep only the aiding time type part. */
 
 //----------------------------------------------------------------------//
-//- Footer (close extern C block)                                      -//
+//- Enumeration definitions                                            -//
 //----------------------------------------------------------------------//
+
+/*!
+ * Time types definitions.
+ */
+typedef enum _SbgEComAidingTimeType
+{
+    SBG_ECOM_AIDING_TIME_TYPE_TIMESTAMP         = 0,                            /*!< The timeStamp field represents the time since the INS power up, in us. */
+    SBG_ECOM_AIDING_TIME_TYPE_DELAY             = 1,                            /*!< The timeStamp field represents a delay, in us. */
+    SBG_ECOM_AIDING_TIME_TYPE_TIME_OF_WEEK      = 2                             /*!< The timeStamp field represents a GPS time of the week, in ms. */
+} SbgEComAidingTimeType;
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // SBG_ECOM_LIB_H
+#endif // SBG_ECOM_DEFS_AIDING_H

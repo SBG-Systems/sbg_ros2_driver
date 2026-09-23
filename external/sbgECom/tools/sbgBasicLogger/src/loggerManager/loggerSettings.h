@@ -5,7 +5,7 @@
  *
  * \brief           Define the logger settings.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    Proprietary license
  *
  * This source code is intended for use only by SBG Systems SAS and
@@ -241,7 +241,7 @@ namespace sbg
         InterfaceMode getInterfaceMode() const;
 
         /*!
-         * Returns true if a valid serial or UDP or file interface is configured.
+         * Returns true if a valid interface is configured.
          *
          * \return                                          true if there is a valid interface configuration.
          */

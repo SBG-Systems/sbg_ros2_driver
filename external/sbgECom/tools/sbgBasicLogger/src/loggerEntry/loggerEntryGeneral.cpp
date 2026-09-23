@@ -222,6 +222,12 @@ std::string CLoggerEntryPtpStatus::convertState(SbgEComLogPtpState state)
 	case SBG_ECOM_LOG_PTP_STATE_PASSIVE:
 		stateStr = "passive";
 		break;
+	case SBG_ECOM_LOG_PTP_STATE_UNCALIBRATED:
+		stateStr = "uncalibrated";
+		break;
+	case SBG_ECOM_LOG_PTP_STATE_SLAVE:
+		stateStr = "slave";
+		break;
 	}
 
 	return stateStr;
@@ -285,8 +291,8 @@ std::string CLoggerEntryPtpStatus::getName() const
 
 void CLoggerEntryPtpStatus::writeHeaderToFile(const CLoggerContext &context)
 {
-	m_outFile	<< context.getTimeColTitle()	<< "\tstate\ttimeScale\ttimeScaleOffset\tlocalClockIdentity\tlocalClockPriority1\tlocalClockPriority2\tlocalClockClass\tlocalClockAccuracy\tlocalClockLog2Variance\tlocalClockTimeSource\tmasterClockIdentity\tmasterClockPriority1\tmasterClockPriority2\tmasterClockClass\tmasterClockAccuracy\tmasterClockLog2Variance\tmasterClockTimeSource\tmasterIpAddress\tmeanPathDelay\tmeanPathDelayStdDev\tclockOffset\tclockOffsetStdDev\tclockFreqOffset\tclockFreqOffsetStdDev\tmasterMacAddress\n";
-	m_outFile	<< context.getTimeUnit()		<< "\t(na)\t(na)\t(s)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(s)\t(s)\t(s)\t(s)\t(s)\t(s)\t(na)\n";
+	m_outFile	<< context.getTimeColTitle()	<< "\tstate\ttransport\ttimeScale\ttimeScaleOffset\tlocalClockIdentity\tlocalClockPriority1\tlocalClockPriority2\tlocalClockClass\tlocalClockAccuracy\tlocalClockLog2Variance\tlocalClockTimeSource\tmasterClockIdentity\tmasterClockPriority1\tmasterClockPriority2\tmasterClockClass\tmasterClockAccuracy\tmasterClockLog2Variance\tmasterClockTimeSource\tmasterIpAddress\tmeanPathDelay\tmeanPathDelayStdDev\tclockOffset\tclockOffsetStdDev\tclockFreqOffset\tclockFreqOffsetStdDev\tmasterMacAddress\tdomain\n";
+	m_outFile	<< context.getTimeUnit()		<< "\t(na)\t(na)\t(na)\t(s)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(na)\t(s)\t(s)\t(s)\t(s)\t(Hz)\t(Hz)\t(na)\t(na)\n";
 }
 
 void CLoggerEntryPtpStatus::writeDataToFile(const CLoggerContext &context, const SbgEComLogUnion &logData)
@@ -329,7 +335,8 @@ void CLoggerEntryPtpStatus::writeDataToFile(const CLoggerContext &context, const
 				<< data.clockFreqOffset													<< "\t"
 				<< data.clockFreqOffsetStdDev											<< "\t"
 
-				<< convertMacAddress(macAddr)											<< "\n";
+				<< convertMacAddress(macAddr)											<< "\t"
+				<< (uint32_t)data.domainNumber											<< "\n";
 }
 
 void CLoggerEntryPtpStatus::writeDataToConsole(const CLoggerContext &context, const SbgEComLogUnion &logData)
@@ -361,7 +368,8 @@ void CLoggerEntryPtpStatus::writeDataToConsole(const CLoggerContext &context, co
 				<< std::setw(12) << data.clockFreqOffset
 				<< std::setw(12) << data.clockFreqOffsetStdDev
 
-				<< std::setw(20) << convertMacAddress(macAddr)							<< "\n";
+				<< std::setw(20) << convertMacAddress(macAddr)
+				<< std::setw(8)  << static_cast<uint32_t>(data.domainNumber) 			<< "\n";
 }
 
 //----------------------------------------------------------------------//
