@@ -1,8 +1,31 @@
+// sbgCommonLib headers
+#include <sbgCommon.h>
+
+// Project headers
+#include <defs/sbgEComDefsAiding.h>
+
+// Local headers
 #include "sbgEComLogAirData.h"
+
+//----------------------------------------------------------------------//
+//- Private definitions for status field                               -//
+//----------------------------------------------------------------------//
+
+//
+// Timestamp time type has been added in 5.4.
+//
+#define SBG_ECOM_LOG_AIR_DATA_TIME_TYPE_SHIFT               (6u)                /*!< Shift used to extract the air data time type part. */
 
 //----------------------------------------------------------------------//
 //- Operations                                                         -//
 //----------------------------------------------------------------------//
+
+void sbgEComLogAirDataConstruct(SbgEComLogAirData *pLogData)
+{
+    assert(pLogData);
+
+    memset(pLogData, 0, sizeof(*pLogData));
+}
 
 SbgErrorCode sbgEComLogAirDataReadFromStream(SbgEComLogAirData *pLogData, SbgStreamBuffer *pStreamBuffer)
 {
@@ -51,6 +74,26 @@ SbgErrorCode sbgEComLogAirDataWriteToStream(const SbgEComLogAirData *pLogData, S
     sbgStreamBufferWriteFloatLE(pStreamBuffer,  pLogData->airTemperature);
 
     return sbgStreamBufferGetLastError(pStreamBuffer);
+}
+
+//----------------------------------------------------------------------//
+//- Public setters/getters                                             -//
+//----------------------------------------------------------------------//
+
+void sbgEComLogAirDataSetTimeType(SbgEComLogAirData *pLogData, SbgEComAidingTimeType timeType)
+{
+    assert(pLogData);
+    assert(timeType <= SBG_ECOM_AIDING_TIME_TYPE_MASK);
+
+    pLogData->status &= ~(SBG_ECOM_AIDING_TIME_TYPE_MASK << SBG_ECOM_LOG_AIR_DATA_TIME_TYPE_SHIFT);
+    pLogData->status |= ((uint16_t)timeType & SBG_ECOM_AIDING_TIME_TYPE_MASK) << SBG_ECOM_LOG_AIR_DATA_TIME_TYPE_SHIFT;
+}
+
+SbgEComAidingTimeType sbgEComLogAirDataGetTimeType(const SbgEComLogAirData *pLogData)
+{
+    assert(pLogData);
+
+    return (SbgEComAidingTimeType)((pLogData->status >> SBG_ECOM_LOG_AIR_DATA_TIME_TYPE_SHIFT) & SBG_ECOM_AIDING_TIME_TYPE_MASK);
 }
 
 //----------------------------------------------------------------------//

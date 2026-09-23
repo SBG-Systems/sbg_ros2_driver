@@ -1,0 +1,4 @@
+pyserial >= 3.5
+crcmod >= 1.7
+numpy >= 1.24.2
+pytest >= 9.0.2

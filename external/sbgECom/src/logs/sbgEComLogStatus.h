@@ -6,7 +6,7 @@
  *
  * \brief           Parse logs used to report device status.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -44,9 +44,10 @@ extern "C" {
 //----------------------------------------------------------------------//
 //- General status definitions                                         -//
 //----------------------------------------------------------------------//
+
 #define SBG_ECOM_GENERAL_MAIN_POWER_OK      (0x0001u << 0)              /*!< Set to 1 when main power supply is OK. */
 #define SBG_ECOM_GENERAL_IMU_POWER_OK       (0x0001u << 1)              /*!< Set to 1 when IMU power supply is OK. */
-#define SBG_ECOM_GENERAL_GPS_POWER_OK       (0x0001u << 2)              /*!< Set to 1 when GPS power supply is OK. */
+#define SBG_ECOM_GENERAL_GPS_POWER_OK       (0x0001u << 2)              /*!< Set to 1 when GNSS power supply is OK. */
 #define SBG_ECOM_GENERAL_SETTINGS_OK        (0x0001u << 3)              /*!< Set to 1 if settings where correctly loaded. */
 #define SBG_ECOM_GENERAL_TEMPERATURE_OK     (0x0001u << 4)              /*!< Set to 1 when temperature is within specified limits. */
 #define SBG_ECOM_GENERAL_DATALOGGER_OK      (0x0001u << 5)              /*!< Set to 1 when the datalogger is working correctly. */
@@ -114,14 +115,15 @@ typedef enum _SbgEComCanBusStatus
 //----------------------------------------------------------------------//
 //- Aiding status definitions                                          -//
 //----------------------------------------------------------------------//
-#define SBG_ECOM_AIDING_GPS1_POS_RECV           (0x00000001u << 0)      /*!< Set to 1 when valid GPS 1 position data is received. */
-#define SBG_ECOM_AIDING_GPS1_VEL_RECV           (0x00000001u << 1)      /*!< Set to 1 when valid GPS 1 velocity data is received. */
-#define SBG_ECOM_AIDING_GPS1_HDT_RECV           (0x00000001u << 2)      /*!< Set to 1 when valid GPS 1 true heading data is received. */
-#define SBG_ECOM_AIDING_GPS1_UTC_RECV           (0x00000001u << 3)      /*!< Set to 1 when valid GPS 1 UTC time data is received. */
-#define SBG_ECOM_AIDING_GPS2_POS_RECV           (0x00000001u << 4)      /*!< Set to 1 when valid GPS 2 position data is received. */
-#define SBG_ECOM_AIDING_GPS2_VEL_RECV           (0x00000001u << 5)      /*!< Set to 1 when valid GPS 2 velocity data is received. */
-#define SBG_ECOM_AIDING_GPS2_HDT_RECV           (0x00000001u << 6)      /*!< Set to 1 when valid GPS 2 true heading data is received. */
-#define SBG_ECOM_AIDING_GPS2_UTC_RECV           (0x00000001u << 7)      /*!< Set to 1 when valid GPS 2 UTC time data is received. */
+
+#define SBG_ECOM_AIDING_GPS1_POS_RECV           (0x00000001u << 0)      /*!< Set to 1 when valid GNSS 1 position data is received. */
+#define SBG_ECOM_AIDING_GPS1_VEL_RECV           (0x00000001u << 1)      /*!< Set to 1 when valid GNSS 1 velocity data is received. */
+#define SBG_ECOM_AIDING_GPS1_HDT_RECV           (0x00000001u << 2)      /*!< Set to 1 when valid GNSS 1 true heading data is received. */
+#define SBG_ECOM_AIDING_GPS1_UTC_RECV           (0x00000001u << 3)      /*!< Set to 1 when valid GNSS 1 UTC time data is received. */
+#define SBG_ECOM_AIDING_GPS2_POS_RECV           (0x00000001u << 4)      /*!< Set to 1 when valid GNSS 2 position data is received. */
+#define SBG_ECOM_AIDING_GPS2_VEL_RECV           (0x00000001u << 5)      /*!< Set to 1 when valid GNSS 2 velocity data is received. */
+#define SBG_ECOM_AIDING_GPS2_HDT_RECV           (0x00000001u << 6)      /*!< Set to 1 when valid GNSS 2 true heading data is received. */
+#define SBG_ECOM_AIDING_GPS2_UTC_RECV           (0x00000001u << 7)      /*!< Set to 1 when valid GNSS 2 UTC time data is received. */
 #define SBG_ECOM_AIDING_MAG_RECV                (0x00000001u << 8)      /*!< Set to 1 when valid Magnetometer data is received. */
 #define SBG_ECOM_AIDING_ODO_RECV                (0x00000001u << 9)      /*!< Set to 1 when Odometer pulse is received. */
 #define SBG_ECOM_AIDING_DVL_RECV                (0x00000001u << 10)     /*!< Set to 1 when valid DVL data is received. */
@@ -129,6 +131,7 @@ typedef enum _SbgEComCanBusStatus
 #define SBG_ECOM_AIDING_DEPTH_RECV              (0x00000001u << 12)     /*!< Set to 1 when valid Depth Log data is received. */
 #define SBG_ECOM_AIDING_AIR_DATA_RECV           (0x00000001u << 13)     /*!< Set to 1 when valid Air Data (altitude and/or true airspeed) is received. */
 #define SBG_ECOM_AIDING_VEL1_RECV               (0x00000001u << 14)     /*!< Set to 1 when valid generic velocity 1 data is received. */
+#define SBG_ECOM_AIDING_POS1_RECV               (0x00000001u << 15)     /*!< Set to 1 when valid generic position 1 data is received. */
 
 //----------------------------------------------------------------------//
 //- Status definitions                                                 -//

@@ -1,4 +1,4 @@
-﻿#include "sbgEComLogStatus.h"
+#include "sbgEComLogStatus.h"
 
 //----------------------------------------------------------------------//
 //- Private definitions                                                -//

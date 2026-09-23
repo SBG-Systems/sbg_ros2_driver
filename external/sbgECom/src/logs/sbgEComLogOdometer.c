@@ -1,4 +1,4 @@
-﻿#include "sbgEComLogOdometer.h"
+#include "sbgEComLogOdometer.h"
 
 //----------------------------------------------------------------------//
 //- Public methods                                                     -//

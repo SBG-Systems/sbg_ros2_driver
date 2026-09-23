@@ -1,12 +1,12 @@
-﻿/*!
+/*!
  * \file            sbgEComLogEkf.h
  * \ingroup         binaryLogs
  * \author          SBG Systems
- * \date            25 February 2013
+ * \date            February 25, 2013
  *
  * \brief           Parse EKF measurements such as attitude, position and velocity logs.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -48,30 +48,34 @@ extern "C" {
 /*!
  * Solution bit masks definitions.
  */
-#define SBG_ECOM_SOL_ATTITUDE_VALID         (0x00000001u << 4)      /*!< Set to 1 if attitude data is reliable (Roll/Pitch error < 0,5°). */
-#define SBG_ECOM_SOL_HEADING_VALID          (0x00000001u << 5)      /*!< Set to 1 if heading data is reliable (Heading error < 1°). */
-#define SBG_ECOM_SOL_VELOCITY_VALID         (0x00000001u << 6)      /*!< Set to 1 if velocity data is reliable (velocity error < 1.5 m/s). */
-#define SBG_ECOM_SOL_POSITION_VALID         (0x00000001u << 7)      /*!< Set to 1 if position data is reliable (Position error < 10m). */
-#define SBG_ECOM_SOL_VERT_REF_USED          (0x00000001u << 8)      /*!< Set to 1 if vertical reference is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_MAG_REF_USED           (0x00000001u << 9)      /*!< Set to 1 if magnetometer is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_GPS1_VEL_USED          (0x00000001u << 10)     /*!< Set to 1 if GPS1 velocity is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_GPS1_POS_USED          (0x00000001u << 11)     /*!< Set to 1 if GPS1 Position is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_GPS1_HDT_USED          (0x00000001u << 13)     /*!< Set to 1 if GPS1 True Heading is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_GPS2_VEL_USED          (0x00000001u << 14)     /*!< Set to 1 if GPS2 velocity is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_GPS2_POS_USED          (0x00000001u << 15)     /*!< Set to 1 if GPS2 Position is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_GPS2_HDT_USED          (0x00000001u << 17)     /*!< Set to 1 if GPS2 True Heading is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_ODO_USED               (0x00000001u << 18)     /*!< Set to 1 if Odometer is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_DVL_BT_USED            (0x00000001u << 19)     /*!< Set to 1 if DVL Bottom Tracking is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_DVL_WT_USED            (0x00000001u << 20)     /*!< Set to 1 if DVL Water Tracking is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_VEL1_USED              (0x00000001u << 21)     /*!< Set to 1 if generic velocity 1 is used in solution (data used and valid since 3s). */
+#define SBG_ECOM_SOL_ATTITUDE_VALID         (0x00000001u << 4)      /*!< Set if attitude data is reliable (Roll/Pitch error within defined criteria). */
+#define SBG_ECOM_SOL_HEADING_VALID          (0x00000001u << 5)      /*!< Set if heading data is reliable (Heading error within defined criteria). */
+#define SBG_ECOM_SOL_VELOCITY_VALID         (0x00000001u << 6)      /*!< Set if velocity data is reliable (Velocity error within defined criteria). */
+#define SBG_ECOM_SOL_POSITION_VALID         (0x00000001u << 7)      /*!< Set if position data is reliable (Position error within defined criteria). */
+
+#define SBG_ECOM_SOL_VERT_REF_USED          (0x00000001u << 8)      /*!< Set if the vertical reference is used in the solution. */
+#define SBG_ECOM_SOL_MAG_REF_USED           (0x00000001u << 9)      /*!< Set if magnetometer is used in the solution. */
+#define SBG_ECOM_SOL_GPS1_VEL_USED          (0x00000001u << 10)     /*!< Set if GNSS 1 velocity is used in the solution. */
+#define SBG_ECOM_SOL_GPS1_POS_USED          (0x00000001u << 11)     /*!< Set if GNSS 1 position is used in the solution. */
+#define SBG_ECOM_SOL_VEL_CONSTRAINTS_USED   (0x00000001u << 12)     /*!< Set if vehicle velocity constraint is used to improve accuracy. */
+#define SBG_ECOM_SOL_GPS1_HDT_USED          (0x00000001u << 13)     /*!< Set if GNSS 1 true heading is used in the solution. */
+#define SBG_ECOM_SOL_GPS2_VEL_USED          (0x00000001u << 14)     /*!< Set if GNSS 2 velocity is used in the solution. */
+#define SBG_ECOM_SOL_GPS2_POS_USED          (0x00000001u << 15)     /*!< Set if GNSS 2 position is used in the solution. */
+#define SBG_ECOM_SOL_GPS2_HDT_USED          (0x00000001u << 17)     /*!< Set if GNSS 2 true heading is used in the solution. */
+#define SBG_ECOM_SOL_ODO_USED               (0x00000001u << 18)     /*!< Set if odometer velocity is used in the solution. */
+#define SBG_ECOM_SOL_DVL_BT_USED            (0x00000001u << 19)     /*!< Set if DVL bottom tracking velocity is used in the solution. */
+#define SBG_ECOM_SOL_DVL_WT_USED            (0x00000001u << 20)     /*!< Set if DVL water layer velocity is used in the solution. */
+#define SBG_ECOM_SOL_VEL1_USED              (0x00000001u << 21)     /*!< Set if generic velocity 1 is used in the solution. */
 #define SBG_ECOM_SOL_RESERVED_01            (0x00000001u << 22)     /*!< Reserved for future use. */
 #define SBG_ECOM_SOL_RESERVED_02            (0x00000001u << 23)     /*!< Reserved for future use. */
-#define SBG_ECOM_SOL_USBL_USED              (0x00000001u << 24)     /*!< Set to 1 if USBL / LBL is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_AIR_DATA_USED          (0x00000001u << 25)     /*!< Set to 1 if AirData (altimeter and/or true airspeed) is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_ZUPT_USED              (0x00000001u << 26)     /*!< Set to 1 if a Zero Velocity Update (ZUPT) is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_ALIGN_VALID            (0x00000001u << 27)     /*!< Set to 1 if sensor alignment and calibration parameters are valid */
-#define SBG_ECOM_SOL_DEPTH_USED             (0x00000001u << 28)     /*!< Set to 1 if Depth sensor (for sub-sea navigation) is used in solution (data used and valid since 3s). */
-#define SBG_ECOM_SOL_ZARU_USED              (0x00000001u << 29)     /*!< Set to 1 if a Zero Angular Rate Update (ZARU) is used in solution (data used and valid since 3s). */
+#define SBG_ECOM_SOL_USBL_USED              (0x00000001u << 24)     /*!< Set if USBL position is used in the solution. */
+#define SBG_ECOM_SOL_AIRSPEED_USED          (0x00000001u << 25)     /*!< Set if true airspeed is used in the solution. */
+#define SBG_ECOM_SOL_ZUPT_USED              (0x00000001u << 26)     /*!< Set if a Zero Velocity Update (ZUPT) is is used in the solution. */
+#define SBG_ECOM_SOL_ALIGN_VALID            (0x00000001u << 27)     /*!< Set if sensor alignment and residual sensors errors have fully converged. */
+#define SBG_ECOM_SOL_VERTICAL_AIDING_USED   (0x00000001u << 28)     /*!< Set if a vertical aiding source (depth or barometric altimeter) is used in the solution. */
+#define SBG_ECOM_SOL_ZARU_USED              (0x00000001u << 29)     /*!< Set if a Zero Angular Rate Update (ZARU) is used in the solution. */
+#define SBG_ECOM_SOL_POS1_USED              (0x00000001u << 30)     /*!< Set if generic position 1 is used in the solution. */
+
 /*!
  * Solution filter mode enum.
  */
@@ -99,16 +103,16 @@ typedef enum _SbgEComSolutionMode
  */
 typedef struct _SbgEComLogEkfEuler
 {
-    uint32_t    timeStamp;              /*!< Time in us since the sensor power up. */
-    float       euler[3];               /*!< Roll [-pi;+pi], pitch [-pi/2;+pi/2], yaw [-pi;+pi] in radians. */
-    float       eulerStdDev[3];         /*!< Roll std. [0;+pi], pitch std. [0;+pi/2] and yaw std. [0;+pi] estimated 1-sigma accuracy in radians */
-    uint32_t    status;                 /*!< EKF solution status bitmask and enum. */
-    float       magDeclination;         /*!< Local magnetic declination in radians (positive east - set to NAN if not available). */
-    float       magInclination;         /*!< Local magnetic inclination in radians (positive down - set to NAN if not available). */
+    uint32_t                             timeStamp;                         /*!< Time in us since the sensor power up. */
+    float                                euler[3];                          /*!< Roll [-pi;+pi], pitch [-pi/2;+pi/2], yaw [-pi;+pi] in radians. */
+    float                                eulerStdDev[3];                    /*!< Roll std. [0;+pi], pitch std. [0;+pi/2] and yaw std. [0;+pi] estimated 1-sigma accuracy in radians */
+    uint32_t                             status;                            /*!< EKF solution status bitmask and enum. */
+    float                                magDeclination;                    /*!< Local magnetic declination in radians (positive east - set to NAN if not available). */
+    float                                magInclination;                    /*!< Local magnetic inclination in radians (positive down - set to NAN if not available). */
 } SbgEComLogEkfEuler;
 
 /*!
- * EFK computed orientation using quaternion.
+ * EKF computed orientation using quaternion.
  *
  * Note: In AHRS (Attitude and Heading Reference System) or INS (Inertial Navigation System) modes,
  * the yaw angle represents the geographic (true) heading of the device.
@@ -118,27 +122,27 @@ typedef struct _SbgEComLogEkfEuler
  */
 typedef struct _SbgEComLogEkfQuat
 {
-    uint32_t    timeStamp;              /*!< Time in us since the sensor power up. */
-    float       quaternion[4];          /*!< Orientation quaternion stored in W, X, Y, Z form. */
-    float       eulerStdDev[3];         /*!< Roll std. [0;+pi], pitch std. [0;+pi/2] and yaw std. [0;+pi] estimated 1-sigma accuracy in radians */
-    uint32_t    status;                 /*!< EKF solution status bitmask and enum. */
-    float       magDeclination;         /*!< Local magnetic declination in radians (positive east - set to NAN if not available). */
-    float       magInclination;         /*!< Local magnetic inclination in radians (positive down - set to NAN if not available). */
+    uint32_t                             timeStamp;                         /*!< Time in us since the sensor power up. */
+    float                                quaternion[4];                     /*!< Orientation quaternion stored in W, X, Y, Z form. */
+    float                                eulerStdDev[3];                    /*!< Roll std. [0;+pi], pitch std. [0;+pi/2] and yaw std. [0;+pi] estimated 1-sigma accuracy in radians */
+    uint32_t                             status;                            /*!< EKF solution status bitmask and enum. */
+    float                                magDeclination;                    /*!< Local magnetic declination in radians (positive east - set to NAN if not available). */
+    float                                magInclination;                    /*!< Local magnetic inclination in radians (positive down - set to NAN if not available). */
 } SbgEComLogEkfQuat;
 
 /*!
- * EFK computed navigation data.
+ * EKF computed navigation data.
  */
 typedef struct _SbgEComLogEkfNav
 {
-    uint32_t    timeStamp;              /*!< Time in us since the sensor power up. */
-    float       velocity[3];            /*!< North, East, Down velocity in m.s^-1. */
-    float       velocityStdDev[3];      /*!< North, East, Down velocity 1-sigma standard deviation in m.s^-1. */
-    double      position[3];            /*!< Latitude, Longitude in degrees positive North and East.
-                                         Altitude above Mean Sea Level in meters. */
-    float       undulation;             /*!< Altitude difference between the geoid and the Ellipsoid in meters (Height above Ellipsoid = altitude + undulation). */
-    float       positionStdDev[3];      /*!< Latitude, longitude and altitude 1 sigma standard deviation in meters. */
-    uint32_t    status;                 /*!< EKF solution status bitmask and enum. */
+    uint32_t                             timeStamp;                         /*!< Time in us since the sensor power up. */
+    float                                velocity[3];                       /*!< North, East, Down velocity in m.s^-1. */
+    float                                velocityStdDev[3];                 /*!< North, East, Down velocity 1-sigma standard deviation in m.s^-1. */
+    double                               position[3];                       /*!< Latitude, Longitude in degrees positive North and East.
+                                                                                 Altitude above Mean Sea Level in meters. */
+    float                                undulation;                        /*!< Altitude difference between the geoid and the Ellipsoid in meters (Height above Ellipsoid = altitude + undulation). */
+    float                                positionStdDev[3];                 /*!< Latitude, longitude and altitude 1 sigma standard deviation in meters. */
+    uint32_t                             status;                            /*!< EKF solution status bitmask and enum. */
 } SbgEComLogEkfNav;
 
 /*!
@@ -146,11 +150,22 @@ typedef struct _SbgEComLogEkfNav
  */
 typedef struct _SbgEComLogEkfVelBody
 {
-    uint32_t    timeStamp;              /*!< Time in us since the sensor power up. */
-    uint32_t    status;                 /*!< EKF solution status bitmask and enum. */
-    float       velocity[3];            /*!< X,Y,Z body velocity in m.s^-1. */
-    float       velocityStdDev[3];      /*!< X,Y,Z body velocity 1 sigma standard deviation in m.s^-1. */
+    uint32_t                             timeStamp;                         /*!< Time in us since the sensor power up. */
+    uint32_t                             status;                            /*!< EKF solution status bitmask and enum. */
+    float                                velocity[3];                       /*!< X,Y,Z body velocity in m.s^-1. */
+    float                                velocityStdDev[3];                 /*!< X,Y,Z body velocity 1 sigma standard deviation in m.s^-1. */
 } SbgEComLogEkfVelBody;
+
+/*!
+ * INS air data computed by the EKF filter.
+ */
+typedef struct _SbgEComLogEkfAirData
+{
+    uint32_t                             timeStamp;                         /*!< Time in us since the sensor power up. */
+    uint16_t                             status;                            /*!< Status, reserved for future use. */
+    float                                wind[3];                           /*!< North, East, Down air velocity, in m.s^-1. */
+    float                                windStdDev[3];                     /*!< North, East, Down air velocity standard deviation, in m.s^-1. */
+} SbgEComLogEkfAirData;
 
 //----------------------------------------------------------------------//
 //- Public methods (SbgEComLogEkfEuler)                                -//
@@ -256,6 +271,35 @@ SbgErrorCode sbgEComLogEkfVelBodyReadFromStream(SbgEComLogEkfVelBody *pLogData, 
 SbgErrorCode sbgEComLogEkfVelBodyWriteToStream(const SbgEComLogEkfVelBody *pLogData, SbgStreamBuffer *pStreamBuffer);
 
 //----------------------------------------------------------------------//
+//- Public methods (SbgEComLogEkfAirData)                              -//
+//----------------------------------------------------------------------//
+
+/*!
+ * Construct an empty / zero initialized instance.
+ *
+ * \param[in]   pLogData                    Log instance.
+ */
+void sbgEComLogEkfAirDataConstruct(SbgEComLogEkfAirData *pLogData);
+
+/*!
+ * Parse data for the SBG_ECOM_LOG_EKF_AIR_DATA message and fill the corresponding structure.
+ *
+ * \param[out]  pLogData                    Log structure instance to fill.
+ * \param[in]   pStreamBuffer               Input stream buffer to read the log from.
+ * \return                                  SBG_NO_ERROR if a valid log has been read from the stream buffer.
+ */
+SbgErrorCode sbgEComLogEkfAirDataReadFromStream(SbgEComLogEkfAirData *pLogData, SbgStreamBuffer *pStreamBuffer);
+
+/*!
+ * Write data for the SBG_ECOM_LOG_EKF_AIR_DATA message to the output stream buffer from the provided structure.
+ *
+ * \param[in]   pLogData                    Log structure instance to write.
+ * \param[out]  pStreamBuffer               Output stream buffer to write the log to.
+ * \return                                  SBG_NO_ERROR if the log has been written to the stream buffer.
+ */
+SbgErrorCode sbgEComLogEkfAirDataWriteToStream(const SbgEComLogEkfAirData *pLogData, SbgStreamBuffer *pStreamBuffer);
+
+//----------------------------------------------------------------------//
 //- Public setters/getters                                             -//
 //----------------------------------------------------------------------//
 
@@ -280,6 +324,11 @@ uint32_t sbgEComLogEkfBuildSolutionStatus(SbgEComSolutionMode solutionMode, uint
 //- DEPRECATED - Used for backward compatibility                       -//
 //----------------------------------------------------------------------//
 
+#ifdef SBG_ECOM_USE_DEPRECATED_MACROS
+    #define SBG_ECOM_SOL_AIR_DATA_USED          (SBG_ECOM_SOL_AIRSPEED_USED)
+    #define SBG_ECOM_SOL_DEPTH_USED             (SBG_ECOM_SOL_VERTICAL_AIDING_USED)
+#endif
+
 SBG_DEPRECATED_TYPEDEF(typedef struct _SbgEComLogEkfEuler   SbgLogEkfEulerData);
 SBG_DEPRECATED_TYPEDEF(typedef struct _SbgEComLogEkfQuat    SbgLogEkfQuatData);
 SBG_DEPRECATED_TYPEDEF(typedef struct _SbgEComLogEkfNav     SbgLogEkfNavData);
@@ -292,7 +341,6 @@ SBG_DEPRECATED(SbgErrorCode sbgEComBinaryLogWriteEkfQuatData(SbgStreamBuffer *pS
 
 SBG_DEPRECATED(SbgErrorCode sbgEComBinaryLogParseEkfNavData(SbgStreamBuffer *pStreamBuffer, SbgEComLogEkfNav *pLogData));
 SBG_DEPRECATED(SbgErrorCode sbgEComBinaryLogWriteEkfNavData(SbgStreamBuffer *pStreamBuffer, const SbgEComLogEkfNav *pLogData));
-
 
 #ifdef __cplusplus
 }

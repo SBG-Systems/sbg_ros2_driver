@@ -1,4 +1,4 @@
-﻿// sbgCommonLib headers
+// sbgCommonLib headers
 #include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 
@@ -65,18 +65,8 @@ SbgErrorCode sbgEComReceiveAnyCmd2(SbgEComHandle *pHandle, uint8_t *pMsgClass, u
 
     assert(pHandle);
 
-    if (timeOut > 0)
-    {
-        start = sbgGetTime();
-    }
-    else
-    {
-        //
-        // Avoid compiler warning
-        //
-        start = 0;
-    }
-
+    start = sbgGetTime();
+    
     for (;;)
     {
         uint8_t                          receivedMsgClass;
@@ -118,36 +108,36 @@ SbgErrorCode sbgEComReceiveAnyCmd2(SbgEComHandle *pHandle, uint8_t *pMsgClass, u
                 break;
             }
         }
-        
-        if (timeOut > 0)
+
+        //
+        // SBG_NOT_READY is an internal polling status.
+        // The public result for  "no command received within the requested timeout" is SBG_TIME_OUT,
+        // including for a zero timeout, which means "poll once".
+        //
+        if (timeOut == 0)
         {
-            //
-            // Only sleep if the Rx buffer is empty, otherwise we should retry ASAP to drain it
-            //
-            if (errorCode == SBG_NOT_READY)
-            {
-                sbgSleep(1);
-            }
-
-            now = sbgGetTime();
-
-            if ((now - start) >= timeOut)
+            if ((errorCode == SBG_NO_ERROR) || (errorCode == SBG_NOT_READY))
             {
                 errorCode = SBG_TIME_OUT;
-                break;
             }
+
+            break;
         }
-        else
+        
+        //
+        // Only sleep if the Rx buffer is empty, otherwise retry immediately to
+        // drain pending frames such as logs before the timeout expires.
+        //
+        if (errorCode == SBG_NOT_READY)
         {
-            if (errorCode == SBG_NO_ERROR)
-            {
-                errorCode = SBG_TIME_OUT;
-            }
-            else
-            {
-                errorCode = SBG_NOT_READY;
-            }
-            
+            sbgSleep(1);
+        }
+
+        now = sbgGetTime();
+
+        if ((now - start) >= timeOut)
+        {
+            errorCode = SBG_TIME_OUT;
             break;
         }
     }

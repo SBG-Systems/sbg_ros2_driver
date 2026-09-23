@@ -8,7 +8,7 @@
  *
  * Only this main header file should be included to use the library.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -43,9 +43,9 @@ extern "C" {
 #include <sbgCommon.h>
 #include <crc/sbgCrc.h>
 #include <interfaces/sbgInterface.h>
-#include <interfaces/sbgInterfaceUdp.h>
-#include <interfaces/sbgInterfaceSerial.h>
 #include <interfaces/sbgInterfaceFile.h>
+#include <interfaces/sbgInterfaceSerial.h>
+#include <interfaces/sbgInterfaceUdp.h>
 #include <splitBuffer/sbgSplitBuffer.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 #include <network/sbgNetwork.h>

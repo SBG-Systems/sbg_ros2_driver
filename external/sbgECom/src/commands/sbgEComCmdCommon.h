@@ -6,7 +6,7 @@
  *
  * \brief           Definitions and methods common to all commands.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -77,9 +77,9 @@ typedef enum _SbgEComAxisDirection
 //----------------------------------------------------------------------//
 
 /*!
- * Receive a command message.
+ * Receive any command message.
  *
- * All binary logs received are handled trough the standard callback system.
+ * All binary logs received are handled through the standard callback system.
  *
  * \param[in]   pHandle                 SbgECom handle.
  * \param[out]  pMsgClass               Message class.
@@ -87,36 +87,34 @@ typedef enum _SbgEComAxisDirection
  * \param[out]  pData                   Data buffer, may be NULL.
  * \param[out]  pSize                   Number of bytes received, in bytes, may be NULL.
  * \param[in]   maxSize                 Data buffer size, in bytes.
- * \param[in]   timeOut                 Time-out, in ms.
- * \return                              SBG_NO_ERROR if successful,
- *                                      SBG_TIME_OUT if no command message was received within the specified time out (even if timeOut = 0).
- *                                      SBG_NOT_READY to indicate the underlying interface is empty (only applicable when timeOut = 0).
- *                                      SBG_BUFFER_OVERFLOW if the payload of the received frame couldn't fit into the buffer,
+ * \param[in]   timeOut                 Timeout, in ms.
+ * \return                              SBG_NO_ERROR if successful.
+ *                                      SBG_TIME_OUT if no command message was received within the specified timeout, including when timeOut is 0.
+ *                                      SBG_BUFFER_OVERFLOW if the received payload does not fit in the user-provided buffer.
  */
 SbgErrorCode sbgEComReceiveAnyCmd(SbgEComHandle *pHandle, uint8_t *pMsgClass, uint8_t *pMsgId, void *pData, size_t *pSize, size_t maxSize, uint32_t timeOut);
 
 /*!
- * Receive a command message.
+ * Receive any command message.
  *
- * All binary logs received are handled trough the standard callback system.
+ * All binary logs received are handled through the standard callback system.
  *
- * This function is equivalent to sbgEComReceiveAnyCmd() with two exceptions :
+ * This function is equivalent to sbgEComReceiveAnyCmd() with two exceptions:
  *  - the use of a payload object allows handling payloads not limited by the size of a user-provided buffer
  *  - the payload object allows direct access to the protocol work buffer to avoid an extra copy per call
  *
- * Any allocated resource associated with the given payload is released when calling this function.
+ * The content previously stored in the given payload is released/discarded by this function.
  *
- * Because the payload buffer may directly refer to the protocol work buffer on return, it is only valid until
- * the next attempt to receive a frame, with any of the receive functions.
+ * Because the returned payload may directly reference the protocol work buffer, its content remains valid only
+ * until the next call to any receive function.
  *
  * \param[in]   pHandle                 SbgECom handle.
  * \param[out]  pMsgClass               Message class.
  * \param[out]  pMsgId                  Message ID.
  * \param[out]  pPayload                Payload.
- * \param[in]   timeOut                 Time-out, in ms.
+ * \param[in]   timeOut                 Timeout, in ms.
  * \return                              SBG_NO_ERROR if successful.
- *                                      SBG_TIME_OUT if no command message was received within the specified time out (even if timeOut = 0).
- *                                      SBG_NOT_READY to indicate the underlying interface is empty (only applicable when timeOut = 0).
+ *                                      SBG_TIME_OUT if no command message was received within the specified timeout, including when timeOut is 0.
  */
 SbgErrorCode sbgEComReceiveAnyCmd2(SbgEComHandle *pHandle, uint8_t *pMsgClass, uint8_t *pMsgId, SbgEComProtocolPayload *pPayload, uint32_t timeOut);
 
@@ -125,7 +123,7 @@ SbgErrorCode sbgEComReceiveAnyCmd2(SbgEComHandle *pHandle, uint8_t *pMsgClass, u
  *
  * This function also processes ACK messages for the given class and ID.
  *
- * All binary logs received during this time are handled trough the standard callback system.
+ * All binary logs received during this time are handled through the standard callback system.
  *
  * \param[in]   pHandle                 SbgECom handle.
  * \param[in]   msgClass                Message class.
@@ -133,9 +131,8 @@ SbgErrorCode sbgEComReceiveAnyCmd2(SbgEComHandle *pHandle, uint8_t *pMsgClass, u
  * \param[out]  pData                   Data buffer.
  * \param[out]  pSize                   Number of bytes received, in bytes.
  * \param[in]   maxSize                 Data buffer size, in bytes.
- * \param[in]   timeOut                 Time-out, in ms.
+ * \param[in]   timeOut                 Timeout, in ms.
  * \return                              SBG_NO_ERROR if successful,
- *                                      SBG_NOT_READY if no command message has been received,
  *                                      SBG_BUFFER_OVERFLOW if the payload of the received frame couldn't fit into the buffer,
  *                                      SBG_TIME_OUT if no command message was received within the specified time out,
  *                                      any error code reported by an ACK message for the given class and ID.
@@ -147,7 +144,7 @@ SbgErrorCode sbgEComReceiveCmd(SbgEComHandle *pHandle, uint8_t msgClass, uint8_t
  *
  * This function also processes ACK messages for the given class and ID.
  *
- * All binary logs received during this time are handled trough the standard callback system.
+ * All binary logs received during this time are handled through the standard callback system.
  *
  * This function is equivalent to sbgEComReceiveCmd() with two exceptions :
  *  - the use of a payload object allows handling payloads not limited by the size of a user-provided buffer
@@ -162,11 +159,11 @@ SbgErrorCode sbgEComReceiveCmd(SbgEComHandle *pHandle, uint8_t msgClass, uint8_t
  * \param[in]   msgClass                Message class.
  * \param[in]   msgId                   Message ID.
  * \param[out]  pPayload                Payload.
- * \param[in]   timeOut                 Time-out, in ms.
- * \return                              SBG_NO_ERROR if successful,
- *                                      SBG_NOT_READY if no command message has been received 
- *                                      SBG_TIME_OUT if no command message was received within the specified time out,
- *                                      any error code reported by an ACK message for the given class and ID.
+ * \param[in]   timeOut                 Timeout, in ms.
+ * \return                              SBG_NO_ERROR if successful.
+ *                                      SBG_TIME_OUT if no matching command message was received within the specified timeout.
+ *                                      SBG_ERROR if a successful ACK is received for the requested command instead of the expected response.
+ *                                      Any error code reported by an ACK message for the given class and ID.
  */
 SbgErrorCode sbgEComReceiveCmd2(SbgEComHandle *pHandle, uint8_t msgClass, uint8_t msgId, SbgEComProtocolPayload *pPayload, uint32_t timeOut);
 
@@ -177,22 +174,22 @@ SbgErrorCode sbgEComReceiveCmd2(SbgEComHandle *pHandle, uint8_t msgClass, uint8_
 /*!
  * Wait for an ACK for a specified amount of time.
  *
- * \param[in]   pHandle                     A valid sbgECom handle.
- * \param[in]   msgClass                    The message class that we want to check
- * \param[in]   msg                         The message ID that we want to check
- * \param[in]   timeOut                     Time out in ms during which we can receive the ACK.
- * \return                                  SBG_NO_ERROR if the ACK has been received.
+ * \param[in]   pHandle                 A valid sbgECom handle.
+ * \param[in]   msgClass                The message class that we want to check
+ * \param[in]   msg                     The message ID that we want to check
+ * \param[in]   timeOut                 Timeout in ms during which we can receive the ACK.
+ * \return                              SBG_NO_ERROR if the ACK has been received.
  */
 SbgErrorCode sbgEComWaitForAck(SbgEComHandle *pHandle, uint8_t msgClass, uint8_t msg, uint32_t timeOut);
 
 /*!
  * Send an ACK for a specific command with an associated error code.
  *
- * \param[in]   pHandle                     A valid sbgECom handle.
- * \param[in]   msgClass                    The message class that we want to send
- * \param[in]   msg                         The message ID that we want to send.
- * \param[in]   cmdError                    The associated error code.
- * \return                                  SBG_NO_ERROR if the ACK has been sent.
+ * \param[in]   pHandle                 A valid sbgECom handle.
+ * \param[in]   msgClass                The message class that we want to send
+ * \param[in]   msg                     The message ID that we want to send.
+ * \param[in]   cmdError                The associated error code.
+ * \return                              SBG_NO_ERROR if the ACK has been sent.
  */
 SbgErrorCode sbgEComSendAck(SbgEComHandle *pHandle, uint8_t msgClass, uint8_t msg, SbgErrorCode cmdError);
 
@@ -203,22 +200,22 @@ SbgErrorCode sbgEComSendAck(SbgEComHandle *pHandle, uint8_t msgClass, uint8_t ms
 /*!
  * Generic function to set an error model ID
  *
- * \param[in]   pHandle                     A valid sbgECom handle.
- * \param[in]   msgClass                    Original message class
- * \param[in]   msg                         Original message ID
- * \param[in]   modelId                     Model ID to set
- * \return                                  SBG_NO_ERROR if the command has been executed successfully.
+ * \param[in]   pHandle                 A valid sbgECom handle.
+ * \param[in]   msgClass                Original message class
+ * \param[in]   msg                     Original message ID
+ * \param[in]   modelId                 Model ID to set
+ * \return                              SBG_NO_ERROR if the command has been executed successfully.
  */
 SbgErrorCode sbgEComCmdGenericSetModelId(SbgEComHandle *pHandle, uint8_t msgClass, uint8_t msg, uint32_t modelId);
 
 /*!
  * Generic function to get an error model ID
  *
- * \param[in]   pHandle                     A valid sbgECom handle.
- * \param[in]   msgClass                    Original message class
- * \param[in]   msg                         Original message ID
- * \param[out]  pModelId                    Returns the currently used model ID.
- * \return                                  SBG_NO_ERROR if the command has been executed successfully.
+ * \param[in]   pHandle                 A valid sbgECom handle.
+ * \param[in]   msgClass                Original message class
+ * \param[in]   msg                     Original message ID
+ * \param[out]  pModelId                Returns the currently used model ID.
+ * \return                              SBG_NO_ERROR if the command has been executed successfully.
  */
 SbgErrorCode sbgEComCmdGenericGetModelId(SbgEComHandle *pHandle, uint8_t msgClass, uint8_t msg, uint32_t *pModelId);
 

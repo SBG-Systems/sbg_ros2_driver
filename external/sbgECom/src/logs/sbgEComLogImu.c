@@ -1,4 +1,4 @@
-﻿#include "sbgEComLogImu.h"
+#include "sbgEComLogImu.h"
 
 //----------------------------------------------------------------------//
 //- Private constant definitions                                       -//

@@ -66,11 +66,13 @@ It briefly describe which parameters are contained in each output log.
 | [SBG_ECOM_LOG_GPS1_HDT (15)](#SBG_ECOM_LOG_GPSX_HDT)                     | GNSS true heading from primary receiver                                                |
 | [SBG_ECOM_LOG_GPS1_RAW (31)](#SBG_ECOM_LOG_GPSX_RAW)                     | GNSS raw data from primary receiver                                                    |
 | [SBG_ECOM_LOG_GPS1_SAT (50)](#SBG_ECOM_LOG_GPSX_SAT)                     | GNSS satellite in view information from primary receiver                               |
+| [SBG_ECOM_LOG_GPS1_DOP (64)](#SBG_ECOM_LOG_GPSX_DOP)                     | GNSS dilution of precision from primary receiver                                       |
 | [SBG_ECOM_LOG_GPS2_VEL (16)](#SBG_ECOM_LOG_GPSX_VEL)                     | GNSS velocity from secondary receiver                                                  |
 | [SBG_ECOM_LOG_GPS2_POS (17)](#SBG_ECOM_LOG_GPSX_POS)                     | GNSS position from secondary receiver                                                  |
 | [SBG_ECOM_LOG_GPS2_HDT (18)](#SBG_ECOM_LOG_GPSX_HDT)                     | GNSS true heading from secondary receiver                                              |
 | [SBG_ECOM_LOG_GPS2_RAW (38)](#SBG_ECOM_LOG_GPSX_RAW)                     | GNSS raw data from secondary receiver                                                  |
 | [SBG_ECOM_LOG_GPS2_SAT (51)](#SBG_ECOM_LOG_GPSX_SAT)                     | GNSS satellite in view information from secondary receiver                             |
+| [SBG_ECOM_LOG_GPS2_DOP (65)](#SBG_ECOM_LOG_GPSX_DOP)                     | GNSS dilution of precision from secondary receiver                                     |
 | [SBG_ECOM_LOG_ODO_VEL (19)](#SBG_ECOM_LOG_ODO_VEL)                       | Provides odometer velocity measured by the device                                      |
 | [SBG_ECOM_LOG_AIR_DATA (36)](#SBG_ECOM_LOG_AIR_DATA)                     | Barometric altimeter input/output for airdata support                                  |
 | [SBG_ECOM_LOG_DEPTH (47)](#SBG_ECOM_LOG_DEPTH)                           | Depth sensor measurement log used for subsea navigation                                |
@@ -91,6 +93,9 @@ It briefly describe which parameters are contained in each output log.
 | [SBG_ECOM_LOG_VELOCITY_1 (58)](#SBG_ECOM_LOG_VELOCITY_X)                 | Generic 1D, 2D or 3D velocity aiding measurement.                                      |
 | [SBG_ECOM_LOG_VIB_MON_FFT (59)](#SBG_ECOM_LOG_VIB_MON_FFT)               | Vibration monitoring FFT spectrum magnitudes.                                          |
 | [SBG_ECOM_LOG_VIB_MON_REPORT (60)](#SBG_ECOM_LOG_VIB_MON_REPORT)         | Vibration monitoring summary report with computed metrics.                             |
+| [SBG_ECOM_LOG_EKF_AIR_DATA (61)](#SBG_ECOM_LOG_EKF_AIR_DATA)             | Air velocity in NED navigation frame.                                                  |
+| [SBG_ECOM_LOG_POSITION_1 (62)](#SBG_ECOM_LOG_POSITION_X)                 | Generic 3D position aiding measurement in navigation frame.                            |
+| [SBG_ECOM_LOG_EKF_STATUS (63)](#SBG_ECOM_LOG_EKF_STATUS)                 | Kalman filter specific statuses.                                                       |
 
 ## Messages Availability
 
@@ -324,21 +329,22 @@ Tells which aiding data is received.
 
 | Bit | Name                          | Type | Description                                              |
 | --- | ----------------------------- | ---- | -------------------------------------------------------- |
-| 0   | SBG_ECOM_AIDING_GPS1_POS_RECV | Mask | Set to 1 when valid GPS 1 position data is received      |
-| 1   | SBG_ECOM_AIDING_GPS1_VEL_RECV | Mask | Set to 1 when valid GPS 1 velocity data is received      |
-| 2   | SBG_ECOM_AIDING_GPS1_HDT_RECV | Mask | Set to 1 when valid GPS 1 true heading data is received  |
-| 3   | SBG_ECOM_AIDING_GPS1_UTC_RECV | Mask | Set to 1 when valid GPS 1 UTC time data is received      |
-| 4   | SBG_ECOM_AIDING_GPS2_POS_RECV | Mask | Set to 1 when valid GPS 2 position data is received      |
-| 5   | SBG_ECOM_AIDING_GPS2_VEL_RECV | Mask | Set to 1 when valid GPS 2 velocity data is received      |
-| 6   | SBG_ECOM_AIDING_GPS2_HDT_RECV | Mask | Set to 1 when valid GPS 2 true heading data is received  |
-| 7   | SBG_ECOM_AIDING_GPS2_UTC_RECV | Mask | Set to 1 when valid GPS 2 UTC time data is received      |
-| 8   | SBG_ECOM_AIDING_MAG_RECV      | Mask | Set to 1 when valid Magnetometer data is received        |
-| 9   | SBG_ECOM_AIDING_ODO_RECV      | Mask | Set to 1 when Odometer pulse is received                 |
+| 0   | SBG_ECOM_AIDING_GPS1_POS_RECV | Mask | Set to 1 when valid GNSS 1 position data is received     |
+| 1   | SBG_ECOM_AIDING_GPS1_VEL_RECV | Mask | Set to 1 when valid GNSS 1 velocity data is received     |
+| 2   | SBG_ECOM_AIDING_GPS1_HDT_RECV | Mask | Set to 1 when valid GNSS 1 true heading data is received |
+| 3   | SBG_ECOM_AIDING_GPS1_UTC_RECV | Mask | Set to 1 when valid GNSS 1 UTC time data is received     |
+| 4   | SBG_ECOM_AIDING_GPS2_POS_RECV | Mask | Set to 1 when valid GNSS 2 position data is received     |
+| 5   | SBG_ECOM_AIDING_GPS2_VEL_RECV | Mask | Set to 1 when valid GNSS 2 velocity data is received     |
+| 6   | SBG_ECOM_AIDING_GPS2_HDT_RECV | Mask | Set to 1 when valid GNSS 2 true heading data is received |
+| 7   | SBG_ECOM_AIDING_GPS2_UTC_RECV | Mask | Set to 1 when valid GNSS 2 UTC time data is received     |
+| 8   | SBG_ECOM_AIDING_MAG_RECV      | Mask | Set to 1 when valid magnetometer data is received        |
+| 9   | SBG_ECOM_AIDING_ODO_RECV      | Mask | Set to 1 when odometer pulse is received                 |
 | 10  | SBG_ECOM_AIDING_DVL_RECV      | Mask | Set to 1 when valid DVL data is received                 |
 | 11  | SBG_ECOM_AIDING_USBL_RECV     | Mask | Set to 1 when valid USBL data is received                |
-| 12  | SBG_ECOM_AIDING_DEPTH_RECV    | Mask | Set to 1 when valid Depth sensor data is received        |
+| 12  | SBG_ECOM_AIDING_DEPTH_RECV    | Mask | Set to 1 when valid depth sensor data is received        |
 | 13  | SBG_ECOM_AIDING_AIR_DATA_RECV | Mask | Set to 1 when valid altitude and/or airspeed is received |
 | 14  | SBG_ECOM_AIDING_VEL1_RECV     | Mask | Set to 1 when valid generic velocity 1 data is received  |
+| 15  | SBG_ECOM_AIDING_POS1_RECV     | Mask | Set to 1 when valid generic position 1 data is received  |
 
 ### SBG_ECOM_LOG_UTC_TIME (02) {#SBG_ECOM_LOG_UTC_TIME}
 
@@ -421,7 +427,7 @@ The message reporting the PTP status and accuracy is detailed below:
 - **Message Name (ID):** `SBG_ECOM_LOG_PTP_STATUS (57)`
 - **Compatibility:** High Performance INS
 - **Firmware:** ![HPINS](https://img.shields.io/badge/HPINS-5.3-blue)
-- **Payload Size:** 82 bytes
+- **Payload Size:** 83 bytes
 
 | Field                      | Description                                                                        | Unit | Format | Size | Offset |
 |----------------------------|------------------------------------------------------------------------------------|------|--------|------|--------|
@@ -429,19 +435,19 @@ The message reporting the PTP status and accuracy is detailed below:
 | STATUS                     | State, transport and time scale status (see [PTP_STATUS](#PTP_STATUS)).            | -    | uint16 | 2    | 4      |
 | TIME_SCALE_OFFSET          | Internal time scale offset, in seconds.                                            | s    | double | 8    | 6      |
 | LOCAL_CLOCK_IDENTITY       | Local clock identity, UINT64_MAX if invalid.                                       | -    | uint64 | 4    | 14     |
-| LOCAL_CLOCK_PRIORITY1      | Local clock priority1 attribute.                                                   | -    | uint8  | 4    | 22     |
-| LOCAL_CLOCK_PRIORITY2      | Local clock priority2 attribute.                                                   | -    | uint8  | 4    | 23     |
-| LOCAL_CLOCK_CLASS          | Local clock class attribute.                                                       | -    | uint8  | 4    | 24     |
-| LOCAL_CLOCK_ACCURACY       | Local clock accuracy.                                                              | -    | uint8  | 4    | 25     |
+| LOCAL_CLOCK_PRIORITY1      | Local clock priority1 attribute.                                                   | -    | uint8  | 1    | 22     |
+| LOCAL_CLOCK_PRIORITY2      | Local clock priority2 attribute.                                                   | -    | uint8  | 1    | 23     |
+| LOCAL_CLOCK_CLASS          | Local clock class attribute.                                                       | -    | uint8  | 1    | 24     |
+| LOCAL_CLOCK_ACCURACY       | Local clock accuracy.                                                              | -    | uint8  | 1    | 25     |
 | LOCAL_CLOCK_LOG2_VARIANCE  | Local clock variance expressed as an exponential (base 2).                         | -    | uint16 | 4    | 26     |
-| LOCAL_CLOCK_TIME_SOURCE    | Local clock time source.                                                           | -    | uint8  | 4    | 28     |
+| LOCAL_CLOCK_TIME_SOURCE    | Local clock time source.                                                           | -    | uint8  | 1    | 28     |
 | MASTER_CLOCK_IDENTITY      | Master clock identity, UINT64_MAX if invalid.                                      | -    | uint64 | 4    | 29     |
-| MASTER_CLOCK_PRIORITY1     | Master clock priority1 attribute.                                                  | -    | uint8  | 4    | 37     |
-| MASTER_CLOCK_PRIORITY2     | Master clock priority2 attribute.                                                  | -    | uint8  | 4    | 38     |
-| MASTER_CLOCK_CLASS         | Master clock class attribute.                                                      | -    | uint8  | 4    | 39     |
-| MASTER_CLOCK_ACCURACY      | Master clock accuracy.                                                             | -    | uint8  | 4    | 40     |
+| MASTER_CLOCK_PRIORITY1     | Master clock priority1 attribute.                                                  | -    | uint8  | 1    | 37     |
+| MASTER_CLOCK_PRIORITY2     | Master clock priority2 attribute.                                                  | -    | uint8  | 1    | 38     |
+| MASTER_CLOCK_CLASS         | Master clock class attribute.                                                      | -    | uint8  | 1    | 39     |
+| MASTER_CLOCK_ACCURACY      | Master clock accuracy.                                                             | -    | uint8  | 1    | 40     |
 | MASTER_CLOCK_LOG2_VARIANCE | Master clock variance expressed as an exponential (base 2).                        | -    | uint16 | 4    | 41     |
-| MASTER_CLOCK_TIME_SOURCE   | Master clock time source.                                                          | -    | uint8  | 4    | 43     |
+| MASTER_CLOCK_TIME_SOURCE   | Master clock time source.                                                          | -    | uint8  | 1    | 43     |
 | MASTER_IP_ADDRESS          | Master clock IP address, UINT32_MAX if invalid.                                    | -    | uint32 | 4    | 44     |
 | MEAN_PATH_DELAY            | Mean path delay to/from the master clock, NaN if not available.                    | s    | float  | 4    | 48     |
 | MEAN_PATH_DELAY_STD_DEV    | Mean path delay standard deviation, NaN if not available.                          | s    | float  | 4    | 52     |
@@ -449,7 +455,8 @@ The message reporting the PTP status and accuracy is detailed below:
 | CLOCK_OFFSET_STD_DEV       | Master clock offset standard deviation, NaN if not available.                      | s    | float  | 4    | 64     |
 | CLOCK_FREQ_OFFSET          | Offset between the frequency of the local and master clocks, NaN if not available. | Hz   | float  | 4    | 68     |
 | CLOCK_FREQ_OFFSET_STD_DEV  | Frequency offset standard deviation, NaN if not available.                         | Hz   | float  | 4    | 72     |
-| MASTER_MAC_ADDRESS         | Master clock MAC address, all fields to UINT32_MAX if invalid (added in v5.2).     | -    | uint8  | 6    | 76     |
+| MASTER_MAC_ADDRESS         | Master clock MAC address, all fields to UINT32_MAX if invalid (added in v5.2).     | -    | uint8[]| 6    | 76     |
+| DOMAIN_NUMBER              | Domain number attribute.                                                           | -    | uint8  | 1    | 82     |
 
 > [!NOTE]
 > The local clock members are valid if and only if the local clock identity is valid.
@@ -472,12 +479,14 @@ The field encodes several enumerations as described below:
 
 Main PTP operating mode and status.
 
-| Value | Name                                | Description                        |
-|-------|-------------------------------------|------------------------------------|
-| 0     | SBG_ECOM_LOG_PTP_STATE_DISABLED     | PTP is disabled.                   |
-| 1     | SBG_ECOM_LOG_PTP_STATE_FAULTY       | The device is in the faulty state. |
-| 2     | SBG_ECOM_LOG_PTP_STATE_MASTER       | The device is the domain master.   |
-| 3     | SBG_ECOM_LOG_PTP_STATE_PASSIVE      | The device is passive.             |
+| Value | Name                                | Description                          |
+|-------|-------------------------------------|--------------------------------------|
+| 0     | SBG_ECOM_LOG_PTP_STATE_DISABLED     | PTP is disabled.                     |
+| 1     | SBG_ECOM_LOG_PTP_STATE_FAULTY       | The device is in the faulty state.   |
+| 2     | SBG_ECOM_LOG_PTP_STATE_MASTER       | The device is the domain master.     |
+| 3     | SBG_ECOM_LOG_PTP_STATE_PASSIVE      | The device is passive.               |
+| 4     | SBG_ECOM_LOG_PTP_STATE_UNCALIBRATED | The device is an uncalibrated slave. |
+| 5     | SBG_ECOM_LOG_PTP_STATE_SLAVE        | The device is a slave.               |
 
 ##### PTP Transport {#PTP_TRANSPORT}
 
@@ -579,18 +588,18 @@ It returns calibrated IMU data expressed in body frame as well as the IMU temper
 The IMU_DATA_STATUS field is a bitmask that indicates the health and status of the IMU.  
 Each bit represents a specific status flag, providing detailed information on various components of the IMU system.
 
-| Bit     | Name                            | Description                                                                    |
-|---------|---------------------------------|--------------------------------------------------------------------------------|
-| 0 (LSB) | SBG_ECOM_IMU_COM_OK             | Set to 1 if communication with the IMU is working properly.                    |
-| 1       | SBG_ECOM_IMU_STATUS_BIT         | Set to 1 if the IMU passes internal BIT, including calibration and CPU checks. |
-| 2       | SBG_ECOM_IMU_ACCEL_X_BIT        | Set to 1 if the X-axis accelerometer passes PBIT and CBIT.                     |
-| 3       | SBG_ECOM_IMU_ACCEL_Y_BIT        | Set to 1 if the Y-axis accelerometer passes PBIT and CBIT.                     |
-| 4       | SBG_ECOM_IMU_ACCEL_Z_BIT        | Set to 1 if the Z-axis accelerometer passes PBIT and CBIT.                     |
-| 5       | SBG_ECOM_IMU_GYRO_X_BIT         | Set to 1 if the X-axis gyroscope passes PBIT and CBIT.                         |
-| 6       | SBG_ECOM_IMU_GYRO_Y_BIT         | Set to 1 if the Y-axis gyroscope passes PBIT and CBIT.                         |
-| 7       | SBG_ECOM_IMU_GYRO_Z_BIT         | Set to 1 if the Z-axis gyroscope passes PBIT and CBIT.                         |
-| 8       | SBG_ECOM_IMU_ACCELS_IN_RANGE    | Set to 1 if all accelerometers are operating within the specified range.       |
-| 9       | SBG_ECOM_IMU_GYROS_IN_RANGE     | Set to 1 if all gyroscopes are operating within the specified range.           |
+| Bit     | Name                         | Description                                                                                    |
+| ------- | ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| 0 (LSB) | SBG_ECOM_IMU_COM_OK          | Set to 1 if communication with the IMU is working properly.                                    |
+| 1       | SBG_ECOM_IMU_STATUS_BIT      | Set to 1 if the IMU passes internal BIT, including calibration, clock accuracy and CPU checks. |
+| 2       | SBG_ECOM_IMU_ACCEL_X_BIT     | Set to 1 if the X-axis accelerometer passes PBIT and CBIT.                                     |
+| 3       | SBG_ECOM_IMU_ACCEL_Y_BIT     | Set to 1 if the Y-axis accelerometer passes PBIT and CBIT.                                     |
+| 4       | SBG_ECOM_IMU_ACCEL_Z_BIT     | Set to 1 if the Z-axis accelerometer passes PBIT and CBIT.                                     |
+| 5       | SBG_ECOM_IMU_GYRO_X_BIT      | Set to 1 if the X-axis gyroscope passes PBIT and CBIT.                                         |
+| 6       | SBG_ECOM_IMU_GYRO_Y_BIT      | Set to 1 if the Y-axis gyroscope passes PBIT and CBIT.                                         |
+| 7       | SBG_ECOM_IMU_GYRO_Z_BIT      | Set to 1 if the Z-axis gyroscope passes PBIT and CBIT.                                         |
+| 8       | SBG_ECOM_IMU_ACCELS_IN_RANGE | Set to 1 if all accelerometers are operating within the specified range.                       |
+| 9       | SBG_ECOM_IMU_GYROS_IN_RANGE  | Set to 1 if all gyroscopes are operating within the specified range.                           |
 
 > [!NOTE]
 > **PBIT (Power-On Built-In Tests):** These tests are conducted once when the IMU is powered on, ensuring that all essential systems are functioning correctly at startup.  
@@ -692,37 +701,71 @@ Unlike raw IMU data, these measurements have been processed by the INS Extended 
 
 Furthermore, the effects of Earth's gravity and rotation rate are also removed, providing data that accurately reflects the vehicle's true dynamics.
 
-### SOLUTION_STATUS {#SOLUTION_STATUS}
+> [!IMPORTANT]
+> Starting from sbgECom 6.0, the legacy `SOLUTION_STATUS` field embedded in multiple EKF output logs is deprecated.
+> 
+> A new dedicated message, `SBG_ECOM_LOG_EKF_STATUS (63)`, is introduced to provide a comprehensive and extensible representation of the INS solution status.
+> 
+> The following logs still include the `SOLUTION_STATUS` field for backward compatibility:
+> - `SBG_ECOM_LOG_EKF_EULER`
+> - `SBG_ECOM_LOG_EKF_QUAT`
+> - `SBG_ECOM_LOG_EKF_NAV`
+> - `SBG_ECOM_LOG_EKF_VEL_BODY`
+> - `SBG_ECOM_LOG_EKF_ROT_ACCEL_BODY`
+> - `SBG_ECOM_LOG_EKF_ROT_ACCEL_NED`
+> .  
+> For all new developments, users should rely on `SBG_ECOM_LOG_EKF_STATUS`, which provides:
+> - Detailed EKF validity and alignment information
+> - A unified solution type (replacing `SOLUTION_MODE`)
+> - Explicit aiding source usage
+> - GNSS spoofing indicators and navigation safety status
+> .  
+> The legacy `SOLUTION_STATUS` field may be removed in future versions.
 
-This status provides information about the Extended Kalman Filter (EKF), indicating which aiding data is used and the current solution mode.
+### SOLUTION_STATUS (DEPRECATED) {#SOLUTION_STATUS}
 
-| Bit   | Name                        | Description                                                                        |
-| ----- | --------------------------- | ---------------------------------------------------------------------------------- |
-| [0-3] | SBG_ECOM_SOLUTION_MODE      | Indicates the Kalman filter computation mode (see [SOLUTION_MODE](#SOLUTION_MODE)) |
-| 4     | SBG_ECOM_SOL_ATTITUDE_VALID | Set if attitude data is reliable (Roll/Pitch error within defined criteria).       |
-| 5     | SBG_ECOM_SOL_HEADING_VALID  | Set if heading data is reliable (Heading error within defined criteria).           |
-| 6     | SBG_ECOM_SOL_VELOCITY_VALID | Set if velocity data is reliable (Velocity error within defined criteria).         |
-| 7     | SBG_ECOM_SOL_POSITION_VALID | Set if position data is reliable (Position error within defined criteria).         |
-| 8     | SBG_ECOM_SOL_VERT_REF_USED  | Set if the vertical reference is used in the solution.                             |
-| 9     | SBG_ECOM_SOL_MAG_REF_USED   | Set if magnetometer is used in the solution.                                       |
-| 10    | SBG_ECOM_SOL_GPS1_VEL_USED  | Set if GNSS 1 velocity is used in the solution.                                    |
-| 11    | SBG_ECOM_SOL_GPS1_POS_USED  | Set if GNSS 1 position is used in the solution.                                    |
-| 13    | SBG_ECOM_SOL_GPS1_HDT_USED  | Set if GNSS 1 true heading is used in the solution.                                |
-| 14    | SBG_ECOM_SOL_GPS2_VEL_USED  | Set if GNSS 2 velocity is used in the solution.                                    |
-| 15    | SBG_ECOM_SOL_GPS2_POS_USED  | Set if GNSS 2 position is used in the solution.                                    |
-| 17    | SBG_ECOM_SOL_GPS2_HDT_USED  | Set if GNSS 2 true heading is used in the solution.                                |
-| 18    | SBG_ECOM_SOL_ODO_USED       | Set if odometer velocity is used in the solution.                                  |
-| 19    | SBG_ECOM_SOL_DVL_BT_USED    | Set if DVL bottom tracking velocity is used in the solution.                       |
-| 20    | SBG_ECOM_SOL_DVL_WT_USED    | Set if DVL water layer velocity is used in the solution.                           |
-| 21    | SBG_ECOM_SOL_VEL1_USED      | Set if generic velocity 1 is used in the solution.                                 |
-| 22    | Reserved                    | Reserved for future use.                                                           |
-| 23    | Reserved                    | Reserved for future use.                                                           |
-| 24    | SBG_ECOM_SOL_USBL_USED      | Set if USBL position is used in the solution.                                      |
-| 25    | SBG_ECOM_SOL_AIR_DATA_USED  | Set if altitude or true airspeed is used in the solution.                          |
-| 26    | SBG_ECOM_SOL_ZUPT_USED      | Set if a Zero Velocity Update (ZUPT) is is used in the solution.                   |
-| 27    | SBG_ECOM_SOL_ALIGN_VALID    | Set if sensor alignment and residual sensors errors have fully converged.          |
-| 28    | SBG_ECOM_SOL_DEPTH_USED     | Set if depth sensor is used in the solution (subsea navigation).                   |
-| 29    | SBG_ECOM_SOL_ZARU_USED      | Set if a Zero Angular Rate Update (ZARU) is used in the solution.                  |
+This legacy status provides information about the Extended Kalman Filter (EKF), indicating which aiding data is used and the current solution mode.
+
+> [!WARNING]
+> This field is deprecated and has been replaced by the dedicated `SBG_ECOM_LOG_EKF_STATUS (63)` message.
+> 
+> The new status message provides a clearer and more extensible representation of:
+> - EKF validity and alignment
+> - Solution type (replacing `SOLUTION_MODE`)
+> - Aiding sources used
+> - GNSS spoofing and navigation safety indicators
+> .  
+> It is recommended to use `SBG_ECOM_LOG_EKF_STATUS` instead of this legacy field for all new developments.
+
+| Bit   | Name                              | Description                                                                              |
+| ----- | --------------------------------- | ---------------------------------------------------------------------------------------- |
+| [0-3] | SBG_ECOM_SOLUTION_MODE            | Indicates the Kalman filter computation mode (see [SOLUTION_MODE](#SOLUTION_MODE))       |
+| 4     | SBG_ECOM_SOL_ATTITUDE_VALID       | Set if attitude data is reliable (Roll/Pitch error within defined criteria).             |
+| 5     | SBG_ECOM_SOL_HEADING_VALID        | Set if heading data is reliable (Heading error within defined criteria).                 |
+| 6     | SBG_ECOM_SOL_VELOCITY_VALID       | Set if velocity data is reliable (Velocity error within defined criteria).               |
+| 7     | SBG_ECOM_SOL_POSITION_VALID       | Set if position data is reliable (Position error within defined criteria).               |
+| 8     | SBG_ECOM_SOL_VERT_REF_USED        | Set if the vertical reference is used in the solution.                                   |
+| 9     | SBG_ECOM_SOL_MAG_REF_USED         | Set if magnetometer is used in the solution.                                             |
+| 10    | SBG_ECOM_SOL_GPS1_VEL_USED        | Set if GNSS 1 velocity is used in the solution.                                          |
+| 11    | SBG_ECOM_SOL_GPS1_POS_USED        | Set if GNSS 1 position is used in the solution.                                          |
+| 12    | SBG_ECOM_SOL_VEL_CONSTRAINTS_USED | Set if vehicle velocity constraint is used to improve accuracy.                          |
+| 13    | SBG_ECOM_SOL_GPS1_HDT_USED        | Set if GNSS 1 true heading is used in the solution.                                      |
+| 14    | SBG_ECOM_SOL_GPS2_VEL_USED        | Set if GNSS 2 velocity is used in the solution.                                          |
+| 15    | SBG_ECOM_SOL_GPS2_POS_USED        | Set if GNSS 2 position is used in the solution.                                          |
+| 17    | SBG_ECOM_SOL_GPS2_HDT_USED        | Set if GNSS 2 true heading is used in the solution.                                      |
+| 18    | SBG_ECOM_SOL_ODO_USED             | Set if odometer velocity is used in the solution.                                        |
+| 19    | SBG_ECOM_SOL_DVL_BT_USED          | Set if DVL bottom tracking velocity is used in the solution.                             |
+| 20    | SBG_ECOM_SOL_DVL_WT_USED          | Set if DVL water layer velocity is used in the solution.                                 |
+| 21    | SBG_ECOM_SOL_VEL1_USED            | Set if generic velocity 1 is used in the solution.                                       |
+| 22    | Reserved                          | Reserved for future use.                                                                 |
+| 23    | Reserved                          | Reserved for future use.                                                                 |
+| 24    | SBG_ECOM_SOL_USBL_USED            | Set if USBL position is used in the solution.                                            |
+| 25    | SBG_ECOM_SOL_AIRSPEED_USED        | Set if true airspeed is used in the solution.                                            |
+| 26    | SBG_ECOM_SOL_ZUPT_USED            | Set if a Zero Velocity Update (ZUPT) is is used in the solution.                         |
+| 27    | SBG_ECOM_SOL_ALIGN_VALID          | Set if sensor alignment and residual sensors errors have fully converged.                |
+| 28    | SBG_ECOM_SOL_VERTICAL_AIDING_USED | Set if a vertical aiding source (depth or barometric altimeter) is used in the solution. |
+| 29    | SBG_ECOM_SOL_ZARU_USED            | Set if a Zero Angular Rate Update (ZARU) is used in the solution.                        |
+| 30    | SBG_ECOM_SOL_POS1_USED            | Set if generic position 1 is used in the solution.                                       |
 
 #### SOLUTION_MODE {#SOLUTION_MODE}
 
@@ -735,8 +778,8 @@ This status provides information about the Extended Kalman Filter (EKF), indicat
 | 4     | SBG_ECOM_SOL_MODE_NAV_POSITION  | Full computation of attitude, velocity, and position.                       |
 
 > [!NOTE]
-> The *Used in Solution* flags have a 3s timeout mechanism for easier interpretation.  
-> For instance, the SBG_ECOM_SOL_ODO_USED flag remains valid for 3 seconds after the odometer was last used in the solution.
+> The *Used in Solution* flags have a 1s timeout mechanism for easier interpretation.  
+> For instance, the SBG_ECOM_SOL_ODO_USED flag remains valid for 1 second after the odometer was last used in the solution.
 
 ### SBG_ECOM_LOG_EKF_EULER (06) {#SBG_ECOM_LOG_EKF_EULER}
 
@@ -747,18 +790,18 @@ This log provides the Euler angles (roll, pitch, yaw) and their associated accur
 - **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-1.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-1.0-blue)
 - **Payload Size:** 40 bytes
 
-| Field           | Description                                                   | Unit  | Format | Size | Offset |
-|-----------------|---------------------------------------------------------------|-------|--------|------|--------|
-| TIME_STAMP      | Time since the sensor was powered up                          | µs    | uint32 | 4    | 0      |
-| ROLL            | Roll angle                                                    | rad   | float  | 4    | 4      |
-| PITCH           | Pitch angle                                                   | rad   | float  | 4    | 8      |
-| YAW             | Yaw angle (geographic heading)                                | rad   | float  | 4    | 12     |
-| ROLL_ACC        | 1σ standard deviation of roll angle accuracy                  | rad   | float  | 4    | 16     |
-| PITCH_ACC       | 1σ standard deviation of pitch angle accuracy                 | rad   | float  | 4    | 20     |
-| YAW_ACC         | 1σ standard deviation of yaw angle accuracy                   | rad   | float  | 4    | 24     |
-| SOLUTION_STATUS | INS solution status (see [SOLUTION_STATUS](#SOLUTION_STATUS)) | -     | uint32 | 4    | 28     |
-| MAG_DECL        | Local magnetic declination, positive East.                    | rad   | float  | 4    | 32     |
-| MAG_INCL        | Local magnetic inclination, positive Down.                    | rad   | float  | 4    | 36     |
+| Field           | Description                                                                       | Unit  | Format | Size | Offset |
+|-----------------|-----------------------------------------------------------------------------------|-------|--------|------|--------|
+| TIME_STAMP      | Time since the sensor was powered up                                              | µs    | uint32 | 4    | 0      |
+| ROLL            | Roll angle                                                                        | rad   | float  | 4    | 4      |
+| PITCH           | Pitch angle                                                                       | rad   | float  | 4    | 8      |
+| YAW             | Yaw angle (geographic heading)                                                    | rad   | float  | 4    | 12     |
+| ROLL_ACC        | 1σ standard deviation of roll angle accuracy                                      | rad   | float  | 4    | 16     |
+| PITCH_ACC       | 1σ standard deviation of pitch angle accuracy                                     | rad   | float  | 4    | 20     |
+| YAW_ACC         | 1σ standard deviation of yaw angle accuracy                                       | rad   | float  | 4    | 24     |
+| SOLUTION_STATUS | Legacy INS solution status (deprecated, see [SOLUTION_STATUS](#SOLUTION_STATUS)). | -     | uint32 | 4    | 28     |
+| MAG_DECL        | Local magnetic declination, positive East.                                        | rad   | float  | 4    | 32     |
+| MAG_INCL        | Local magnetic inclination, positive Down.                                        | rad   | float  | 4    | 36     |
 
 ### SBG_ECOM_LOG_EKF_QUAT (07) {#SBG_ECOM_LOG_EKF_QUAT}
 
@@ -770,19 +813,19 @@ It also includes the standard deviation accuracies for roll, pitch, and yaw angl
 - **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-1.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-1.0-blue)
 - **Payload Size:** 44 bytes
 
-| Field           | Description                                                   | Unit  | Format | Size | Offset |
-|-----------------|---------------------------------------------------------------|-------|--------|------|--------|
-| TIME_STAMP      | Time since the sensor was powered up                          | µs    | uint32 | 4    | 0      |
-| Q0              | First quaternion parameter (W component)                      | -     | float  | 4    | 4      |
-| Q1              | Second  quaternion parameter (X component)                    | -     | float  | 4    | 8      |
-| Q2              | Third quaternion parameter (Y component)                      | -     | float  | 4    | 12     |
-| Q3              | Fourth quaternion parameter (Z component)                     | -     | float  | 4    | 16     |
-| ROLL_ACC        | 1σ standard deviation of roll angle accuracy                  | rad   | float  | 4    | 20     |
-| PITCH_ACC       | 1σ standard deviation of pitch angle accuracy                 | rad   | float  | 4    | 24     |
-| YAW_ACC         | 1σ standard deviation of yaw angle accuracy                   | rad   | float  | 4    | 28     |
-| SOLUTION_STATUS | INS solution status (see [SOLUTION_STATUS](#SOLUTION_STATUS)) | -     | uint32 | 4    | 32     |
-| MAG_DECL        | Local magnetic declination, positive East.                    | rad   | float  | 4    | 36     |
-| MAG_INCL        | Local magnetic inclination, positive Down.                    | rad   | float  | 4    | 40     |
+| Field           | Description                                                                       | Unit  | Format | Size | Offset |
+|-----------------|-----------------------------------------------------------------------------------|-------|--------|------|--------|
+| TIME_STAMP      | Time since the sensor was powered up                                              | µs    | uint32 | 4    | 0      |
+| Q0              | First quaternion parameter (W component)                                          | -     | float  | 4    | 4      |
+| Q1              | Second  quaternion parameter (X component)                                        | -     | float  | 4    | 8      |
+| Q2              | Third quaternion parameter (Y component)                                          | -     | float  | 4    | 12     |
+| Q3              | Fourth quaternion parameter (Z component)                                         | -     | float  | 4    | 16     |
+| ROLL_ACC        | 1σ standard deviation of roll angle accuracy                                      | rad   | float  | 4    | 20     |
+| PITCH_ACC       | 1σ standard deviation of pitch angle accuracy                                     | rad   | float  | 4    | 24     |
+| YAW_ACC         | 1σ standard deviation of yaw angle accuracy                                       | rad   | float  | 4    | 28     |
+| SOLUTION_STATUS | Legacy INS solution status (deprecated, see [SOLUTION_STATUS](#SOLUTION_STATUS)). | -     | uint32 | 4    | 32     |
+| MAG_DECL        | Local magnetic declination, positive East.                                        | rad   | float  | 4    | 36     |
+| MAG_INCL        | Local magnetic inclination, positive Down.                                        | rad   | float  | 4    | 40     |
 
 ### SBG_ECOM_LOG_EKF_NAV (08) {#SBG_ECOM_LOG_EKF_NAV}
 
@@ -794,27 +837,31 @@ It also includes accuracy parameters for each measurement along with the INS sol
 - **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-1.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-1.0-blue)
 - **Payload Size:** 72 bytes
 
-| Field           | Description                                                   | Unit  | Format | Size | Offset |
-|-----------------|---------------------------------------------------------------|-------|--------|------|--------|
-| TIME_STAMP      | Time since the sensor was powered up                          | µs    | uint32 | 4    | 0      |
-| VELOCITY_N      | Velocity in the North direction                               | m/s   | float  | 4    | 4      |
-| VELOCITY_E      | Velocity in the East direction                                | m/s   | float  | 4    | 8      |
-| VELOCITY_D      | Velocity in the Down direction                                | m/s   | float  | 4    | 12     |
-| VELOCITY_N_ACC  | 1σ standard deviation of velocity accuracy in North direction | m/s   | float  | 4    | 16     |
-| VELOCITY_E_ACC  | 1σ standard deviation of velocity accuracy in East direction  | m/s   | float  | 4    | 20     |
-| VELOCITY_D_ACC  | 1σ standard deviation of velocity accuracy in Down direction  | m/s   | float  | 4    | 24     |
-| LATITUDE        | Geographic latitude, positive North.                          | °     | double | 8    | 28     |
-| LONGITUDE       | Geographic longitude, positive East.                          | °     | double | 8    | 36     |
-| ALTITUDE        | Altitude above Mean Sea Level (MSL), positive upward.         | m     | double | 8    | 44     |
-| UNDULATION      | Difference between geoid and ellipsoid altitude               | m     | float  | 4    | 52     |
-| LATITUDE_ACC    | 1σ standard deviation of latitude accuracy                    | m     | float  | 4    | 56     |
-| LONGITUDE_ACC   | 1σ standard deviation of longitude accuracy                   | m     | float  | 4    | 60     |
-| ALTITUDE_ACC    | 1σ standard deviation of vertical position accuracy           | m     | float  | 4    | 64     |
-| SOLUTION_STATUS | INS solution status (see [SOLUTION_STATUS](#SOLUTION_STATUS)) | -     | uint32 | 4    | 68     |
+| Field           | Description                                                                       | Unit  | Format | Size | Offset |
+|-----------------|-----------------------------------------------------------------------------------|-------|--------|------|--------|
+| TIME_STAMP      | Time since the sensor was powered up                                              | µs    | uint32 | 4    | 0      |
+| VELOCITY_N      | Velocity in the North direction                                                   | m/s   | float  | 4    | 4      |
+| VELOCITY_E      | Velocity in the East direction                                                    | m/s   | float  | 4    | 8      |
+| VELOCITY_D      | Velocity in the Down direction                                                    | m/s   | float  | 4    | 12     |
+| VELOCITY_N_ACC  | 1σ standard deviation of velocity accuracy in North direction                     | m/s   | float  | 4    | 16     |
+| VELOCITY_E_ACC  | 1σ standard deviation of velocity accuracy in East direction                      | m/s   | float  | 4    | 20     |
+| VELOCITY_D_ACC  | 1σ standard deviation of velocity accuracy in Down direction                      | m/s   | float  | 4    | 24     |
+| LATITUDE        | Geographic latitude, positive North.                                              | °     | double | 8    | 28     |
+| LONGITUDE       | Geographic longitude, positive East.                                              | °     | double | 8    | 36     |
+| ALTITUDE        | Altitude above Mean Sea Level (MSL), positive upward.                             | m     | double | 8    | 44     |
+| UNDULATION      | Difference between geoid and ellipsoid altitude                                   | m     | float  | 4    | 52     |
+| LATITUDE_ACC    | 1σ standard deviation of latitude accuracy                                        | m     | float  | 4    | 56     |
+| LONGITUDE_ACC   | 1σ standard deviation of longitude accuracy                                       | m     | float  | 4    | 60     |
+| ALTITUDE_ACC    | 1σ standard deviation of vertical position accuracy                               | m     | float  | 4    | 64     |
+| SOLUTION_STATUS | Legacy INS solution status (deprecated, see [SOLUTION_STATUS](#SOLUTION_STATUS)). | -     | uint32 | 4    | 68     |
 
 > [!NOTE]
 > The undulation can be used to compute the height above ellipsoid from the MSL altitude.  
 > Please use the following formula: *height = altitude + undulation*
+
+> [!NOTE]
+> The position is expressed in the datum of the position aiding sources.  
+> The INS does not apply any datum conversion.
 
 ### SBG_ECOM_LOG_EKF_VEL_BODY (54) {#SBG_ECOM_LOG_EKF_VEL_BODY}
 
@@ -828,16 +875,16 @@ For instance, in a car, the X-axis points forward, and the Y-axis points to the 
 - **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-4.0-blue)
 - **Payload Size:** 32 bytes
 
-| Field           | Description                                                        | Unit  | Format | Size | Offset |
-|-----------------|--------------------------------------------------------------------|-------|--------|------|--------|
-| TIME_STAMP      | Time since the sensor was powered up                               | µs    | uint32 | 4    | 0      |
-| SOLUTION_STATUS | INS solution status (see [SOLUTION_STATUS](#SOLUTION_STATUS))      | -     | uint32 | 4    | 4      |
-| VELOCITY_X      | Velocity along the X-axis (forward direction in vehicle frame)     | m/s   | float  | 4    | 8      |
-| VELOCITY_Y      | Velocity along the Y-axis (right direction in vehicle frame)       | m/s   | float  | 4    | 12     |
-| VELOCITY_Z      | Velocity along the Z-axis (downward direction in vehicle frame)    | m/s   | float  | 4    | 16     |
-| VELOCITY_X_ACC  | 1σ standard deviation of velocity accuracy along the X-axis        | m/s   | float  | 4    | 20     |
-| VELOCITY_Y_ACC  | 1σ standard deviation of velocity accuracy along the Y-axis        | m/s   | float  | 4    | 24     |
-| VELOCITY_Z_ACC  | 1σ standard deviation of velocity accuracy along the Z-axis        | m/s   | float  | 4    | 28     |
+| Field           | Description                                                                       | Unit  | Format | Size | Offset |
+|-----------------|-----------------------------------------------------------------------------------|-------|--------|------|--------|
+| TIME_STAMP      | Time since the sensor was powered up                                              | µs    | uint32 | 4    | 0      |
+| SOLUTION_STATUS | Legacy INS solution status (deprecated, see [SOLUTION_STATUS](#SOLUTION_STATUS)). | -     | uint32 | 4    | 4      |
+| VELOCITY_X      | Velocity along the X-axis (forward direction in vehicle frame)                    | m/s   | float  | 4    | 8      |
+| VELOCITY_Y      | Velocity along the Y-axis (right direction in vehicle frame)                      | m/s   | float  | 4    | 12     |
+| VELOCITY_Z      | Velocity along the Z-axis (downward direction in vehicle frame)                   | m/s   | float  | 4    | 16     |
+| VELOCITY_X_ACC  | 1σ standard deviation of velocity accuracy along the X-axis                       | m/s   | float  | 4    | 20     |
+| VELOCITY_Y_ACC  | 1σ standard deviation of velocity accuracy along the Y-axis                       | m/s   | float  | 4    | 24     |
+| VELOCITY_Z_ACC  | 1σ standard deviation of velocity accuracy along the Z-axis                       | m/s   | float  | 4    | 28     |
 
 ### SBG_ECOM_LOG_EKF_ROT_ACCEL_BODY (52) {#SBG_ECOM_LOG_EKF_ROT_ACCEL_BODY}
 
@@ -849,16 +896,16 @@ The data is compensated by the Navigation Filter for sensor bias, scale factor, 
 - **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-4.0-blue)
 - **Payload Size:** 32 bytes
 
-| Field           | Description                                                        | Unit  | Format | Size | Offset |
-|-----------------|--------------------------------------------------------------------|-------|--------|------|--------|
-| TIME_STAMP      | Time since the sensor was powered up                               | µs    | uint32 | 4    | 0      |
-| SOLUTION_STATUS | INS solution status (see [SOLUTION_STATUS](#SOLUTION_STATUS))      | -     | uint32 | 4    | 4      |
-| RATE_X          | Rotation rate around the X axis                                    | rad/s | float  | 4    | 8      |
-| RATE_Y          | Rotation rate around the Y axis                                    | rad/s | float  | 4    | 12     |
-| RATE_Z          | Rotation rate around the Z axis                                    | rad/s | float  | 4    | 16     |
-| ACCELERATION_X  | Acceleration along the X axis                                      | m/s²  | float  | 4    | 20     |
-| ACCELERATION_Y  | Acceleration along the Y axis                                      | m/s²  | float  | 4    | 24     |
-| ACCELERATION_Z  | Acceleration along the Z axis                                      | m/s²  | float  | 4    | 28     |
+| Field           | Description                                                                       | Unit  | Format | Size | Offset |
+|-----------------|-----------------------------------------------------------------------------------|-------|--------|------|--------|
+| TIME_STAMP      | Time since the sensor was powered up                                              | µs    | uint32 | 4    | 0      |
+| SOLUTION_STATUS | Legacy INS solution status (deprecated, see [SOLUTION_STATUS](#SOLUTION_STATUS)). | -     | uint32 | 4    | 4      |
+| RATE_X          | Rotation rate around the X axis                                                   | rad/s | float  | 4    | 8      |
+| RATE_Y          | Rotation rate around the Y axis                                                   | rad/s | float  | 4    | 12     |
+| RATE_Z          | Rotation rate around the Z axis                                                   | rad/s | float  | 4    | 16     |
+| ACCELERATION_X  | Acceleration along the X axis                                                     | m/s²  | float  | 4    | 20     |
+| ACCELERATION_Y  | Acceleration along the Y axis                                                     | m/s²  | float  | 4    | 24     |
+| ACCELERATION_Z  | Acceleration along the Z axis                                                     | m/s²  | float  | 4    | 28     |
 
 > [!NOTE]
 > This log is properly decimated based on the selected output rate to prevent aliasing issues.
@@ -875,16 +922,16 @@ This log is particularly useful for determining a vehicle's turn rate, such as t
 - **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-4.0-blue)
 - **Payload Size:** 32 bytes
 
-| Field           | Description                                                        | Unit  | Format | Size | Offset |
-|-----------------|--------------------------------------------------------------------|-------|--------|------|--------|
-| TIME_STAMP      | Time since the sensor was powered up                               | µs    | uint32 | 4    | 0      |
-| SOLUTION_STATUS | INS solution status (see [SOLUTION_STATUS](#SOLUTION_STATUS))      | -     | uint32 | 4    | 4      |
-| RATE_N          | Rotation rate around the North axis in the navigation frame        | rad/s | float  | 4    | 8      |
-| RATE_E          | Rotation rate around the East axis in the navigation frame         | rad/s | float  | 4    | 12     |
-| RATE_D          | Rotation rate around the Down axis in the navigation frame         | rad/s | float  | 4    | 16     |
-| ACCELERATION_N  | Acceleration along the North axis in the navigation frame          | m/s²  | float  | 4    | 20     |
-| ACCELERATION_E  | Acceleration along the East axis in the navigation frame           | m/s²  | float  | 4    | 24     |
-| ACCELERATION_D  | Acceleration along the Down axis in the navigation frame           | m/s²  | float  | 4    | 28     |
+| Field           | Description                                                                       | Unit  | Format | Size | Offset |
+|-----------------|-----------------------------------------------------------------------------------|-------|--------|------|--------|
+| TIME_STAMP      | Time since the sensor was powered up                                              | µs    | uint32 | 4    | 0      |
+| SOLUTION_STATUS | Legacy INS solution status (deprecated, see [SOLUTION_STATUS](#SOLUTION_STATUS)). | -     | uint32 | 4    | 4      |
+| RATE_N          | Rotation rate around the North axis in the navigation frame                       | rad/s | float  | 4    | 8      |
+| RATE_E          | Rotation rate around the East axis in the navigation frame                        | rad/s | float  | 4    | 12     |
+| RATE_D          | Rotation rate around the Down axis in the navigation frame                        | rad/s | float  | 4    | 16     |
+| ACCELERATION_N  | Acceleration along the North axis in the navigation frame                         | m/s²  | float  | 4    | 20     |
+| ACCELERATION_E  | Acceleration along the East axis in the navigation frame                          | m/s²  | float  | 4    | 24     |
+| ACCELERATION_D  | Acceleration along the Down axis in the navigation frame                          | m/s²  | float  | 4    | 28     |
 
 > [!NOTE]
 > This log is properly decimated based on the selected output rate to prevent aliasing issues.
@@ -892,6 +939,153 @@ This log is particularly useful for determining a vehicle's turn rate, such as t
 > [!WARNING]
 > Rotation rates around the North and East navigation axes are not commonly used.  
 > In most cases, rotation rates in the body X and Y axes are preferable.
+
+### SBG_ECOM_LOG_EKF_AIR_DATA (61) {#SBG_ECOM_LOG_EKF_AIR_DATA}
+
+This log provides air velocity in the North, East, Down (NED) navigation frame. 
+
+- **Message Name (ID):** `SBG_ECOM_LOG_EKF_AIR_DATA (61)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.2-blue) ![HPINS](https://img.shields.io/badge/HPINS-6.0-blue)
+- **Payload Size:** 30 bytes
+
+| Field           | Description                                                        | Unit  | Format | Size | Offset |
+|-----------------|--------------------------------------------------------------------|-------|--------|------|--------|
+| TIME_STAMP      | Time since the sensor was powered up.                              | µs    | uint32 | 4    | 0      |
+| STATUS          | Reserved for future use.                                           | -     | uint16 | 2    | 4      |
+| WIND_N          | Air velocity in the North direction.                               | m/s   | float  | 4    | 6      |
+| WIND_E          | Air velocity in the East direction.                                | m/s   | float  | 4    | 10     |
+| WIND_D          | Air velocity in the Down direction.                                | m/s   | float  | 4    | 14     |
+| WIND_N_STD_DEV  | Air velocity standard deviation in the North direction.            | m/s   | float  | 4    | 18     |
+| WIND_E_STD_DEV  | Air velocity standard deviation in the East direction.             | m/s   | float  | 4    | 22     |
+| WIND_D_STD_DEV  | Air velocity standard deviation in the Down direction.             | m/s   | float  | 4    | 26     |
+
+### SBG_ECOM_LOG_EKF_STATUS (63) {#SBG_ECOM_LOG_EKF_STATUS}
+
+This message reports the status of the INS solution produced by the Extended Kalman Filter (EKF).
+
+- **Message Name (ID):** `SBG_ECOM_LOG_EKF_STATUS (63)`
+- **Compatibility:** INS-capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-4.1-blue) ![HPINS](https://img.shields.io/badge/HPINS-7.0-blue)
+- **Payload Size:** 18 bytes
+
+| Field                 | Description                                                                           | Unit | Format | Size | Offset |
+|-----------------------|---------------------------------------------------------------------------------------|------|--------|------|--------|
+| TIME_STAMP            | Time since sensor power-up.                                                           | µs   | uint32 | 4    | 0      |
+| EKF_STATUS            | EKF general status. See [EKF_STATUS](#EKF_STATUS).                                    | -    | uint32 | 4    | 4      |
+| SOLUTION_TYPE         | INS solution type. See [SOLUTION_TYPE](#SOLUTION_TYPE).                               | -    | uint8  | 1    | 8      |
+| ALIGNMENT_PROGRESS    | INS alignment progress, from 0 to 100.                                                | %    | uint8  | 1    | 9      |
+| GNSS1_SPOOFING_STATUS | GNSS 1 extended spoofing status. See [SPOOFING_STATUS](#SPOOFING_STATUS).             | -    | uint16 | 2    | 10     |
+| GNSS2_SPOOFING_STATUS | GNSS 2 extended spoofing status. See [SPOOFING_STATUS](#SPOOFING_STATUS).             | -    | uint16 | 2    | 12     |
+| AIDINGS_USED_0        | Aiding sources currently used by the EKF solution. See [AIDINGS_USED](#AIDINGS_USED). | -    | uint32 | 4    | 14     |
+
+#### EKF_STATUS {#EKF_STATUS}
+
+Main INS filter status and validity flags.
+
+| Bit    | Name                                     | Type | Description                                                                                           |
+|--------|------------------------------------------|------|-------------------------------------------------------------------------------------------------------|
+| 0      | SBG_EKF_STATUS_ROLL_PITCH_VALID          | Mask | Set if roll and pitch data are reliable.                                                              |
+| 1      | SBG_EKF_STATUS_HEADING_VALID             | Mask | Set if heading data is reliable.                                                                      |
+| 2      | SBG_EKF_STATUS_VELOCITY_VALID            | Mask | Set if velocity data is reliable.                                                                     |
+| 3      | SBG_EKF_STATUS_POSITION_VALID            | Mask | Set if position data is reliable.                                                                     |
+| 4      | SBG_EKF_STATUS_ALIGN_VALID               | Mask | Set if the INS is aligned and sensor error estimation has converged enough to trust the solution.     |
+| [8-10] | SBG_EKF_STATUS_NAV_SAFETY                | Enum | Navigation safety status. See [NAV_SAFETY](#NAV_SAFETY).                                              |
+
+##### NAV_SAFETY {#NAV_SAFETY}
+
+Indicates whether the navigation solution can be trusted with respect to GNSS spoofing threats.
+
+This status reflects the ability of the EKF to detect inconsistencies, the availability of independent aiding sources, and the current navigation uncertainty.  
+The mitigation strategy is only effective in full INS solution modes.
+
+| Value | Name                                      | Description                                                                                                                          |
+|-------|-------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| 0     | SBG_EKF_STATUS_NAV_SAFETY_UNKNOWN         | Safety cannot be assessed. Anti-spoofing is disabled or not running (e.g. AHRS/VG modes).                                            |
+| 1     | SBG_EKF_STATUS_NAV_SAFETY_NOMINAL         | No spoofing is detected, and navigation operates under nominal conditions.                                                           |
+| 2     | SBG_EKF_STATUS_NAV_SAFETY_MITIGATED       | Spoofing is detected or suspected, but navigation remains protected thanks to mitigation using inertial and/or other aiding sources. |
+| 3     | SBG_EKF_STATUS_NAV_SAFETY_UNPROTECTED     | Navigation is operating with limited or no spoofing mitigation capability (e.g. due to high uncertainty, or insufficient aiding).    |
+
+#### SOLUTION_TYPE {#SOLUTION_TYPE}
+
+INS solution type combining the INS operating mode and the primary aiding used to compute the solution.
+
+| Value | Name                                               | Description                                                                                                  |
+|-------|----------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| 0     | SBG_EKF_STATUS_SOL_TYPE_INVALID                    | EKF is not initialized. All outputs are invalid.                                                             |
+| 1     | SBG_EKF_STATUS_SOL_TYPE_VG                         | Vertical gyro mode with roll and pitch estimated from the vertical reference.                                |
+| 2     | SBG_EKF_STATUS_SOL_TYPE_AHRS                       | AHRS mode with roll, pitch, and heading estimated from magnetometers, dual-GNSS heading, or gyro-compassing. |
+| 3     | SBG_EKF_STATUS_SOL_TYPE_NAV_INERTIAL               | Full INS solution using inertial data only.                                                                  |
+| 4     | SBG_EKF_STATUS_SOL_TYPE_NAV_MOTION_CONSTRAINT      | Full INS solution using vehicle motion constraints.                                                          |
+| 5     | SBG_EKF_STATUS_SOL_TYPE_NAV_ZUPT                   | Full INS solution using Zero Velocity Updates (ZUPT).                                                        |
+| 6     | SBG_EKF_STATUS_SOL_TYPE_NAV_GNSS_VEL               | Full INS solution using GNSS velocity.                                                                       |
+| 7     | SBG_EKF_STATUS_SOL_TYPE_NAV_GNSS_UNKNOWN           | Full INS solution using GNSS position of unknown type.                                                       |
+| 8     | SBG_EKF_STATUS_SOL_TYPE_NAV_SINGLE_POINT           | Full INS solution using GNSS single-point position.                                                          |
+| 9     | SBG_EKF_STATUS_SOL_TYPE_NAV_DGPS                   | Full INS solution using GNSS DGPS position.                                                                  |
+| 10    | SBG_EKF_STATUS_SOL_TYPE_NAV_SBAS                   | Full INS solution using GNSS SBAS position.                                                                  |
+| 11    | SBG_EKF_STATUS_SOL_TYPE_NAV_RTK_FLOAT              | Full INS solution using GNSS RTK float position.                                                             |
+| 12    | SBG_EKF_STATUS_SOL_TYPE_NAV_RTK_FIXED              | Full INS solution using GNSS RTK fixed position.                                                             |
+| 13    | SBG_EKF_STATUS_SOL_TYPE_NAV_PPP_FLOAT              | Full INS solution using GNSS PPP float position.                                                             |
+| 14    | SBG_EKF_STATUS_SOL_TYPE_NAV_PPP_FIXED              | Full INS solution using GNSS PPP fixed position.                                                             |
+| 15    | SBG_EKF_STATUS_SOL_TYPE_NAV_ODO                    | Full INS solution using odometer velocity.                                                                   |
+| 16    | SBG_EKF_STATUS_SOL_TYPE_NAV_DVL                    | Full INS solution using DVL velocity.                                                                        |
+| 17    | SBG_EKF_STATUS_SOL_TYPE_NAV_USBL                   | Full INS solution using USBL position.                                                                       |
+| 18    | SBG_EKF_STATUS_SOL_TYPE_NAV_AIRSPEED               | Full INS solution using true airspeed.                                                                       |
+| 19    | SBG_EKF_STATUS_SOL_TYPE_NAV_GENERIC_VEL1           | Full INS solution using generic velocity 1.                                                                  |
+| 20    | SBG_EKF_STATUS_SOL_TYPE_NAV_GENERIC_POS1           | Full INS solution using generic position 1.                                                                  |
+
+#### SPOOFING_STATUS {#SPOOFING_STATUS}
+
+GNSS receiver spoofing status indicators.
+
+| Bit   | Name                                             | Type | Description                                                             |
+|-------|--------------------------------------------------|------|-------------------------------------------------------------------------|
+| [0-2] | SBG_EKF_STATUS_GNSS_SPOOFING_INDICATOR           | Enum | GNSS spoofing indicator. See [SPOOFING_INDICATOR](#SPOOFING_INDICATOR). |
+| 3     | SBG_EKF_STATUS_GNSS_SPOOFING_SRC_TIME            | Mask | Set if GNSS reports inconsistent time information.                      |
+| 4     | SBG_EKF_STATUS_GNSS_SPOOFING_SRC_BEHAVIOR        | Mask | Set if GNSS exhibits abnormal behavior consistent with spoofing.        |
+| 5     | SBG_EKF_STATUS_GNSS_SPOOFING_SRC_SOLUTION        | Mask | Set if the GNSS PVT solution is inconsistent with the INS solution.     |
+
+##### SPOOFING_INDICATOR {#SPOOFING_INDICATOR}
+
+Indicates the spoofing status of a GNSS receiver.
+
+| Value | Name                                        | Description                                                                    |
+|-------|---------------------------------------------|--------------------------------------------------------------------------------|
+| 0     | SBG_EKF_STATUS_SPOOFING_UNKNOWN             | Spoofing status is undetermined.                                               |
+| 1     | SBG_EKF_STATUS_SPOOFING_RELIABLE            | GNSS solution is considered as reliable.                                       |
+| 2     | SBG_EKF_STATUS_SPOOFING_INDICATED           | At least one detector indicates a potential spoofing event.                    |
+| 3     | SBG_EKF_STATUS_SPOOFING_CONFIRMED           | Multiple indicators confirm spoofing.                                          |
+
+#### AIDINGS_USED {#AIDINGS_USED}
+
+Indicates which aiding sources are currently used by the EKF solution.
+
+| Bit | Name                                              | Description                                                       |
+|-----|---------------------------------------------------|-------------------------------------------------------------------|
+| 0   | SBG_EKF_STATUS_AIDING_VERTICAL_REF_USED           | Set if the vertical reference is used in the solution.            |
+| 1   | SBG_EKF_STATUS_AIDING_ZUPT_USED                   | Set if a Zero Velocity Update (ZUPT) is used in the solution.     |
+| 2   | SBG_EKF_STATUS_AIDING_ZARU_USED                   | Set if a Zero Angular Rate Update (ZARU) is used in the solution. |
+| 3   | SBG_EKF_STATUS_AIDING_MOTION_CONSTRAINT_USED      | Set if vehicle motion constraints are used in the solution.       |
+| 4   | SBG_EKF_STATUS_AIDING_MAGNETOMETER_USED           | Set if the magnetometer is used in the solution.                  |
+| 5   | SBG_EKF_STATUS_AIDING_GNSS1_VEL_USED              | Set if GNSS 1 velocity is used in the solution.                   |
+| 6   | SBG_EKF_STATUS_AIDING_GNSS1_POS_USED              | Set if GNSS 1 position is used in the solution.                   |
+| 7   | SBG_EKF_STATUS_AIDING_GNSS1_HDT_USED              | Set if GNSS 1 true heading is used in the solution.               |
+| 8   | SBG_EKF_STATUS_AIDING_GNSS2_VEL_USED              | Set if GNSS 2 velocity is used in the solution.                   |
+| 9   | SBG_EKF_STATUS_AIDING_GNSS2_POS_USED              | Set if GNSS 2 position is used in the solution.                   |
+| 10  | SBG_EKF_STATUS_AIDING_GNSS2_HDT_USED              | Set if GNSS 2 true heading is used in the solution.               |
+| 11  | SBG_EKF_STATUS_AIDING_ODO_USED                    | Set if odometer velocity is used in the solution.                 |
+| 12  | SBG_EKF_STATUS_AIDING_DVL_BT_USED                 | Set if DVL bottom-tracking velocity is used in the solution.      |
+| 13  | SBG_EKF_STATUS_AIDING_DVL_WT_USED                 | Set if DVL water-track velocity is used in the solution.          |
+| 14  | SBG_EKF_STATUS_AIDING_USBL_USED                   | Set if USBL position is used in the solution.                     |
+| 15  | SBG_EKF_STATUS_AIDING_DEPTH_USED                  | Set if depth is used in the solution.                             |
+| 16  | SBG_EKF_STATUS_AIDING_AIRSPEED_USED               | Set if true airspeed is used in the solution.                     |
+| 17  | SBG_EKF_STATUS_AIDING_BARO_ALT_USED               | Set if barometric altitude is used in the solution.               |
+| 18  | SBG_EKF_STATUS_AIDING_GENERIC_VEL1_USED           | Set if generic velocity 1 is used in the solution.                |
+| 19  | SBG_EKF_STATUS_AIDING_GENERIC_POS1_USED           | Set if generic position 1 is used in the solution.                |
+
+> [!NOTE]
+> The *Used in Solution* flags use a 1 s timeout mechanism for easier interpretation.  
+> For example, `SBG_EKF_STATUS_AIDING_ODO_USED` remains set for 1 second after the odometer was last used in the solution.
 ## Surge, Sway, Heave
 
 This section covers output measurements specific to marine applications, including Surge, Sway, and Heave.
@@ -910,8 +1104,8 @@ Ship motion measurements are defined in a vessel-specific coordinate frame:
 - **Surge**: Longitudinal displacement (positive toward the bow/forward).
 - **Sway**: Transverse displacement (positive toward the starboard side/right).
 
-The heave measurement and vertical velocity (`HEAVE` and `VEL_Z` fields) are affected by the selected output monitoring point and will be re-located accordingly.  
-However, surge/sway, horizontal velocities and accelerations values are **only valid** when output at the IMU physical measurement point (Bare IMU).
+The ship-motion `HEAVE` and `VEL_Z` outputs are re-located to the selected output monitoring point.  
+The `SURGE`, `SWAY`, `VEL_X`, `VEL_Y`, `ACCEL_X`, `ACCEL_Y`, and `ACCEL_Z` outputs are **only valid** when this monitoring point is the IMU physical measurement point (`Bare IMU`). If another monitoring point is selected, these fields should be considered invalid.
 
 ### Ship Motion Status {#SHIP_MOTION_STATUS}
 
@@ -971,7 +1165,8 @@ This log provides real-time ship motion data, including main heave period, surge
 > All other fields are set to zero and reported as invalid in the `STATUS` bitmask.
 
 > [!WARNING]
-> Surge, sway, X/Y velocities, and acceleration values are only valid when measured at the IMU's physical location (Bare IMU).
+> The `HEAVE` and `VEL_Z` outputs follow the selected output monitoring point.  
+> The `SURGE`, `SWAY`, `VEL_X`, `VEL_Y`, `ACCEL_X`, `ACCEL_Y`, and `ACCEL_Z` outputs are only valid when this monitoring point is the IMU physical measurement point (`Bare IMU`).
 
 ### SBG_ECOM_LOG_SHIP_MOTION_HP (32) {#SBG_ECOM_LOG_SHIP_MOTION_HP}
 
@@ -1001,11 +1196,12 @@ The data corresponds to conditions roughly 150 seconds earlier than other logs t
 | STATUS        | Ship motion output status (see [SHIP_MOTION_STATUS](#SHIP_MOTION_STATUS)) | -     | uint16 | 2    | 44     |
 
 > [!NOTE]
-> The `SBG_ECOM_LOG_SHIP_MOTION_HP` message only computes and outputs delayed heave, vertical velocity and acceleration.  
+> The `SBG_ECOM_LOG_SHIP_MOTION_HP` message only computes and outputs delayed heave, vertical velocity and accelerations.  
 > All other fields are reported as 0 and the `STATUS` bitmask is set accordingly.
 
 > [!WARNING]
-> Acceleration values are only valid when measured at the IMU's physical location (Bare IMU).
+> The `HEAVE` and `VEL_Z` outputs follow the selected output monitoring point.  
+> The `ACCEL_X`, `ACCEL_Y`, and `ACCEL_Z` outputs are only valid when this monitoring point is the IMU physical measurement point (`Bare IMU`).
 ## GNSS aiding (PVT, HDT)
 
 The following logs provide the navigation unit's output, including Euler angles, quaternions, velocity and position.  
@@ -1077,25 +1273,30 @@ The timestamp indicates the actual GPS position data time, not synchronized with
 - **Message Name (ID):** `SBG_ECOM_LOG_GPS1_POS (14)`, `SBG_ECOM_LOG_GPS2_POS (17)`
 - **Compatibility:** INS capable products
 - **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-1.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-1.0-blue)
-- **Payload Size:** 62 bytes
+- **Payload Size:** 67 bytes
 
-| Field           | Description                                                                                | Unit  | Format  | Size | Offset |
-|-----------------|--------------------------------------------------------------------------------------------|-------|---------|------|--------|
-| TIME_STAMP      | Time since the sensor was powered up                                                       | µs    | uint32  | 4    | 0      |
-| STATUS_TYPE     | Position solution type and status (see [GPS_POS_STATUS_TYPE](#GPS_POS_STATUS_TYPE))        | -     | uint32  | 4    | 4      |
-| TOW             | GNSS Time of Week                                                                          | ms    | uint32  | 4    | 8      |
-| LATITUDE        | Latitude, positive North                                                                   | °     | double  | 8    | 12     |
-| LONGITUDE       | Longitude, positive East                                                                   | °     | double  | 8    | 20     |
-| ALTITUDE        | Altitude Above Mean Sea Level                                                              | m     | double  | 8    | 28     |
-| UNDULATION      | Altitude difference between the geoid and the Ellipsoid                                    | m     | float   | 4    | 36     |
-| LAT_ACC         | 1σ Latitude Accuracy                                                                       | m     | float   | 4    | 40     |
-| LONG_ACC        | 1σ Longitude Accuracy                                                                      | m     | float   | 4    | 44     |
-| ALTI_ACC        | 1σ Altitude Accuracy                                                                       | m     | float   | 4    | 48     |
-| NUM_SV_USED     | Number of space vehicles used in GNSS solution - 0xFF if N/A (since v1.4)                  | -     | uint8   | 1    | 52     |
-| BASE_STATION_ID | ID of the DGPS/RTK base station in use - 0xFFFF if N/A (since v1.4)                        | -     | uint16  | 2    | 53     |
-| DIFF_AGE        | Differential data age - 0xFFFF if N/A (since v1.4)                                         | 0.01s | uint16  | 2    | 55     |
-| NUM_SV_TRACKED  | Number of tracked SV - 0xFF if N/A (since v4.0)                                            | -     | uint8   | 1    | 57     |
-| STATUS_EXT      | Interference/spoofing status (see [GPS_POS_STATUS_EXT](#GPS_POS_STATUS_EXT)). (since v4.0) | -     | uint32  | 4    | 58     |
+| Field               | Description                                                                                | Unit  | Format  | Size | Offset |
+|---------------------|--------------------------------------------------------------------------------------------|-------|---------|------|--------|
+| TIME_STAMP          | Time since the sensor was powered up                                                       | µs    | uint32  | 4    | 0      |
+| STATUS_TYPE         | Position solution type and status (see [GPS_POS_STATUS_TYPE](#GPS_POS_STATUS_TYPE))        | -     | uint32  | 4    | 4      |
+| TOW                 | GNSS Time of Week                                                                          | ms    | uint32  | 4    | 8      |
+| LATITUDE            | Latitude, positive North                                                                   | °     | double  | 8    | 12     |
+| LONGITUDE           | Longitude, positive East                                                                   | °     | double  | 8    | 20     |
+| ALTITUDE            | Altitude Above Mean Sea Level                                                              | m     | double  | 8    | 28     |
+| UNDULATION          | Altitude difference between the geoid and the Ellipsoid                                    | m     | float   | 4    | 36     |
+| LAT_ACC             | 1σ Latitude Accuracy                                                                       | m     | float   | 4    | 40     |
+| LONG_ACC            | 1σ Longitude Accuracy                                                                      | m     | float   | 4    | 44     |
+| ALTI_ACC            | 1σ Altitude Accuracy                                                                       | m     | float   | 4    | 48     |
+| NUM_SV_USED         | Number of space vehicles used in GNSS solution - 0xFF if N/A (since v1.4)                  | -     | uint8   | 1    | 52     |
+| BASE_STATION_ID     | ID of the DGPS/RTK base station in use - 0xFFFF if N/A (since v1.4)                        | -     | uint16  | 2    | 53     |
+| DIFF_AGE            | Differential data age - 0xFFFF if N/A (since v1.4)                                         | 0.01s | uint16  | 2    | 55     |
+| NUM_SV_TRACKED      | Number of tracked SV - 0xFF if N/A (since v4.0)                                            | -     | uint8   | 1    | 57     |
+| STATUS_EXT          | Interference/spoofing status (see [GPS_POS_STATUS_EXT](#GPS_POS_STATUS_EXT)). (since v4.0) | -     | uint32  | 4    | 58     |
+| NR_DIAG_REBOOTS     | Number of GNSS reboots triggered by abnormal operating conditions. (since v5.6)            | -     | uint8   | 1    | 62     |
+| UP_TIME             | GNSS up time, in seconds - 0xFFFFFFFF if N/A. (since v5.6)                                 | s     | uint32  | 4    | 63     |
+
+> [!NOTE]
+> The GNSS receiver may be rebooted by the software if abnormal operating conditions are detected (e.g. interference or spoofing detection). Reboots triggered by normal user actions, including configuration changes or firmware updates, are not included in the counter.
 
 #### Status and Solution Type Field {#GPS_POS_STATUS_TYPE}
 
@@ -1209,18 +1410,18 @@ The timestamp represents the actual time of the GPS true heading data.
 - **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-1.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-1.0-blue)
 - **Payload Size:** 32 bytes
 
-| Field            | Description                                                                  | Unit  | Format  | Size | Offset |
-|------------------|------------------------------------------------------------------------------|-------|---------|------|--------|
-| TIME_STAMP       | Time since the sensor was powered up                                         | µs    | uint32  | 4    | 0      |
-| STATUS           | GNSS True Heading status (see [GPS_HDT_STATUS_BIT](#GPS_HDT_STATUS_BIT))     | -     | uint16  | 2    | 4      |
-| TOW              | GPS Time of Week                                                             | ms    | uint32  | 4    | 6      |
-| TRUE_HEADING     | True heading angle (0 to 360°)                                               | °     | float   | 4    | 10     |
-| TRUE_HEADING_ACC | 1σ True heading estimated accuracy (0 to 360°)                               | °     | float   | 4    | 14     |
-| PITCH            | Pitch angle from the master to the rover (-90 to +90°)                       | °     | float   | 4    | 18     |
-| PITCH_ACC        | 1σ pitch estimated accuracy (0 to 90°)                                       | °     | float   | 4    | 22     |
-| BASELINE         | Distance between main and auxiliary antenna (since v1.11)                    | m     | float   | 4    | 26     |
-| NUM_SV_TRACKED   | Number of space vehicles tracked for true heading - 0xFF if N/A (since v4.0) | -     | uint8   | 1    | 30     |
-| NUM_SV_USED      | Number of SV used in true heading solution - 0xFF if N/A (since v4.0)        | -     | uint8   | 1    | 31     |
+| Field            | Description                                                                       | Unit  | Format  | Size | Offset |
+|------------------|-----------------------------------------------------------------------------------|-------|---------|------|--------|
+| TIME_STAMP       | Time since the sensor was powered up                                              | µs    | uint32  | 4    | 0      |
+| STATUS           | GNSS True Heading status (see [GPS_HDT_STATUS_BIT](#GPS_HDT_STATUS_BIT))          | -     | uint16  | 2    | 4      |
+| TOW              | GPS Time of Week                                                                  | ms    | uint32  | 4    | 6      |
+| TRUE_HEADING     | True heading angle (0 to 360°)                                                    | °     | float   | 4    | 10     |
+| TRUE_HEADING_ACC | 1σ True heading estimated accuracy (0 to 360°)                                    | °     | float   | 4    | 14     |
+| PITCH            | Pitch angle from the master to the rover (-90 to +90°)                            | °     | float   | 4    | 18     |
+| PITCH_ACC        | 1σ pitch estimated accuracy (0 to 90°)                                            | °     | float   | 4    | 22     |
+| BASELINE         | Distance between main and auxiliary antenna (since v1.11)                         | m     | float   | 4    | 26     |
+| NUM_SV_TRACKED   | Number of space vehicles tracked for true heading - 0xFF if N/A (since v4.0)      | -     | uint8   | 1    | 30     |
+| NUM_SV_USED      | Number of SV used in true heading solution - 0xFF if N/A (since v4.0)             | -     | uint8   | 1    | 31     |
 
 #### Status and Validity {#GPS_HDT_STATUS_BIT}
 
@@ -1345,6 +1546,26 @@ The definitions below are shared across [SatData](#SatData) and [SignalData](#Si
 | 0     | SBG_ECOM_SAT_ELEVATION_STATUS_UNKNOWN          | Elevation status unknown                              |
 | 1     | SBG_ECOM_SAT_ELEVATION_STATUS_SETTING          | The satellite elevation is setting                    |
 | 2     | SBG_ECOM_SAT_ELEVATION_STATUS_RISING           | The satellite elevation is rising                     |
+
+### GNSS DOP {#SBG_ECOM_LOG_GPSX_DOP}
+
+This section provides dilution of precision (DOP) information from the primary or secondary GNSS receiver.
+
+- **Message Name (ID):** `SBG_ECOM_LOG_GPS1_DOP (64)`, `SBG_ECOM_LOG_GPS2_DOP (65)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-4.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-7.0-blue)
+- **Payload Size:** 20 bytes
+
+| Field           | Description                                                                         | Unit  | Format  | Size | Offset |
+|-----------------|-------------------------------------------------------------------------------------|-------|---------|------|--------|
+| TIME_STAMP      | Time since sensor was powered up                                                    | µs    | uint32  | 4    | 0      |
+| H_DOP           | Horizontal dilution of precision                                                    | -     | float   | 4    | 4      |
+| P_DOP           | Position dilution of precision                                                      | -     | float   | 4    | 8      |
+| V_DOP           | Vertical dilution of precision                                                      | -     | float   | 4    | 12     |
+| T_DOP           | Time dilution of precision                                                          | -     | float   | 4    | 16     |
+
+> [!NOTE]
+> A value of `99.0` indicates that the corresponding DOP value is not available.
 ## Aiding Equipments
 
 The following logs provide the navigation unit's output, including Euler angles, quaternions, velocity and position.  
@@ -1355,21 +1576,32 @@ These logs share common status flags and enumerations, detailed below.
 This log provides calibrated magnetometer data along with associated accelerometer readings.  
 When an internal magnetometer is used, the accelerometer data is sourced from the internal IMU.
 
+**Timestamp Considerations:**
+When used as an input for external magnetometer aiding, the `TIME_STAMP` field can represent:
+ - The INS internal time since the INS was powered up (in µs).
+ - A measurement delay to apply on the message reception and processing time (in µs).
+ - A GPS time of the week (in ms).
+
+You can control the type of supplied time with the `MAG_STATUS` field.
+
+> [!NOTE]
+> The output aiding message always uses the INS internal timestamp (in µs since the sensor power-up) to comply with other sbgECom output logs.
+
 - **Message Name (ID):** `SBG_ECOM_LOG_MAG (04)`
-- **Compatibility:** ELLIPSE AHRS/INS
-- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-1.0-blue)
+- **Compatibility:** All products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-1.0-blue) ![HPINS](https://img.shields.io/badge/HPINS-5.5-blue) ![PULSE](https://img.shields.io/badge/PULSE-3.0-blue)
 - **Payload Size:** 30 bytes
 
-| Field       | Description                                                       | Unit  | Format | Size | Offset |
-|-------------|-------------------------------------------------------------------|-------|--------|------|--------|
-| TIME_STAMP  | Time since the sensor was powered up                              | µs    | uint32 | 4    | 0      |
-| MAG_STATUS  | Magnetometer status bitmask (see [MAG_STATUS](#MAG_STATUS))       | -     | uint16 | 2    | 4      |
-| MAG_X       | Magnetic field along the X axis in the body frame.                | a.u   | float  | 4    | 6      |
-| MAG_Y       | Magnetic field along the Y axis in the body frame.                | a.u   | float  | 4    | 10     |
-| MAG_Z       | Magnetic field along the Z axis in the body frame.                | a.u   | float  | 4    | 14     |
-| ACCEL_X     | Acceleration along the X axis in the body frame.                  | m/s²  | float  | 4    | 18     |
-| ACCEL_Y     | Acceleration along the Y axis in the body frame.                  | m/s²  | float  | 4    | 22     |
-| ACCEL_Z     | Acceleration along the Z axis in the body frame.                  | m/s²  | float  | 4    | 26     |
+| Field       | Description                                                       | Unit     | Format | Size | Offset |
+|-------------|-------------------------------------------------------------------|----------|--------|------|--------|
+| TIME_STAMP  | Time since the sensor was powered up or delay or GPS TOW.         | µs or ms | uint32 | 4    | 0      |
+| MAG_STATUS  | Magnetometer status bitmask (see [MAG_STATUS](#MAG_STATUS))       | -        | uint16 | 2    | 4      |
+| MAG_X       | Magnetic field along the X axis in the body frame.                | a.u      | float  | 4    | 6      |
+| MAG_Y       | Magnetic field along the Y axis in the body frame.                | a.u      | float  | 4    | 10     |
+| MAG_Z       | Magnetic field along the Z axis in the body frame.                | a.u      | float  | 4    | 14     |
+| ACCEL_X     | Acceleration along the X axis in the body frame.                  | m/s²     | float  | 4    | 18     |
+| ACCEL_Y     | Acceleration along the Y axis in the body frame.                  | m/s²     | float  | 4    | 22     |
+| ACCEL_Z     | Acceleration along the Z axis in the body frame.                  | m/s²     | float  | 4    | 26     |
 
 > [!NOTE]
 > Magnetic field measurements are expressed in Arbitrary Units (A.U.) as they are used to determine magnetic heading.  
@@ -1377,17 +1609,18 @@ When an internal magnetometer is used, the accelerometer data is sourced from th
 
 #### MAG_STATUS Definition {#MAG_STATUS}
 
-| Bit | Name                             | Description                                             |
-|-----|----------------------------------|---------------------------------------------------------|
-| 0   | SBG_ECOM_MAG_MAG_X_BIT           | Set if the magnetometer X-axis passes the self-test     |
-| 1   | SBG_ECOM_MAG_MAG_Y_BIT           | Set if the magnetometer Y-axis passes the self-test     |
-| 2   | SBG_ECOM_MAG_MAG_Z_BIT           | Set if the magnetometer Z-axis passes the self-test     |
-| 3   | SBG_ECOM_MAG_ACCEL_X_BIT         | Set if the accelerometer X-axis passes the self-test    |
-| 4   | SBG_ECOM_MAG_ACCEL_Y_BIT         | Set if the accelerometer Y-axis passes the self-test    |
-| 5   | SBG_ECOM_MAG_ACCEL_Z_BIT         | Set if the accelerometer Z-axis passes the self-test    |
-| 6   | SBG_ECOM_MAG_MAGS_IN_RANGE       | Set if the magnetometer is not saturated                |
-| 7   | SBG_ECOM_MAG_ACCELS_IN_RANGE     | Set if the accelerometer is not saturated               |
-| 8   | SBG_ECOM_MAG_CALIBRATION_OK      | Set if the magnetometer appears to be calibrated        |
+| Bit    | Name                             | Description                                                                                     |
+|--------|----------------------------------|-------------------------------------------------------------------------------------------------|
+| 0      | SBG_ECOM_MAG_MAG_X_BIT           | Set if the magnetometer X-axis passes the self-test                                             |
+| 1      | SBG_ECOM_MAG_MAG_Y_BIT           | Set if the magnetometer Y-axis passes the self-test                                             |
+| 2      | SBG_ECOM_MAG_MAG_Z_BIT           | Set if the magnetometer Z-axis passes the self-test                                             |
+| 3      | SBG_ECOM_MAG_ACCEL_X_BIT         | Set if the accelerometer X-axis passes the self-test                                            |
+| 4      | SBG_ECOM_MAG_ACCEL_Y_BIT         | Set if the accelerometer Y-axis passes the self-test                                            |
+| 5      | SBG_ECOM_MAG_ACCEL_Z_BIT         | Set if the accelerometer Z-axis passes the self-test                                            |
+| 6      | SBG_ECOM_MAG_MAGS_IN_RANGE       | Set if the magnetometer is not saturated                                                        |
+| 7      | SBG_ECOM_MAG_ACCELS_IN_RANGE     | Set if the accelerometer is not saturated                                                       |
+| 8      | SBG_ECOM_MAG_CALIBRATION_OK      | Set if the magnetometer appears to be calibrated                                                |
+| [9-11] | SBG_ECOM_MAG_TIME_TYPE           | Indicates the magnetometer time type (added in v5.4) (see [AIDING_TIME_TYPE](#AIDING_TIME_TYPE))|
 
 ### SBG_ECOM_LOG_MAG_CALIB (05) {#SBG_ECOM_LOG_MAG_CALIB}
 
@@ -1431,7 +1664,6 @@ Consequently, the timestamp may slightly precede other data, such as IMU reading
 | Bit | Name                   | Description                                                                        |
 |-----|------------------------|------------------------------------------------------------------------------------|
 | 0   | SBG_ECOM_ODO_REAL_MEAS | Set if the log is from a real pulse measurement, 0 for virtual ZUPT.               |
-| 1   | SBG_ECOM_ODO_TIME_SYNC | Set if the velocity information is correctly time-synchronized.                    |
 
 ### SBG_ECOM_LOG_AIR_DATA (36) {#SBG_ECOM_LOG_AIR_DATA}
 
@@ -1444,37 +1676,45 @@ This log serves both as an input and output.
 It is sent by the unit when new internal airdata information is available.  
 It can also be used to inject external altitude and true airspeed aiding information.
 
-**Timestamp Considerations:**  
+**Timestamp Considerations:**
 This log is asynchronous, with the timestamp indicating the actual time of the altitude/airspeed measurement, rather than the time when the log was generated.
 
-When used as an input for external altitude aiding, the `TIME_STAMP` field may either represent an absolute time or a measurement delay, depending on the status flags.  
-The measurement delay allows the INS to calculate an absolute timestamp based on the reception time, transmission delay, and the specified delay.
+When used as an input for external air data aiding, the `TIME_STAMP` field can represent:
+ - The INS internal time since the INS was powered up (in µs).
+ - A measurement delay to apply on the message reception and processing time (in µs).
+ - A GPS time of the week (in ms).
+
+You can control the type of supplied time with the `AIRDATA_STATUS` field.
+
+> [!NOTE]
+> The output aiding message always uses the INS internal timestamp (in µs since the sensor power-up) to comply with other sbgECom output logs.
 
 - **Message Name (ID):** `SBG_ECOM_LOG_AIR_DATA (36)`
-- **Compatibility:** ELLIPSE AHRS/INS
-- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-2.3-blue)
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-2.3-blue) ![HPINS](https://img.shields.io/badge/HPINS-5.5-blue)
 - **Payload Size:** 26 bytes
 
-| Field              | Description                                                        | Unit   | Format | Size | Offset |
-|--------------------|--------------------------------------------------------------------|--------|--------|------|--------|
-| TIME_STAMP / DELAY | Time since sensor was powered up or measurement delay              | µs     | uint32 | 4    | 0      |
-| AIRDATA_STATUS     | Airdata information status (see [AIRDATA_STATUS](#AIRDATA_STATUS)) | -      | uint16 | 2    | 4      |
-| PRESSURE_ABS       | Raw absolute pressure measured by the barometer sensor             | Pa     | float  | 4    | 6      |
-| ALTITUDE           | Altitude computed from barometric altimeter                        | m      | float  | 4    | 10     |
-| PRESSURE_DIFF      | Raw differential pressure measured by the pitot tube               | Pa     | float  | 4    | 14     |
-| TRUE_AIRSPEED      | True airspeed measured by the pitot tube                           | m/s    | float  | 4    | 18     |
-| AIR_TEMPERATURE    | Outside air temperature used for airspeed computations             | °C     | float  | 4    | 22     |
+| Field              | Description                                                        | Unit     | Format | Size | Offset |
+|--------------------|--------------------------------------------------------------------|----------|--------|------|--------|
+| TIME_STAMP         | Time since the INS was powered up or delay or GPS TOW.             | µs or ms | uint32 | 4    | 0      |
+| AIRDATA_STATUS     | Airdata information status (see [AIRDATA_STATUS](#AIRDATA_STATUS)) | -        | uint16 | 2    | 4      |
+| PRESSURE_ABS       | Raw absolute pressure measured by the barometer sensor             | Pa       | float  | 4    | 6      |
+| ALTITUDE           | Altitude computed from barometric altimeter                        | m        | float  | 4    | 10     |
+| PRESSURE_DIFF      | Raw differential pressure measured by the pitot tube               | Pa       | float  | 4    | 14     |
+| TRUE_AIRSPEED      | True airspeed measured by the pitot tube                           | m/s      | float  | 4    | 18     |
+| AIR_TEMPERATURE    | Outside air temperature used for airspeed computations             | °C       | float  | 4    | 22     |
 
 #### AIRDATA_STATUS Definition {#AIRDATA_STATUS}
 
-| Bit | Name                                  | Description                                                                  |
-|-----|---------------------------------------|------------------------------------------------------------------------------|
-| 0   | SBG_ECOM_AIR_DATA_TIME_IS_DELAY       | Set if `TIME_STAMP` represents a measurement delay instead of absolute time. |
-| 1   | SBG_ECOM_AIR_DATA_PRESSURE_ABS_VALID  | Set if the absolute pressure field is filled and valid.                      |
-| 2   | SBG_ECOM_AIR_DATA_ALTITUDE_VALID      | Set if the barometric altitude field is filled and valid.                    |
-| 3   | SBG_ECOM_AIR_DATA_PRESSURE_DIFF_VALID | Set if the differential pressure field is filled and valid.                  |
-| 4   | SBG_ECOM_AIR_DATA_AIRSPEED_VALID      | Set if the true airspeed field is filled and valid.                          |
-| 5   | SBG_ECOM_AIR_DATA_TEMPERATURE_VALID   | Set if the outside air temperature field is filled and valid.                |
+| Bit   | Name                                  | Description                                                                                  |
+|-------|---------------------------------------|----------------------------------------------------------------------------------------------|
+| 0     | SBG_ECOM_AIR_DATA_TIME_IS_DELAY       | Deprecated. Set if `TIME_STAMP` represents a measurement delay instead of absolute time.     |
+| 1     | SBG_ECOM_AIR_DATA_PRESSURE_ABS_VALID  | Set if the absolute pressure field is filled and valid.                                      |
+| 2     | SBG_ECOM_AIR_DATA_ALTITUDE_VALID      | Set if the barometric altitude field is filled and valid.                                    |
+| 3     | SBG_ECOM_AIR_DATA_PRESSURE_DIFF_VALID | Set if the differential pressure field is filled and valid.                                  |
+| 4     | SBG_ECOM_AIR_DATA_AIRSPEED_VALID      | Set if the true airspeed field is filled and valid.                                          |
+| 5     | SBG_ECOM_AIR_DATA_TEMPERATURE_VALID   | Set if the outside air temperature field is filled and valid.                                |
+| [6-8] | SBG_ECOM_AIR_DATA_TIME_TYPE           | Indicates the air data time type (added in v5.4) (see [AIDING_TIME_TYPE](#AIDING_TIME_TYPE)) |
 
 ### SBG_ECOM_LOG_DVL_BOTTOM/WATER_TRACK {#SBG_ECOM_LOG_DVL_XXXX}
 
@@ -1511,44 +1751,45 @@ The timestamp reflects the actual time of the depth measurement, rather than bei
 
 - **Message Name (ID):** `SBG_ECOM_LOG_DEPTH (47)`
 - **Compatibility:** High Performance INS
-- **Firmware:** ![HPINS](https://img.shields.io/badge/HPINS-1.3-blue)
+- **Firmware:** ![HPINS](https://img.shields.io/badge/HPINS-6.3-blue)
 - **Payload Size:** 14 bytes
 
 | Field         | Description                                                     | Unit  | Format | Size | Offset |
 |---------------|-----------------------------------------------------------------|-------|--------|------|--------|
 | TIME_STAMP    | Time since the sensor was powered up or measurement delay       | µs    | uint32 | 4    | 0      |
 | DEPTH_STATUS  | Depth sensor status bitmask (see [DEPTH_STATUS](#DEPTH_STATUS)) | -     | uint16 | 2    | 4      |
-| PRESSURE_ABS  | Absolute water pressure measured                                | Pa    | float  | 4    | 6      |
-| DEPTH         | Measured depth, positive upward                                 | m     | float  | 4    | 10     |
+| PRESSURE      | Hydrostatic pressure measured                                   | Pa    | float  | 4    | 6      |
+| DEPTH         | Measured depth, positive downward                               | m     | float  | 4    | 10     |
 
 #### DEPTH_STATUS Definition {#DEPTH_STATUS}
 
 | Bit | Name                              | Description                                                      |
 |-----|-----------------------------------|------------------------------------------------------------------|
 | 0   | SBG_ECOM_DEPTH_TIME_IS_DELAY      | Set if the timestamp represents a delay instead of absolute time |
-| 1   | SBG_ECOM_DEPTH_PRESSURE_ABS_VALID | Set if the pressure field is valid                               |
+| 1   | SBG_ECOM_DEPTH_PRESSURE_VALID     | Set if the hydrostatic pressure field is valid                   |
 | 2   | SBG_ECOM_DEPTH_ALTITUDE_VALID     | Set if the depth field is valid                                  |
 
 ### SBG_ECOM_LOG_USBL (37) {#SBG_ECOM_LOG_USBL}
 
-This log retrieves the position information as determined by a USBL (Ultra-Short Baseline) beacon.  
-The timestamp indicates the actual time of the positioning data, rather than being synchronized with the main loop.
+This log retrieves the position information as determined by a USBL (Ultra-Short Baseline) beacon.
+The timestamp represents the time at which the USBL message was received.
 
 - **Message Name (ID):** `SBG_ECOM_LOG_USBL (37)`
 - **Compatibility:** High Performance INS
-- **Firmware:** ![HPINS](https://img.shields.io/badge/HPINS-1.3-blue)
-- **Payload Size:** 38 bytes
+- **Firmware:** ![HPINS](https://img.shields.io/badge/HPINS-6.3-blue)
+- **Payload Size:** 42 bytes
 
-| Field         | Description                                                    | Unit   | Format | Size | Offset |
-|---------------|----------------------------------------------------------------|--------|--------|------|--------|
-| TIME_STAMP    | Time since the sensor was powered up                           | µs     | uint32 | 4    | 0      |
-| USBL_STATUS   | USBL system status bitmask (see [USBL_STATUS](#USBL_STATUS))   | -      | uint16 | 2    | 4      |
-| LATITUDE      | Latitude in degrees, positive north                            | °      | double | 8    | 6      |
-| LONGITUDE     | Longitude in degrees, positive east                            | °      | double | 8    | 14     |
-| DEPTH         | Depth below mean sea level, positive down                      | m      | float  | 4    | 22     |
-| LATITUDE_STD  | 1σ standard deviation of latitude accuracy                     | m      | float  | 4    | 26     |
-| LONGITUDE_STD | 1σ standard deviation of longitude accuracy                    | m      | float  | 4    | 30     |
-| DEPTH_STD     | 1σ standard deviation of depth accuracy                        | m      | float  | 4    | 34     |
+| Field            | Description                                                    | Unit   | Format | Size | Offset |
+|------------------|----------------------------------------------------------------|--------|--------|------|--------|
+| TIME_STAMP       | Time since the sensor was powered up                           | µs     | uint32 | 4    | 0      |
+| USBL_STATUS      | USBL system status bitmask (see [USBL_STATUS](#USBL_STATUS))   | -      | uint16 | 2    | 4      |
+| LATITUDE         | Latitude in degrees, positive north                            | °      | double | 8    | 6      |
+| LONGITUDE        | Longitude in degrees, positive east                            | °      | double | 8    | 14     |
+| DEPTH            | Depth below mean sea level, positive down                      | m      | float  | 4    | 22     |
+| LATITUDE_STD     | 1σ standard deviation of latitude accuracy                     | m      | float  | 4    | 26     |
+| LONGITUDE_STD    | 1σ standard deviation of longitude accuracy                    | m      | float  | 4    | 30     |
+| DEPTH_STD        | 1σ standard deviation of depth accuracy                        | m      | float  | 4    | 34     |
+| INFORMATION_AGE  | Age of the USBL measurement at processing time                 | µs     | uint32 | 4    | 38     |
 
 #### USBL_STATUS Definition {#USBL_STATUS}
 
@@ -1573,14 +1814,11 @@ This log serves both as an input and output:
 **Velocity Frame**
 
 The INS can utilize 1D, 2D, or 3D velocity information to enhance navigation performance, particularly during dead reckoning periods.
+A 1D, 2D, or 3D velocity can be provided using the `VELOCITY_STATUS` bitmask.
 
-The velocity can be expressed in either:
- - The vehicle body frame (X/Y/Z)
- - The INS navigation frame (North, East, Down)
-  
-The velocity frame convention is determined by the generic velocity aiding error model configuration.
- - When body velocity is used, a 1D, 2D, or 3D velocity can be provided using the `VELOCITY_STATUS` bitmask.
- - When navigation frame velocity is used, all three components (North, East, Down) must be supplied.
+The velocity is expressed in body frame (X/Y/Z):
+ - When the log is used as an input, the frame is the velocity instrument body frame.
+ - When the log is used as an output, the frame is the vehicle body frame.
 
 **Timestamp Considerations:**
 When used as an input for external velocity aiding, the `TIME_STAMP` field can represent:
@@ -1602,9 +1840,9 @@ You can control the type of supplied time with the `VELOCITY_STATUS` field.
 | --------------- | ----------------------------------------------------------------- | -------- | ------ | ---- | ------ |
 | TIME_STAMP      | Time since the INS was powered up or delay or GPS TOW.            | µs or ms | uint32 | 4    | 0      |
 | VELOCITY_STATUS | Velocity status bitmask (see [VELOCITY_STATUS](#VELOCITY_STATUS)) | -        | uint16 | 2    | 4      |
-| VELOCITY_0      | Velcoity component 0, body X (forward) or navigation North        | m/s      | float  | 4    | 6      |
-| VELOCITY_1      | Velcoity component 1, body Y (right) or navigation East           | m/s      | float  | 4    | 10     |
-| VELOCITY_2      | Velcoity component 2, body Z (down) or navigation Down            | m/s      | float  | 4    | 14     |
+| VELOCITY_0      | Velocity component 0, body X (forward)                            | m/s      | float  | 4    | 6      |
+| VELOCITY_1      | Velocity component 1, body Y (right)                              | m/s      | float  | 4    | 10     |
+| VELOCITY_2      | Velocity component 2, body Z (down)                               | m/s      | float  | 4    | 14     |
 | VELOCITY_STD_0  | Standard deviation of the velocity 0 component                    | m/s      | float  | 4    | 18     |
 | VELOCITY_STD_1  | Standard deviation of the velocity 1 component                    | m/s      | float  | 4    | 22     |
 | VELOCITY_STD_2  | Standard deviation of the velocity 2 component                    | m/s      | float  | 4    | 26     |
@@ -1613,19 +1851,86 @@ You can control the type of supplied time with the `VELOCITY_STATUS` field.
 
 | Bit   | Name                        | Description                                                                      |
 | ----- | --------------------------- | -------------------------------------------------------------------------------- |
-| [0-2] | SBG_ECOM_VELOCITY_TIME_TYPE | Indicates the velocity time type (see [VELOCITY_TIME_TYPE](#VELOCITY_TIME_TYPE)) |
+| [0-2] | SBG_ECOM_VELOCITY_TIME_TYPE | Indicates the velocity time type (see [AIDING_TIME_TYPE](#AIDING_TIME_TYPE))     |
 | 3     | SBG_ECOM_VELOCITY_0_VALID   | Set if the velocity component 0 information is valid                             |
 | 4     | SBG_ECOM_VELOCITY_1_VALID   | Set if the velocity component 1 information is valid                             |
 | 5     | SBG_ECOM_VELOCITY_2_VALID   | Set if the velocity component 2 information is valid                             |
 | 6     | SBG_ECOM_VELOCITY_STD_VALID | Set if the velocity standard deviation information is valid                      |
 
-##### VELOCITY_TIME_TYPE Definition
+### SBG_ECOM_LOG_POSITION_X {#SBG_ECOM_LOG_POSITION_X}
+
+This log provides 3D position aiding information in geodetic coordinates (Latitude, Longitude, Height above ellipsoid).
+
+This log serves both as an input and output:
+ - It is used to inject external position aiding information into the INS.
+ - The unit can send this log when new position information is received and processed.
+
+**Position Frame**
+
+The INS can utilize the 3D position information to enhance navigation performance, particularly during dead reckoning periods.
+
+The position must always be expressed as a complete 3D position in the navigation frame:
+ - Latitude (in degrees, positive North)
+ - Longitude (in degrees, positive East)
+ - Height above ellipsoid (in meters)
+
+The INS does not apply any datum conversion: the position is used in the datum it is supplied in.
+
+**Timestamp Considerations:**
+When used as an input for external position aiding, the `TIME_STAMP` field can represent:
+ - The INS internal time since the INS was powered up (in µs).
+ - A measurement delay to apply on the message reception and processing time (in µs).
+ - A GPS time of the week (in ms).
+
+You can control the type of supplied time with the `POSITION_STATUS` field.
+
+> [!NOTE]
+> The output position aiding message always uses the INS internal timestamp (in µs since the sensor power-up) to comply with other sbgECom output logs.
+
+- **Message Name (ID):** `SBG_ECOM_LOG_POSITION_1 (62)`
+- **Compatibility:** INS capable products
+- **Firmware:** ![ELLIPSE](https://img.shields.io/badge/ELLIPSE-3.2-blue) ![HPINS](https://img.shields.io/badge/HPINS-6.0-blue)
+- **Payload Size:** 54
+
+| Field           | Description                                                       | Unit     | Format | Size | Offset |
+| --------------- | ----------------------------------------------------------------- | -------- | ------ | ---- | ------ |
+| TIME_STAMP      | Time since the INS was powered up or delay or GPS TOW.            | µs or ms | uint32 | 4    | 0      |
+| POSITION_STATUS | Position status bitmask (see [POSITION_STATUS](#POSITION_STATUS)) | -        | uint16 | 2    | 4      |
+| LATITUDE        | Latitude, positive North                                          | °        | double | 8    | 6      |
+| LONGITUDE       | Longitude, positive East                                          | °        | double | 8    | 14     |
+| HEIGHT          | Height above ellipsoid                                            | m        | double | 8    | 22     |
+| COV_LAT_LAT     | Variance of the latitude estimate                                 | m^2      | float  | 4    | 30     |
+| COV_LON_LON     | Variance of the longitude estimate                                | m^2      | float  | 4    | 34     |
+| COV_HGT_HGT     | Variance of the height estimate                                   | m^2      | float  | 4    | 38     |
+| COV_LAT_LON     | Covariance between latitude and longitude estimates               | m^2      | float  | 4    | 42     |
+| COV_LAT_HGT     | Covariance between latitude and height estimates                  | m^2      | float  | 4    | 46     |
+| COV_LON_HGT     | Covariance between longitude and height estimates                 | m^2      | float  | 4    | 50     |
+
+#### POSITION_STATUS Definition {#POSITION_STATUS}
+
+| Bit   | Name                        | Description                                                                      |
+| ----- | --------------------------- | -------------------------------------------------------------------------------- |
+| [0-2] | SBG_ECOM_POSITION_TIME_TYPE | Indicates the position time type (see [AIDING_TIME_TYPE](#AIDING_TIME_TYPE))     |
+| [3-5] | SBG_ECOM_POSITION_TYPE      | Position type (see [POSITION_TYPE](#POSITION_TYPE))                              |
+
+##### POSITION_TYPE Definition {#POSITION_TYPE}
+
+| Value | Name                              | Description                                             |
+| ----- | --------------------------------- | ------------------------------------------------------- |
+| 0     | SBG_ECOM_POSITION_TYPE_INVALID    | Position information is invalid                         |
+| 1     | SBG_ECOM_POSITION_TYPE_VALID      | Position information is valid                           |
+
+> [!NOTE]
+> The covariance matrix must always be provided by the user.
+> If full covariance information is not available, provide a default variance (e.g., 100 m^2 for 10 m standard deviation) and set off-diagonal covariance terms to zero.
+
+### AIDING_TIME_TYPE Definition {#AIDING_TIME_TYPE}
 
 | Value | Name                                     | Description                                             |
 | ----- | ---------------------------------------- | ------------------------------------------------------- |
-| 0     | SBG_ECOM_VELOCITY_TIME_TYPE_TIMESTAMP    | `TIME_STAMP` represents time since INS power-up (in µs) |
-| 1     | SBG_ECOM_VELOCITY_TIME_TYPE_DELAY        | `TIME_STAMP` represents a measurement delay (in µs)     |
-| 2     | SBG_ECOM_VELOCITY_TIME_TYPE_TIME_OF_WEEK | `TIME_STAMP` represents GPS time of the week (in ms)    |
+| 0     | SBG_ECOM_AIDING_TIME_TYPE_TIMESTAMP      | `TIME_STAMP` represents time since INS power-up (in µs) |
+| 1     | SBG_ECOM_AIDING_TIME_TYPE_DELAY          | `TIME_STAMP` represents a measurement delay (in µs)     |
+| 2     | SBG_ECOM_AIDING_TIME_TYPE_TIME_OF_WEEK   | `TIME_STAMP` represents GPS time of the week (in ms)    |
 ## Event Markers
 
 SBG Systems products support multiple input and output events, facilitating precise timestamping and synchronization of various equipment.  

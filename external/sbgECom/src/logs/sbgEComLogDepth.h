@@ -8,9 +8,9 @@
  *
  * Depth sensor are used for sub-sea navigation to improve height.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -28,7 +28,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * \endlicense
  */
 
@@ -44,14 +44,14 @@ extern "C" {
 #endif
 
 //----------------------------------------------------------------------//
-//- Log Air Data status definitions                                    -//
+//- Log depth status definitions                                       -//
 //----------------------------------------------------------------------//
 
 /*!
- * Air Data sensor status mask definitions
+ * Depth sensor status mask definitions.
  */
 #define SBG_ECOM_DEPTH_TIME_IS_DELAY                (0x0001u << 0)      /*!< Set to 1 if the timeStamp field represents a delay instead of an absolute timestamp. */
-#define SBG_ECOM_DEPTH_PRESSURE_ABS_VALID           (0x0001u << 1)      /*!< Set to 1 if the pressure field is filled and valid. */
+#define SBG_ECOM_DEPTH_PRESSURE_VALID               (0x0001u << 1)      /*!< Set to 1 if the hydrostatic pressure field is filled and valid. */
 #define SBG_ECOM_DEPTH_ALTITUDE_VALID               (0x0001u << 2)      /*!< Set to 1 if the depth altitude field is filled and valid. */
 
 //----------------------------------------------------------------------//
@@ -64,9 +64,9 @@ extern "C" {
 typedef struct _SbgEComLogDepth
 {
     uint32_t    timeStamp;                      /*!< Time in us since the sensor power up OR measurement delay in us. */
-    uint16_t    status;                         /*!< Airdata sensor status bitmask. */
-    float       pressureAbs;                    /*!< Raw absolute pressure measured by the depth sensor in Pascals. */
-    float       altitude;                       /*!< Altitude computed from depth sensor in meters and positive upward. */
+    uint16_t    status;                         /*!< Depth sensor status bitmask. */
+    float       pressure;                       /*!< Hydrostatic pressure measured by the depth sensor in Pascals. */
+    float       depth;                          /*!< Depth computed in meters and positive downward. */
 } SbgEComLogDepth;
 
 //----------------------------------------------------------------------//
@@ -75,7 +75,7 @@ typedef struct _SbgEComLogDepth
 
 /*!
  * Parse data for the SBG_ECOM_LOG_DEPTH message and fill the corresponding structure.
- * 
+ *
  * \param[out]  pLogData                    Log structure instance to fill.
  * \param[in]   pStreamBuffer               Input stream buffer to read the log from.
  * \return                                  SBG_NO_ERROR if a valid log has been read from the stream buffer.

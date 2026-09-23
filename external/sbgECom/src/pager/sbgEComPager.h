@@ -6,7 +6,7 @@
  *
  * \brief           Page management.
  *
- * \copyright       Copyright (C) 2007-2025, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -61,6 +61,13 @@ typedef struct _SbgEComPager
 //----------------------------------------------------------------------//
 //- Public functions                                                   -//
 //----------------------------------------------------------------------//
+
+/*!
+ * Zero initialize a pager.
+ *
+ * \param[in]   pPager                      Pager.
+ */
+void sbgEComPagerZeroInit(SbgEComPager *pPager);
 
 
 /*!

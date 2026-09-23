@@ -153,13 +153,13 @@ const sbg_driver::msg::SbgEkfStatus MessageWrapper::createEkfStatusMessage(uint3
 
   ekf_status_message.usbl_used          = (ekf_status & SBG_ECOM_SOL_USBL_USED) != 0;
 
-  ekf_status_message.air_data_used      = (ekf_status & SBG_ECOM_SOL_AIR_DATA_USED) != 0;
+  ekf_status_message.air_data_used      = (ekf_status & SBG_ECOM_SOL_AIRSPEED_USED) != 0;
 
   ekf_status_message.zupt_used          = (ekf_status & SBG_ECOM_SOL_ZUPT_USED) != 0;
 
   ekf_status_message.align_valid        = (ekf_status & SBG_ECOM_SOL_ALIGN_VALID) != 0;
 
-  ekf_status_message.depth_used         = (ekf_status & SBG_ECOM_SOL_DEPTH_USED) != 0;
+  ekf_status_message.depth_used         = (ekf_status & SBG_ECOM_SOL_VERTICAL_AIDING_USED) != 0;
 
   ekf_status_message.zaru_used          = (ekf_status & SBG_ECOM_SOL_ZARU_USED) != 0;
 
@@ -371,7 +371,7 @@ const sbg_driver::msg::SbgAirDataStatus MessageWrapper::createAirDataStatusMessa
   air_data_status_message.pressure_valid        = (ref_sbg_air_data.status & SBG_ECOM_AIR_DATA_PRESSURE_ABS_VALID) != 0;
   air_data_status_message.altitude_valid        = (ref_sbg_air_data.status & SBG_ECOM_AIR_DATA_ALTITUDE_VALID) != 0;
   air_data_status_message.pressure_diff_valid   = (ref_sbg_air_data.status & SBG_ECOM_AIR_DATA_PRESSURE_DIFF_VALID) != 0;
-  air_data_status_message.air_speed_valid       = (ref_sbg_air_data.status & SBG_ECOM_AIR_DATA_AIRPSEED_VALID) != 0;
+  air_data_status_message.air_speed_valid       = (ref_sbg_air_data.status & SBG_ECOM_AIR_DATA_AIRSPEED_VALID) != 0;
   air_data_status_message.air_temperature_valid = (ref_sbg_air_data.status & SBG_ECOM_AIR_DATA_TEMPERATURE_VALID) != 0;
 
   return air_data_status_message;

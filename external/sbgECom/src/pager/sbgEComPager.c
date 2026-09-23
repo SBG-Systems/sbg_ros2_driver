@@ -26,6 +26,18 @@ static void sbgEComPagerReset(SbgEComPager *pPager)
 //- Public functions                                                   -//
 //----------------------------------------------------------------------//
 
+void sbgEComPagerZeroInit(SbgEComPager *pPager)
+{
+    assert(pPager);
+
+    pPager->nrPages     = 0;
+    pPager->pageIndex   = 0;
+    pPager->size        = 0;
+    pPager->pBuffer     = 0;
+    pPager->bufferSize  = 0;
+
+}
+
 
 SbgErrorCode sbgEComPagerInitForJoin(SbgEComPager *pPager, void *pBuffer, size_t bufferSize)
 {

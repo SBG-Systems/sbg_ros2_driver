@@ -208,10 +208,14 @@ The device coordinate frame is defined as North East Down (NED).
 | Latitude            | Degrees, positive values indicate North, negative values indicate South. |
 | Longitude           | Degrees, positive values indicate East, negative values indicate West.   |
 | Altitude            | Meters, altitude above Mean Sea Level (MSL), positive upward.            |
-| Height              | Meters, height above the WGS-84 Ellipsoid, positive upward.              |
+| Height              | Meters, height above the ellipsoid, positive upward.                     |
 | Heave               | Vertical displacement, positive downward.                                |
 | Surge               | Longitudinal displacement, positive toward the vessel's bow.             |
 | Sway                | Transverse displacement, positive toward the vessel's starboard side.    |
+
+> [!NOTE]
+> Latitude, longitude and height are expressed in the datum of the position aiding sources.  
+> The INS does not apply any datum conversion.
 
 ## GNSS Definitions
 This section covers common definitions related to GNSS used by the sbgECom binary protocol.
@@ -356,6 +360,7 @@ Below are the enum definitions for GNSS signals.
 | SBG_ECOM_SIGNAL_ID_QZSS_L6_D         | 167   |
 | SBG_ECOM_SIGNAL_ID_QZSS_L6_E         | 168   |
 | SBG_ECOM_SIGNAL_ID_QZSS_L6_DE        | 169   |
+| SBG_ECOM_SIGNAL_ID_QZSS_L1_CB        | 170   |
 
 #### SBAS system (180 to 199)
 | Enum                                 | Value |

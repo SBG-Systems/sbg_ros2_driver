@@ -30,7 +30,8 @@ It briefly describe which parameters are contained in each output log.
 
 The `SBG_ECOM_THIRD_PARTY_TSS1` message is a proprietary log specifically designed for marine survey applications, providing heave, roll, pitch, sway, and vertical accelerations data.
 
-The log data is deported to the output lever arms configured for each output interface, ensuring precise measurements at specific points on the vessel.  
+The `Heave measurement` field is re-located to the output lever arms configured for each output interface, ensuring precise measurements at specific points on the vessel.  
+The `Sway acceleration` and `Vertical acceleration` fields are only valid when this output reference point is the IMU physical measurement point (`Bare IMU`).  
 With the capability to output multiple TSS1 frames across various interfaces, it allows seamless data integration for equipment located in different positions on a vessel.
 
 ### Message Format
@@ -101,6 +102,10 @@ Please find below a detailed breakdown and explanation of each field:
 
 > [!WARNING]
 > The TSS1 frame uses different conventions for heave measurements. In this frame, sway is expressed as positive left, and heave is positive up.
+
+> [!WARNING]
+> The `Heave measurement` field follows the configured output lever arm.  
+> The `Sway acceleration` and `Vertical acceleration` fields are only valid when the selected output reference point is the IMU physical measurement point (`Bare IMU`).
 
 ---
 
