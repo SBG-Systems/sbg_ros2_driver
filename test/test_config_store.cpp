@@ -143,6 +143,14 @@ TEST_F(ConfigStoreTest, optionalParametersFallBackToTheirDefaults)
   EXPECT_FALSE(config_store.shouldPublishNmea());
   EXPECT_EQ(config_store.getNmeaFullTopic(), "ntrip_client/nmea");
 
+  EXPECT_FALSE(config_store.getPositionInputConf().subscribe);
+  EXPECT_EQ(config_store.getPositionInputConf().topic, "position");
+  EXPECT_FALSE(config_store.getVelocityInputConf().subscribe);
+  EXPECT_EQ(config_store.getVelocityInputConf().topic, "velocity");
+  EXPECT_EQ(config_store.getVelocityInputFrame(), sbg::aiding::VelocityFrame::NED);
+  EXPECT_FALSE(config_store.getAirDataInputConf().subscribe);
+  EXPECT_EQ(config_store.getAirDataInputConf().topic, "airData");
+
   EXPECT_FALSE(config_store.checkConfigWithRos());
   EXPECT_FALSE(config_store.checkRosStandardMessages());
   EXPECT_TRUE(config_store.getInsSettingsFile().empty());
@@ -170,6 +178,46 @@ TEST_F(ConfigStoreTest, rtcmAndNmeaTopicsAreBuiltFromNamespaceAndName)
 
   EXPECT_TRUE(config_store.shouldPublishNmea());
   EXPECT_EQ(config_store.getNmeaFullTopic(), "ntrip/gga");
+}
+
+TEST_F(ConfigStoreTest, aidingInputsAreReadFromTheirOwnSection)
+{
+  const auto node = createNode({
+    rclcpp::Parameter("uartConf.portName", "/dev/ttyUSB0"),
+    rclcpp::Parameter("aidingInput.position.subscribe", true),
+    rclcpp::Parameter("aidingInput.position.topic_name", "gnss/fix"),
+    rclcpp::Parameter("aidingInput.velocity.subscribe", true),
+    rclcpp::Parameter("aidingInput.velocity.topic_name", "dvl/twist"),
+    rclcpp::Parameter("aidingInput.velocity.frame", "flu"),
+    rclcpp::Parameter("aidingInput.airData.subscribe", true),
+    rclcpp::Parameter("aidingInput.airData.topic_name", "baro/pressure"),
+  });
+
+  sbg::ConfigStore config_store;
+
+  config_store.loadFromRosNodeHandle(*node);
+
+  EXPECT_TRUE(config_store.getPositionInputConf().subscribe);
+  EXPECT_EQ(config_store.getPositionInputConf().topic, "gnss/fix");
+
+  EXPECT_TRUE(config_store.getVelocityInputConf().subscribe);
+  EXPECT_EQ(config_store.getVelocityInputConf().topic, "dvl/twist");
+  EXPECT_EQ(config_store.getVelocityInputFrame(), sbg::aiding::VelocityFrame::FLU);
+
+  EXPECT_TRUE(config_store.getAirDataInputConf().subscribe);
+  EXPECT_EQ(config_store.getAirDataInputConf().topic, "baro/pressure");
+}
+
+TEST_F(ConfigStoreTest, unknownVelocityAidingFrameIsRejected)
+{
+  const auto node = createNode({
+    rclcpp::Parameter("uartConf.portName", "/dev/ttyUSB0"),
+    rclcpp::Parameter("aidingInput.velocity.frame", "body"),
+  });
+
+  sbg::ConfigStore config_store;
+
+  EXPECT_ANY_THROW(config_store.loadFromRosNodeHandle(*node));
 }
 
 TEST_F(ConfigStoreTest, missingCommunicationInterfaceIsRejected)
