@@ -252,6 +252,9 @@ if(BUILD_TESTING)
 
   ament_lint_auto_find_test_dependencies()
 
+  ament_add_gtest(test_aiding_input test/test_aiding_input.cpp)
+  target_link_libraries(test_aiding_input sbg_driver_core)
+
   ament_add_gtest(test_sbg_ros_helpers test/test_sbg_ros_helpers.cpp)
   target_link_libraries(test_sbg_ros_helpers sbg_driver_core)
 
