@@ -6,9 +6,9 @@
  *
  * \brief           Parse diagnostic logs emitted by the device.
  *
- * \copyright       Copyright (C) 2007-2024, SBG Systems SAS. All rights reserved.
+ * \copyright       Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
  * \beginlicense    The MIT license
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -26,7 +26,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * \endlicense
  */
 
@@ -74,7 +74,7 @@ typedef struct _SbgEComLogDiagData
 
 /*!
  * Parse data for the SBG_ECOM_LOG_DIAG message and fill the corresponding structure.
- * 
+ *
  * \param[out]  pLogData                    Log structure instance to fill.
  * \param[in]   pStreamBuffer               Input stream buffer to read the log from.
  * \return                                  SBG_NO_ERROR if a valid log has been read from the stream buffer.

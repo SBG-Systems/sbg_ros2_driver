@@ -1,4 +1,4 @@
-﻿// sbgCommonLib headers
+// sbgCommonLib headers
 #include <sbgCommon.h>
 #include <streamBuffer/sbgStreamBuffer.h>
 

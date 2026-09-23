@@ -1,0 +1,113 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: Linux
+          - os: macos-latest
+            platform: Darwin
+            cmake-args: -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+          - os: windows-latest
+            platform: win64
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set package name
+        id: package
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            version="${{ github.event.release.tag_name }}"
+          else
+            version="${GITHUB_SHA::7}"
+          fi
+          echo "name=sbgECom-${version}-${{ matrix.platform }}" >> "$GITHUB_OUTPUT"
+
+      - name: Configure
+        run: >
+          cmake -B build
+          -DBUILD_TOOLS=ON
+          -DBUILD_EXAMPLES=ON
+          -DCMAKE_BUILD_TYPE=Release
+          ${{ matrix.cmake-args }}
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Install
+        run: cmake --install build --config Release --prefix "install/${{ steps.package.outputs.name }}"
+
+      - name: Add documentation files
+        run: cp README.md LICENSE.md CHANGELOG.md "install/${{ steps.package.outputs.name }}/"
+
+      - name: Package
+        working-directory: install
+        run: cmake -E tar cf "${{ steps.package.outputs.name }}.zip" --format=zip "${{ steps.package.outputs.name }}"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.name }}
+          path: install/${{ steps.package.outputs.name }}.zip
+
+      - name: Attach archive to release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" "install/${{ steps.package.outputs.name }}.zip" --clobber
+
+  publish-pypi:
+    name: Publish to PyPI
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pysbgecom
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Build package
+        working-directory: pysbgecom
+        run: |
+          python -m pip install build
+          python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: pysbgecom/dist

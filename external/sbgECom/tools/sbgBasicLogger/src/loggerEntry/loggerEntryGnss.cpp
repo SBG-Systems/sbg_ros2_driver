@@ -67,8 +67,8 @@ void CLoggerEntryGnssVel::writeDataToConsole(const CLoggerContext &context, cons
 
 void CLoggerEntryGnssPos::writeHeaderToFile(const CLoggerContext &context)
 {
-	m_outFile	<< context.getTimeColTitle()	<< "\tstatus\tstatusExt\tgpsTow\tlatitude\tlongitude\taltitude\tundulation\tlatitudeStd\tlongitudeStd\taltitudeStd\tnumSvTracked\tnumSvUsed\tbaseStationId\tdiffAge\n";
-	m_outFile	<< context.getTimeUnit()		<< "\t(na)\t(na)\t(ms)\t(deg)\t(deg)\t(m)\t(m)\t(m)\t(m)\t(m)\t(na)\t(na)\t(na)\t(0.01s)\n";
+	m_outFile	<< context.getTimeColTitle()	<< "\tstatus\tstatusExt\tgpsTow\tlatitude\tlongitude\taltitude\tundulation\tlatitudeStd\tlongitudeStd\taltitudeStd\tnumSvTracked\tnumSvUsed\tbaseStationId\tdiffAge\tnrDiagReboots\tupTime\n";
+	m_outFile	<< context.getTimeUnit()		<< "\t(na)\t(na)\t(ms)\t(deg)\t(deg)\t(m)\t(m)\t(m)\t(m)\t(m)\t(na)\t(na)\t(na)\t(0.01s)\t(na)\t(s)\n";
 }
 
 void CLoggerEntryGnssPos::writeDataToFile(const CLoggerContext &context, const SbgEComLogUnion &logData)
@@ -89,7 +89,9 @@ void CLoggerEntryGnssPos::writeDataToFile(const CLoggerContext &context, const S
 				<< (uint32_t)data.numSvTracked											<< "\t"
 				<< (uint32_t)data.numSvUsed												<< "\t"
 				<< (uint32_t)data.baseStationId											<< "\t"
-				<< (uint32_t)data.differentialAge										<< "\n";
+				<< (uint32_t)data.differentialAge										<< "\t"
+				<< (uint32_t)data.nrDiagReboots											<< "\t"
+				<< data.upTime															<< "\n";
 }
 
 void CLoggerEntryGnssPos::writeDataToConsole(const CLoggerContext &context, const SbgEComLogUnion &logData)
@@ -110,7 +112,9 @@ void CLoggerEntryGnssPos::writeDataToConsole(const CLoggerContext &context, cons
 				<< std::setw(12) << (uint32_t)data.numSvTracked
 				<< std::setw(12) << (uint32_t)data.numSvUsed
 				<< std::setw(12) << (uint32_t)data.baseStationId
-				<< std::setw(12) << (uint32_t)data.differentialAge						<< "\n";
+				<< std::setw(12) << (uint32_t)data.differentialAge
+				<< std::setw(12) << (uint32_t)data.nrDiagReboots
+				<< std::setw(12) << data.upTime											<< "\n";
 }
 
 //----------------------------------------------------------------------//
@@ -198,10 +202,41 @@ void CLoggerEntryGnssSat::writeDataToConsole(const CLoggerContext &context, cons
 }
 
 //----------------------------------------------------------------------//
+//- CLoggerEntryGnssDop                                                -//
+//----------------------------------------------------------------------//
+
+void CLoggerEntryGnssDop::writeHeaderToFile(const CLoggerContext &context)
+{
+	m_outFile	<< context.getTimeColTitle()	<< "\thDop\tpDop\tvDop\ttDop\n";
+}
+
+void CLoggerEntryGnssDop::writeDataToFile(const CLoggerContext &context, const SbgEComLogUnion &logData)
+{
+	const SbgEComLogGnssDop			&data = logData.gpsDopData;
+
+	m_outFile	<< context.fmtTime(data.timeStamp)										<< "\t"
+				<< data.hDop															<< "\t"
+				<< data.pDop															<< "\t"
+				<< data.vDop															<< "\t"
+				<< data.tDop															<< "\n";
+}
+
+void CLoggerEntryGnssDop::writeDataToConsole(const CLoggerContext &context, const SbgEComLogUnion &logData)
+{
+	const SbgEComLogGnssDop			&data = logData.gpsDopData;
+
+	std::cout	<< std::setw(12) << getName()											<< ": "
+				<< std::setw(12) << data.hDop
+				<< std::setw(12) << data.pDop
+				<< std::setw(12) << data.vDop
+				<< std::setw(12) << data.tDop										<< "\n";
+}
+
+//----------------------------------------------------------------------//
 //- CLoggerEntryGnss1Vel                                               -//
 //----------------------------------------------------------------------//
 
-std::string CLoggerEntryGnss1Vel::getName() const 
+std::string CLoggerEntryGnss1Vel::getName() const
 {
 	return "gnss1Vel";
 }
@@ -210,7 +245,7 @@ std::string CLoggerEntryGnss1Vel::getName() const
 //- CLoggerEntryGnss1Pos                                               -//
 //----------------------------------------------------------------------//
 
-std::string CLoggerEntryGnss1Pos::getName() const 
+std::string CLoggerEntryGnss1Pos::getName() const
 {
 	return "gnss1Pos";
 }
@@ -219,7 +254,7 @@ std::string CLoggerEntryGnss1Pos::getName() const
 //- CLoggerEntryGnss1Hdt                                               -//
 //----------------------------------------------------------------------//
 
-std::string CLoggerEntryGnss1Hdt::getName() const 
+std::string CLoggerEntryGnss1Hdt::getName() const
 {
 	return "gnss1Hdt";
 }
@@ -228,7 +263,7 @@ std::string CLoggerEntryGnss1Hdt::getName() const
 //- CLoggerEntryGnss1Raw                                               -//
 //----------------------------------------------------------------------//
 
-std::string CLoggerEntryGnss1Raw::getName() const 
+std::string CLoggerEntryGnss1Raw::getName() const
 {
 	return "gnss1Raw";
 }
@@ -237,16 +272,25 @@ std::string CLoggerEntryGnss1Raw::getName() const
 //- CLoggerEntryGnss1Sat                                               -//
 //----------------------------------------------------------------------//
 
-std::string CLoggerEntryGnss1Sat::getName() const 
+std::string CLoggerEntryGnss1Sat::getName() const
 {
 	return "gnss1Sat";
+}
+
+//----------------------------------------------------------------------//
+//- CLoggerEntryGnss1Dop                                               -//
+//----------------------------------------------------------------------//
+
+std::string CLoggerEntryGnss1Dop::getName() const
+{
+	return "gnss1Dop";
 }
 
 //----------------------------------------------------------------------//
 //- CLoggerEntryGnss2Vel                                               -//
 //----------------------------------------------------------------------//
 
-std::string CLoggerEntryGnss2Vel::getName() const 
+std::string CLoggerEntryGnss2Vel::getName() const
 {
 	return "gnss2Vel";
 }
@@ -255,7 +299,7 @@ std::string CLoggerEntryGnss2Vel::getName() const
 //- CLoggerEntryGnss2Pos                                               -//
 //----------------------------------------------------------------------//
 
-std::string CLoggerEntryGnss2Pos::getName() const 
+std::string CLoggerEntryGnss2Pos::getName() const
 {
 	return "gnss2Pos";
 }
@@ -264,7 +308,7 @@ std::string CLoggerEntryGnss2Pos::getName() const
 //- CLoggerEntryGnss2Hdt                                               -//
 //----------------------------------------------------------------------//
 
-std::string CLoggerEntryGnss2Hdt::getName() const 
+std::string CLoggerEntryGnss2Hdt::getName() const
 {
 	return "gnss2Hdt";
 }
@@ -273,7 +317,7 @@ std::string CLoggerEntryGnss2Hdt::getName() const
 //- CLoggerEntryGnss2Raw                                               -//
 //----------------------------------------------------------------------//
 
-std::string CLoggerEntryGnss2Raw::getName() const 
+std::string CLoggerEntryGnss2Raw::getName() const
 {
 	return "gnss2Raw";
 }
@@ -282,9 +326,18 @@ std::string CLoggerEntryGnss2Raw::getName() const
 //- CLoggerEntryGnss2Sat                                               -//
 //----------------------------------------------------------------------//
 
-std::string CLoggerEntryGnss2Sat::getName() const 
+std::string CLoggerEntryGnss2Sat::getName() const
 {
 	return "gnss2Sat";
+}
+
+//----------------------------------------------------------------------//
+//- CLoggerEntryGnss2Dop                                               -//
+//----------------------------------------------------------------------//
+
+std::string CLoggerEntryGnss2Dop::getName() const
+{
+	return "gnss2Dop";
 }
 
 }; // Namespace sbg

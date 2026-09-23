@@ -40,7 +40,7 @@ It should help users benefits from the new features and improvements brought by 
 
 ### Serial Interface
 
-The ELLIPSE firmware v3 allow up to 1 kHz IMU output on serial interface as well as settings streaming.
+The ELLIPSE firmware v3 allows up to 1 kHz IMU output on serial interface as well as settings streaming.
 To better support high throughput, the maximum allowable baudrate has been increased from 921600 bps to 2 Mbit/s.
 
 > [!WARNING]
@@ -84,6 +84,41 @@ This new settings is available through the sbgInsRestApi at `api/v1/settings/aid
 
 Legacy sbgECom configuration command `SBG_ECOM_CMD_SET_MAG_CALIB` has been extended to include the 2D/3D calibration mode information.  
 The new method `sbgEComCmdMagSetCalibData2` has been introduced to provide the mode information.
+
+## From sbgECom v6.0
+
+Starting from sbgECom 6.0, the legacy `SOLUTION_STATUS` field embedded in multiple EKF output logs is deprecated.
+
+A new dedicated message, `SBG_ECOM_LOG_EKF_STATUS (63)`, is introduced to provide a comprehensive and extensible representation of the INS solution status.
+
+The following logs still include the `SOLUTION_STATUS` field for backward compatibility:
+- `SBG_ECOM_LOG_EKF_EULER`
+- `SBG_ECOM_LOG_EKF_QUAT`
+- `SBG_ECOM_LOG_EKF_NAV`
+- `SBG_ECOM_LOG_EKF_VEL_BODY`
+- `SBG_ECOM_LOG_EKF_ROT_ACCEL_BODY`
+- `SBG_ECOM_LOG_EKF_ROT_ACCEL_NED`
+
+For all new developments, users should rely on `SBG_ECOM_LOG_EKF_STATUS`, which provides:
+- Detailed EKF validity and alignment information
+- A unified solution type (replacing `SOLUTION_MODE`)
+- Explicit aiding source usage
+- GNSS spoofing indicators and navigation safety status
+
+The legacy `SOLUTION_STATUS` field may be removed in future versions.
+
+## From sbgECom v5.3 to v5.4
+
+sbgECom v5.4 introduces updated definitions to support a broader range of external aiding sources, including air data, generic velocity aiding, and position aiding.
+
+Some macros have been renamed to reflect these generalized usages and to prepare for future extensions.
+
+### Renamed Solution Status Flags
+
+| Name (v5.4 and later)               | Previous Name (v5.3 and earlier)        |
+|-------------------------------------|-----------------------------------------|
+| `SBG_ECOM_SOL_AIRSPEED_USED`        | `SBG_ECOM_SOL_AIR_DATA_USED`            |
+| `SBG_ECOM_SOL_VERTICAL_AIDING_USED` | `SBG_ECOM_SOL_DEPTH_USED`               |
 
 ## From sbgECom v4.x
 

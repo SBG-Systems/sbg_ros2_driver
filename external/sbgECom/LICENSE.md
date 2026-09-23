@@ -1,7 +1,7 @@
 # License {#license}
 The MIT License (MIT)
 
-Copyright (C) 2007-2025, SBG Systems SAS. All rights reserved.
+Copyright (C) 2007-2026, SBG Systems SAS. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

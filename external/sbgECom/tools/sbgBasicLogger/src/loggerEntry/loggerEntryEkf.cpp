@@ -167,12 +167,11 @@ void CLoggerEntryEkfNav::writeDataToConsole(const CLoggerContext &context, const
 				<< std::setw(12) << data.position[0]
 				<< std::setw(12) << data.position[1]
 				<< std::setw(12) << data.position[2]
-				<< std::setw(12) << data.positionStdDev[0]
-				<< std::setw(12) << data.positionStdDev[1]
-				<< std::setw(12) << data.positionStdDev[2]
+				<< std::setw(16) << data.positionStdDev[0]
+				<< std::setw(16) << data.positionStdDev[1]
+				<< std::setw(16) << data.positionStdDev[2]
 				<< std::setw(12) << data.undulation									<< "\n";
 }
-
 
 //----------------------------------------------------------------------//
 //- CLoggerEntryEkfVelBody                                             -//
@@ -215,6 +214,90 @@ void CLoggerEntryEkfVelBody::writeDataToConsole(const CLoggerContext &context, c
 				<< std::setw(12) << data.velocityStdDev[0]
 				<< std::setw(12) << data.velocityStdDev[1]
 				<< std::setw(12) << data.velocityStdDev[2]							<< "\n";
+}
+
+//----------------------------------------------------------------------//
+//- CLoggerEntryEkfAirData                                             -//
+//----------------------------------------------------------------------//
+
+std::string CLoggerEntryEkfAirData::getName() const
+{
+	return "ekfAirData";
+}
+
+void CLoggerEntryEkfAirData::writeHeaderToFile(const CLoggerContext &context)
+{
+	m_outFile	<< context.getTimeColTitle()	<< "\tstatus\twindN\twindE\twindD\twindStdN\twindStdE\twindStdD\n";
+	m_outFile	<< context.getTimeUnit()		<< "\t(na)\t(m.s^-1)\t(m.s^-1)\t(m.s^-1)\t(m.s^-1)\t(m.s^-1)\t(m.s^-1)\n";
+}
+
+void CLoggerEntryEkfAirData::writeDataToFile(const CLoggerContext &context, const SbgEComLogUnion &logData)
+{
+	const SbgEComLogEkfAirData			&data = logData.ekfAirData;
+
+	m_outFile	<< context.fmtTime(data.timeStamp)									<< "\t"
+				<< context.fmtStatus(data.status)									<< "\t"
+				<< data.wind[0]														<< "\t"
+				<< data.wind[1]														<< "\t"
+				<< data.wind[2]														<< "\t"
+				<< data.windStdDev[0]												<< "\t"
+				<< data.windStdDev[1]												<< "\t"
+				<< data.windStdDev[2]												<< "\n";
+}
+
+void CLoggerEntryEkfAirData::writeDataToConsole(const CLoggerContext &context, const SbgEComLogUnion &logData)
+{
+	const SbgEComLogEkfAirData			&data = logData.ekfAirData;
+
+	std::cout	<< std::setw(12) << getName()										<< ": "
+				<< std::setw(12) << context.fmtStatus(data.status)
+				<< std::setw(12) << data.wind[0]
+				<< std::setw(12) << data.wind[1]
+				<< std::setw(12) << data.wind[2]
+				<< std::setw(12) << data.windStdDev[0]
+				<< std::setw(12) << data.windStdDev[1]
+				<< std::setw(12) << data.windStdDev[2]								<< "\n";
+}
+
+//----------------------------------------------------------------------//
+//- CLoggerEntryEkfStatus                                              -//
+//----------------------------------------------------------------------//
+
+std::string CLoggerEntryEkfStatus::getName() const
+{
+	return "ekfStatus";
+}
+
+void CLoggerEntryEkfStatus::writeHeaderToFile(const CLoggerContext &context)
+{
+	m_outFile	<< context.getTimeColTitle()	<< "\tekfStatus\tsolutionType\talignmentProgress\tgnss1SpoofingStatus\tgnss2SpoofingStatus\taidingsUsed\n";
+	m_outFile	<< context.getTimeUnit()		<< "\t(na)\t(na)\t(%)\t(na)\t(na)\t(na)\n";
+}
+
+void CLoggerEntryEkfStatus::writeDataToFile(const CLoggerContext &context, const SbgEComLogUnion &logData)
+{
+	const SbgEComLogEkfStatus			&data = logData.ekfStatusData;
+
+	m_outFile	<< context.fmtTime(data.timeStamp)									<< "\t"
+				<< context.fmtStatus(data.ekfStatus)								<< "\t"
+				<< context.fmtStatus(data.solutionType)								<< "\t"
+				<< (uint32_t)data.alignmentProgress									<< "\t"
+				<< context.fmtStatus(data.gnss1SpoofingStatus)						<< "\t"
+				<< context.fmtStatus(data.gnss2SpoofingStatus)						<< "\t"
+				<< context.fmtStatus(data.aidingsUsed)								<< "\n";
+}
+
+void CLoggerEntryEkfStatus::writeDataToConsole(const CLoggerContext &context, const SbgEComLogUnion &logData)
+{
+	const SbgEComLogEkfStatus			&data = logData.ekfStatusData;
+
+	std::cout	<< std::setw(12) << getName()										<< ": "
+				<< std::setw(12) << context.fmtStatus(data.ekfStatus)
+				<< std::setw(12) << context.fmtStatus(data.solutionType)
+				<< std::setw(12) << (uint32_t)data.alignmentProgress
+				<< std::setw(12) << context.fmtStatus(data.gnss1SpoofingStatus)
+				<< std::setw(12) << context.fmtStatus(data.gnss2SpoofingStatus)
+				<< std::setw(12) << context.fmtStatus(data.aidingsUsed)				<< "\n";
 }
 
 }; // Namespace sbg

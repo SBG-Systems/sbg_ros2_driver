@@ -1,4 +1,4 @@
-﻿#include "sbgEComLogShipMotion.h"
+#include "sbgEComLogShipMotion.h"
 
 //----------------------------------------------------------------------//
 //- Public methods                                                     -//
