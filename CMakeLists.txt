@@ -118,6 +118,7 @@ include_directories(
 
 ## Define common resources.
 set(SBG_COMMON_RESOURCES
+  src/aiding_input.cpp
   src/imu_sample.cpp
   src/mag_calibration.cpp
   src/message_publisher.cpp

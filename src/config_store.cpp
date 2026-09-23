@@ -18,7 +18,11 @@ configure_through_ros_(false),
 legacy_params_present_(false),
 ros_standard_output_(false),
 rtcm_subscribe_(false),
-nmea_publish_(false)
+nmea_publish_(false),
+position_input_{false, ""},
+velocity_input_{false, ""},
+air_data_input_{false, ""},
+velocity_input_frame_(aiding::VelocityFrame::NED)
 {
 
 }
@@ -150,6 +154,42 @@ void ConfigStore::loadNmeaParameters(const rclcpp::Node &ref_node_handle)
   ref_node_handle.get_parameter_or<std::string>("nmea.namespace",   nmea_namespace,         "ntrip_client");
 
   nmea_full_topic_ = nmea_namespace + "/" + topic_name;
+}
+
+void ConfigStore::loadAidingInputParameters(const rclcpp::Node &ref_node_handle)
+{
+  std::string     velocity_frame;
+
+  ref_node_handle.get_parameter_or<bool>("aidingInput.position.subscribe",         position_input_.subscribe,  false);
+  ref_node_handle.get_parameter_or<std::string>("aidingInput.position.topic_name", position_input_.topic,      "position");
+
+  ref_node_handle.get_parameter_or<bool>("aidingInput.velocity.subscribe",         velocity_input_.subscribe,  false);
+  ref_node_handle.get_parameter_or<std::string>("aidingInput.velocity.topic_name", velocity_input_.topic,      "velocity");
+  ref_node_handle.get_parameter_or<std::string>("aidingInput.velocity.frame",      velocity_frame,             "ned");
+
+  ref_node_handle.get_parameter_or<bool>("aidingInput.airData.subscribe",          air_data_input_.subscribe,  false);
+  ref_node_handle.get_parameter_or<std::string>("aidingInput.airData.topic_name",  air_data_input_.topic,      "airData");
+
+  if (velocity_frame == "ned")
+  {
+    velocity_input_frame_ = aiding::VelocityFrame::NED;
+  }
+  else if (velocity_frame == "enu")
+  {
+    velocity_input_frame_ = aiding::VelocityFrame::ENU;
+  }
+  else if (velocity_frame == "frd")
+  {
+    velocity_input_frame_ = aiding::VelocityFrame::FRD;
+  }
+  else if (velocity_frame == "flu")
+  {
+    velocity_input_frame_ = aiding::VelocityFrame::FLU;
+  }
+  else
+  {
+    rclcpp::exceptions::throw_from_rcl_error(RMW_RET_ERROR, "unknown velocity aiding input frame: " + velocity_frame);
+  }
 }
 
 #ifdef SBG_USE_DEPRECATED_ECOM_CONFIG
@@ -428,6 +468,26 @@ const std::string &ConfigStore::getRtcmFullTopic() const
   return rtcm_full_topic_;
 }
 
+const AidingInputConf &ConfigStore::getPositionInputConf() const
+{
+  return position_input_;
+}
+
+const AidingInputConf &ConfigStore::getVelocityInputConf() const
+{
+  return velocity_input_;
+}
+
+aiding::VelocityFrame ConfigStore::getVelocityInputFrame() const
+{
+  return velocity_input_frame_;
+}
+
+const AidingInputConf &ConfigStore::getAirDataInputConf() const
+{
+  return air_data_input_;
+}
+
 bool ConfigStore::shouldPublishNmea() const
 {
   return nmea_publish_;
@@ -536,6 +596,7 @@ void ConfigStore::loadFromRosNodeHandle(const rclcpp::Node& ref_node_handle)
   loadOutputFrameParameters(ref_node_handle);
   loadRtcmParameters(ref_node_handle);
   loadNmeaParameters(ref_node_handle);
+  loadAidingInputParameters(ref_node_handle);
 
   loadOutputTimeReference(ref_node_handle, "output.time_reference");
 

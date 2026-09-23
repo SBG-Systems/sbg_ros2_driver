@@ -5,6 +5,9 @@ Changelog for package sbg_driver
 Forthcoming
 -----------
 * Update the bundled sbgECom to 5.8.935-stable, which adds the generic position aiding log
+* Forward generic position aiding to the INS from a sensor_msgs/NavSatFix topic
+* Forward generic velocity aiding to the INS from a geometry_msgs/TwistWithCovarianceStamped topic
+* Forward barometric altimeter aiding to the INS from a sensor_msgs/FluidPressure topic
 * Configure the INS with the sbgInsRestApi (api/v1/settings/import) from a JSON settings export document referenced by the new ins.settingsFile parameter, uploaded to the HTTP server of the device on an Ethernet interface and sent through the sbgECom API tunnel on a serial one
 * Add a libcurl dependency
 * Remove the INS parameters from the yaml config files, only ROS related ones are left

@@ -40,8 +40,12 @@
 #include <std_srvs/srv/set_bool.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <rtcm_msgs/msg/message.hpp>
+#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
+#include <sensor_msgs/msg/fluid_pressure.hpp>
+#include <sensor_msgs/msg/nav_sat_fix.hpp>
 
 // Project headers
+#include <aiding_input.h>
 #include <config_applier.h>
 #include <config_store.h>
 #include <mag_calibration.h>
@@ -79,6 +83,10 @@ private:
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr        calib_save_service_;
 
   rclcpp::Subscription<rtcm_msgs::msg::Message>::SharedPtr  rtcm_sub_;
+
+  rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr                      position_input_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::TwistWithCovarianceStamped>::SharedPtr   velocity_input_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::FluidPressure>::SharedPtr                  air_data_input_sub_;
 
   uint32_t                                                  log_replay_last_timestamp_;
 
@@ -266,6 +274,35 @@ private:
    * \param[in] msg             ROS RTCM message.
    */
   void writeRtcmMessageToDevice(const rtcm_msgs::msg::Message::SharedPtr msg);
+
+  /*!
+   * Handler for subscription to the generic position aiding input topic.
+   *
+   * \param[in] msg             ROS NavSatFix message.
+   */
+  void writePositionAidingToDevice(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
+
+  /*!
+   * Handler for subscription to the generic velocity aiding input topic.
+   *
+   * \param[in] msg             ROS TwistWithCovarianceStamped message.
+   */
+  void writeVelocityAidingToDevice(const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg);
+
+  /*!
+   * Handler for subscription to the air data aiding input topic.
+   *
+   * \param[in] msg             ROS FluidPressure message.
+   */
+  void writeAirDataAidingToDevice(const sensor_msgs::msg::FluidPressure::SharedPtr msg);
+
+  /*!
+   * Log an aiding input send error, if any.
+   *
+   * \param[in] error_code      Error code returned when sending the aiding log.
+   * \param[in] p_aiding_name   Name of the aiding input, used in the error message.
+   */
+  void logAidingSendError(SbgErrorCode error_code, const char *p_aiding_name) const;
 
 public:
 

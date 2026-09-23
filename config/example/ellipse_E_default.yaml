@@ -85,3 +85,25 @@
       topic_name: nmea
       # Namespace where to publish topic
       namespace: ntrip_client
+
+    # Aiding measurements forwarded by the driver to the INS.
+    # Note: The matching aiding module must be enabled and assigned to the sbgECom port in
+    #       the device settings, otherwise the INS discards the forwarded measurements.
+    aidingInput:
+      position:
+        # Should ros driver subscribe to a generic position topic
+        subscribe: false
+        # Topic on which the position is published, as a sensor_msgs/NavSatFix message
+        topic_name: position
+      velocity:
+        # Should ros driver subscribe to a generic velocity topic
+        subscribe: false
+        # Topic on which the velocity is published, as a geometry_msgs/TwistWithCovarianceStamped message
+        topic_name: velocity
+        # Frame convention of the published velocity: ned, enu, frd or flu
+        frame: ned
+      airData:
+        # Should ros driver subscribe to an absolute pressure topic
+        subscribe: false
+        # Topic on which the pressure is published, as a sensor_msgs/FluidPressure message
+        topic_name: airData
