@@ -17,6 +17,7 @@ The driver supports the following features:
  - Parse IMU/AHRS/INS/GNSS using the sbgECom protocol
  - Publish standard ROS2 messages and more detailed specific SBG Systems topics
  - Subscribe and forward RTCM data to support DGPS/RTK mode with centimeters-level accuracy
+ - Subscribe and forward external position, velocity and barometric pressure aiding measurements
  - Calibrate 2D/3D magnetic field using the on-board ELLIPSE algorithms
  - Configure the device with the [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/), from a JSON settings file
 
@@ -81,7 +82,7 @@ ros2 launch sbg_driver sbg_device_mag_calibration_launch.py
 
 ## Config files
 The yaml configuration files cover the ROS2 side of the driver: which interface to use, frame
-conventions and IDs, time reference, odometry, RTCM and NMEA topics.
+conventions and IDs, time reference, odometry, RTCM, NMEA and aiding input topics.
 
 The device settings are not described here. They live in a
 [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/) JSON document referenced by the
@@ -299,6 +300,40 @@ Incoming RTCM data are forwarded to the INS internal GNSS receiver to enable DGP
 
   RTCM data from `/ntrip_client/rtcm` will be forwarded to the internal INS GNSS receiver.  
   Namespace `ntrip_client` and topic_name `rtcm` can be customized in .yaml config files.
+
+##### Aiding input topics
+The `sbg_device` node can subscribe to standard ROS2 topics and forward the measurements to the INS
+as sbgECom aiding logs. Each input is disabled by default and is enabled with its own `subscribe`
+parameter in the `aidingInput` section of the .yaml config file. The topic name is configurable per
+input with `topic_name`.
+
+Measurements are reported to the INS as delayed measurements, the delay being computed from the
+`header.stamp` field of the incoming message and the node clock.
+
+> [!NOTE]
+> The matching aiding module must be enabled and assigned to the sbgECom port in the device settings,
+> otherwise the INS discards the forwarded measurements.
+
+* **`/position`** [sensor_msgs/NavSatFix](https://docs.ros.org/en/rolling/p/sensor_msgs/interfaces/msg/NavSatFix.html)
+
+  Generic position aiding, forwarded as `SBG_ECOM_LOG_POSITION_1`. Messages reporting no fix, or an
+  unknown covariance, are discarded as the INS requires a position accuracy.  
+  Set `aidingInput.position.subscribe` to `true` to use this feature.
+
+* **`/velocity`** [geometry_msgs/TwistWithCovarianceStamped](https://docs.ros.org/en/rolling/p/geometry_msgs/interfaces/msg/TwistWithCovarianceStamped.html)
+
+  Generic velocity aiding, forwarded as `SBG_ECOM_LOG_VELOCITY_1`. Only the linear velocities are
+  used. The standard deviations are forwarded when the three linear variances are set.  
+  The frame convention of the incoming message is given by `aidingInput.velocity.frame`, one of
+  `ned`, `enu`, `frd` or `flu`. It must match the frame the velocity aiding module is configured with
+  on the INS, the driver only converts the message to the right handedness.  
+  Set `aidingInput.velocity.subscribe` to `true` to use this feature.
+
+* **`/airData`** [sensor_msgs/FluidPressure](https://docs.ros.org/en/rolling/p/sensor_msgs/interfaces/msg/FluidPressure.html)
+
+  Barometric altimeter aiding, forwarded as `SBG_ECOM_LOG_AIR_DATA`. Only the absolute pressure is
+  forwarded, the INS derives the barometric altitude from it.  
+  Set `aidingInput.airData.subscribe` to `true` to use this feature.
 
 ### sbg_device_mag node
 The sbg_device_mag node is used to execute on board in-situ 2D or 3D magnetic field calibration.  
