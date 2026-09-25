@@ -56,8 +56,8 @@ MessageWrapper::MessageWrapper():
 Node("tf_broadcaster")
 {
   first_valid_utc_ = false;
-  tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
-  static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
+  tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(*this);
+  static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(*this);
 }
 
 //---------------------------------------------------------------------//
